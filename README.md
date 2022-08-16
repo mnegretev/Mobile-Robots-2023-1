@@ -50,6 +50,4 @@ Dr. Marco Negrete<br>
 Profesor Asociado C<br>
 Departamento de Procesamiento de Señales<br>
 Facultad de Ingeniería, UNAM <br>
-[mnegretev.info](http://mnegretev.info)<br>
-contact@mnegretev.info<br>
 marco.negrete@ingenieria.unam.edu<br>
