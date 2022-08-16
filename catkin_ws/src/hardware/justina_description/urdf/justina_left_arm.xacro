@@ -36,7 +36,7 @@
       <material name = "la_material"><color rgba="1.0 0.5 0 1"/></material>
     </visual>
     <collision>
-      <origin xyz="0 -0.01 -0.4881" rpy = "0 0 0"/>
+      <origin xyz="0 -0.01 -0.04881" rpy = "0 0 0"/>
       <geometry> 
         <box size = "0.04025 0.06 0.04025"/> 
       </geometry>
@@ -69,8 +69,7 @@
     <collision>
       <origin xyz="0 0 -0.125" rpy = "0 0 0"/>
       <geometry> 
-
-       <box size = "0.04025 0.04025 0.19"/> 
+        <box size = "0.04025 0.04025 0.19"/> 
       </geometry>
     </collision>
     <collision>
@@ -304,7 +303,7 @@
   </joint>
   
   <joint name="la_3_joint" type="revolute"> 
-    <origin xyz="0 0.0 -0.215" rNNNNNNNNpy="0 0 0"/>
+    <origin xyz="0 0.0 -0.215" rpy="0 0 0"/>
     <parent link="left_arm_link2"/>
     <child link="left_arm_link3"/>
     <axis xyz="0 0 1" />
@@ -313,7 +312,7 @@
   </joint>
   
   <joint name="la_4_joint" type="revolute"> 
-    <origin xyz="0.005 0.0 -0.013" rpy="0 0 0"/>
+    <origin xyz="0 0.0 -0.065" rpy="0 0 0"/>
     <parent link="left_arm_link3"/>
     <child link="left_arm_link4"/>
     <axis xyz="0 -1 0" />

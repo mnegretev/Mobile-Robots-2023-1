@@ -13,7 +13,7 @@ def callback_joint_state(msg):
     for i in range(7):
         la_pose.data.append(msg.position[2+i])
     for i in range(7):
-        ra_pose.data.append(msg.position[2+11])
+        ra_pose.data.append(msg.position[11+i])
     pubHdCurrentPose.publish(hd_pose)
     pubLaCurrentPose.publish(la_pose)
     pubRaCurrentPose.publish(ra_pose)

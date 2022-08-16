@@ -9,7 +9,7 @@
       <geometry> 
         <box size = "0.04025 0.108 0.065"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_red"><color rgba="1.0 0 0 1"/></material>
     </visual>
     <collision>
       <origin xyz="0 0.01 0.02" rpy = "0 0 0"/>
@@ -32,7 +32,7 @@
       <geometry> 
         <box size = "0.04025 0.06 0.04025"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_orange"><color rgba="1.0 0.5 0 1"/></material>
     </visual>
     <collision>
       <origin xyz="0 0.01 -0.04881" rpy = "0 0 0"/>
@@ -55,14 +55,14 @@
       <geometry> 
         <box size = "0.04025 0.04025 0.19"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_yellow"><color rgba="1.0 1 0 1"/></material>
     </visual>
     <visual>
       <origin xyz="-0.01 0 -0.197" rpy = "0 0 0"/>
       <geometry> 
         <box size = "0.06 0.04025 0.04025"/> 
       </geometry>
-      <material name = "la_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "la_material_yellow"><color rgba="1.0 1 0 1"/></material>
     </visual>
     <collision>
       <origin xyz="0 0 -0.125" rpy = "0 0 0"/>
@@ -89,14 +89,14 @@
     <visual>
       <origin xyz="0 0 -0.04" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.04025 0.04025 0.06"/> 
+        <box size = "0.04025 0.04025 0.05"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_green"><color rgba="0 0.5 0 1"/></material>
     </visual>
     <collision>
       <origin xyz="0 0 -0.04" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.04025 0.04025 0.06"/> 
+        <box size = "0.04025 0.04025 0.05"/> 
       </geometry>
     </collision>
     <inertial>
@@ -110,31 +110,31 @@
   </link>
   <link name="right_arm_link4">
     <visual>
-      <origin xyz="0 0 -0.11" rpy = "0 0 0"/>
+      <origin xyz="0 0 -0.075" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.04025 0.04025 0.16"/> 
+        <box size = "0.04025 0.04025 0.08"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_blue"><color rgba="0 0 1 1"/></material>
     </visual>
-    <visual>
+    <!--<visual>
+      <origin xyz="-0.01 0 -0.167" rpy = "0 0 0"/>
+      <geometry> 
+        <box size = "0.06 -0.04025 0.04025"/> 
+      </geometry>
+      <material name = "la_material_blue"><color rgba="0 0 1 1"/></material> 
+    </visual> -->
+    <collision>
+      <origin xyz="0 0 -0.075" rpy = "0 0 0"/>
+      <geometry> 
+        <box size = "0.04025 0.04025 0.08"/> 
+      </geometry>
+    </collision>
+    <!--<collision>
       <origin xyz="-0.01 0 -0.167" rpy = "0 0 0"/>
       <geometry> 
         <box size = "0.06 0.04025 0.04025"/> 
       </geometry>
-      <material name = "la_material"><color rgba="1.0 0.5 0 1"/></material>
-    </visual>
-    <collision>
-      <origin xyz="0 0 -0.11" rpy = "0 0 0"/>
-      <geometry> 
-        <box size = "0.04025 0.04025 0.16"/> 
-      </geometry>
-    </collision>
-    <collision>
-      <origin xyz="-0.01 0 -0.167" rpy = "0 0 0"/>
-      <geometry> 
-        <box size = "0.06 0.04025 0.04025"/> 
-      </geometry>
-    </collision>
+    </collision> -->
     <inertial>
       <origin xyz="-0.01 0 -0.147" rpy = "0 0 0"/>
       <mass value="0.125"/>
@@ -146,16 +146,16 @@
   </link>
   <link name="right_arm_link5">
     <visual>
-      <origin xyz="0 0 -0.025" rpy = "0 0 0"/>
+      <origin xyz="0.02 0 0.005" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.04025 0.04025 0.02"/> 
+        <box size = "0.07 0.03025 0.05"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_purple"><color rgba="1.0 0 1 1"/></material>
     </visual>
     <collision>
-      <origin xyz="0 0 -0.025" rpy = "0 0 0"/>
+      <origin xyz="0.02 0 0.005" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.04025 0.04025 0.02"/> 
+        <box size = "0.07 0.03025 0.05"/> 
       </geometry>
     </collision>
     <inertial>
@@ -169,16 +169,29 @@
   </link>
   <link name="right_arm_link6">
     <visual>
-      <origin xyz="0 0 -0.042" rpy = "0 0 0"/>
+      <origin xyz="0.02 0 -0.045" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.04025 0.04025 0.04"/> 
+        <box size = "0.07025 0.04025 0.02"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_red"><color rgba="1.0 0 0 1"/></material>
+    </visual>
+    <visual>
+      <origin xyz="0 0 -0.088" rpy="0 0 0"/>
+      <geometry>
+        <box size = "0.03025 0.04025 0.03"/>
+      </geometry>
+      <material name ="ra_material_red"><color rgba= "1.0 0 0 1 "/></material>
     </visual>
     <collision>
-      <origin xyz="0 0 -0.042" rpy = "0 0 0"/>
+      <origin xyz="0.02 0 -0.045" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.04025 0.04025 0.04"/> 
+        <box size = "0.07025 0.04025 0.02"/> 
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 -0.088" rpy="0 0 0"/>
+      <geometry>
+        <box size = "0.03025 0.04025 0.03"/>
       </geometry>
     </collision>
     <inertial>
@@ -191,26 +204,26 @@
     </inertial>
   </link>
   <link name="right_arm_link7">
-    <visual>
-      <origin xyz="-0.01 0 -0.03" rpy = "0 0 0"/>
+   <!-- <visual>
+      <origin xyz="-0.025 0 -0.03" rpy = "0 0 0"/>
       <geometry> 
-        <box size = "0.06 0.03525 0.03525"/> 
+        <box size = "0.11 0.03525 0.03525"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
-    </visual>
+      <material name = "ra_material_or"><color rgba="1 0.5 0 1"/></material>
+    </visual>-->
     <visual>
       <origin xyz="0 0 -0.055" rpy = "0 0 0"/>
       <geometry> 
         <box size = "0.03 0.1 0.03"/> 
       </geometry>
-      <material name = "ra_material"><color rgba="1.0 0.5 0 1"/></material>
+      <material name = "ra_material_green"><color rgba="0 0.5 0 1"/></material>
     </visual>
-    <collision>
+    <!--<collision>
       <origin xyz="-0.01 0 -0.03" rpy = "0 0 0"/>
       <geometry> 
         <box size = "0.06 0.03525 0.03525"/> 
       </geometry>
-    </collision>
+    </collision>-->
     <collision>
       <origin xyz="0 0 -0.055" rpy = "0 0 0"/>
       <geometry> 
@@ -225,7 +238,7 @@
         iyy="0.002175" iyz="0.0"
         izz="0.003075"/>
     </inertial>
-  </link>
+  </link> 
   <link name="right_arm_grip_left">
     <visual>
       <origin xyz="0 0 -0.065" rpy = "0 0 0"/>
@@ -300,7 +313,7 @@
     <limit effort="6.0" velocity="3.0" lower="-2.5" upper="2.5"/>
   </joint>
   <joint name="ra_4_joint" type="revolute"> 
-    <origin xyz="0.005 0.0 -0.013" rpy="0 0 0"/>
+    <origin xyz="0 0.0 -0.035" rpy="0 0 0"/>
     <parent link="right_arm_link3"/>
     <child link="right_arm_link4"/>
     <axis xyz="0 -1 0" />
@@ -308,23 +321,23 @@
     <limit effort="8.0" velocity="3.0" lower="-1.8" upper="1.8"/>
   </joint>
   <joint name="ra_5_joint" type="revolute"> 
-    <origin xyz="0 0.0 -0.18" rpy="0 0 0"/>
+    <origin xyz="0 0.0 -0.15" rpy="0 0 0"/>
     <parent link="right_arm_link4"/>
     <child link="right_arm_link5"/>
-    <axis xyz="0 0 1" />
+    <axis xyz="0 -1 0" />
     <dynamics damping ="0.1" />
     <limit effort="6.0" velocity="3.0" lower="-2.5" upper="2.5"/>
   </joint>
   <joint name="ra_6_joint" type="revolute"> 
-    <origin xyz="0 0.0 -0.03" rpy="0 0 0"/>
+    <origin xyz="0 0.0 0" rpy="0 0 0"/>
     <parent link="right_arm_link5"/>
     <child link="right_arm_link6"/>
-    <axis xyz="0 -1 0" />
+    <axis xyz="1 0 0" />
     <dynamics damping ="0.1" />
     <limit effort="6.0" velocity="3.0" lower="-1.4" upper="1.57"/>
   </joint>
   <joint name="ra_7_joint" type="revolute"> 
-    <origin xyz="0 0.0 -0.055" rpy="0 0 0"/>
+    <origin xyz="0 0.0 -0.08" rpy="0 0 0"/>
     <parent link="right_arm_link6"/>
     <child link="right_arm_link7"/>
     <axis xyz="0 0 1" />
@@ -353,4 +366,3 @@
     <child link="right_arm_grip_center"/> 
   </joint>
 </robot>
-  

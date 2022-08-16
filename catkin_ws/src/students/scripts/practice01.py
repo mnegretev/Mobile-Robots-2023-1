@@ -28,7 +28,7 @@ def callback_scan(msg):
 def main():
     print("PRACTICE 01 - " + NAME)
     rospy.init_node("practice01")
-    rospy.Subscriber("/scan", LaserScan, callback_scan)
+    rospy.Subscriber("/hardware/scan", LaserScan, callback_scan)
     pub_cmd_vel = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
     loop = rospy.Rate(10)
     

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>680</width>
-    <height>483</height>
+    <height>443</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -41,11 +41,11 @@ QRadioButton::indicator{
       <x>0</x>
       <y>0</y>
       <width>671</width>
-      <height>441</height>
+      <height>401</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tabGeneral">
      <attribute name="title">
@@ -1107,8 +1107,8 @@ QRadioButton::indicator{
      <widget class="QPushButton" name="visBtnFindLines">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>10</y>
+        <x>30</x>
+        <y>380</y>
         <width>91</width>
         <height>31</height>
        </rect>
@@ -1120,8 +1120,8 @@ QRadioButton::indicator{
      <widget class="QLineEdit" name="visTxtTrainObject">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>70</y>
+        <x>230</x>
+        <y>380</y>
         <width>113</width>
         <height>25</height>
        </rect>
@@ -1130,8 +1130,8 @@ QRadioButton::indicator{
      <widget class="QLabel" name="label_5">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>50</y>
+        <x>130</x>
+        <y>380</y>
         <width>101</width>
         <height>17</height>
        </rect>
@@ -1143,8 +1143,8 @@ QRadioButton::indicator{
      <widget class="QPushButton" name="visBtnRecogObjects">
       <property name="geometry">
        <rect>
-        <x>10</x>
-        <y>110</y>
+        <x>380</x>
+        <y>380</y>
         <width>141</width>
         <height>31</height>
        </rect>
@@ -1157,7 +1157,7 @@ QRadioButton::indicator{
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>150</y>
+        <y>20</y>
         <width>131</width>
         <height>17</height>
        </rect>
@@ -1170,7 +1170,7 @@ QRadioButton::indicator{
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>170</y>
+        <y>40</y>
         <width>131</width>
         <height>25</height>
        </rect>
@@ -2240,7 +2240,7 @@ Person</string>
        <string>Send &amp;Trajectory</string>
       </property>
       <property name="checked">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
      <widget class="QRadioButton" name="laRbSendSinglePose">
@@ -2256,7 +2256,7 @@ Person</string>
        <string>Se&amp;nd Single Pose</string>
       </property>
       <property name="checked">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QProgressBar" name="laPbVoltage">
@@ -3420,7 +3420,7 @@ Person</string>
        <string>Sen&amp;d Trajectory</string>
       </property>
       <property name="checked">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
      </widget>
      <widget class="QRadioButton" name="raRbSendSinglePose">
@@ -3434,6 +3434,9 @@ Person</string>
       </property>
       <property name="text">
        <string>Se&amp;nd Single Pose</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QProgressBar" name="raPbVoltage">
