@@ -1,0 +1,31 @@
+<launch>
+  <arg name="world" default="appartment"/>
+  <arg name="initial_x" default="7.64"/>
+  <arg name="initial_y" default="5.00"/>
+  <arg name="initial_a" default="1.57"/>
+  <env name="GAZEBO_MODEL_PATH" value="$(find gazebo_envs)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+  <param name="/base_link_name" value="base_link"/>
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="debug" value="false"/>
+    <arg name="world_name" value="$(find gazebo_envs)/worlds/$(arg world).world"/>
+  </include>
+  
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find justina_description)/urdf/justina.xacro'"/>
+  <node name="robot_spawn" pkg="gazebo_ros" type="spawn_model" output="screen"
+        args="-urdf -param robot_description -model justina -x $(arg initial_x) -y $(arg initial_y) -z 0.05 -Y $(arg initial_a)"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+    <param name="use_tf_static" value="false"/>
+  </node>
+  <node name="topic_resender" pkg="gazebo_envs" type="topic_resender.py" output="screen"/>
+  <node name="omni_base_control" pkg="gazebo_envs" type="omni_base_gazebo_control.py" output="screen"/>
+  <node name="tf_front_connect_x" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link wheel_front_x 30"/>
+  <node name="tf_front_connect_y" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 wheel_front_x wheel_front_y 30"/>
+  <node name="tf_front_connect_z" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 wheel_front_y wheel_front_z 30"/>
+  <node name="tf_back_connect_x"  pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 base_link wheel_back_x 30"/>
+  <node name="tf_back_connect_y"  pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 wheel_back_x wheel_back_y 30"/>
+  <node name="tf_back_connect_z"  pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 wheel_back_y wheel_back_z 30"/>
+</launch>
