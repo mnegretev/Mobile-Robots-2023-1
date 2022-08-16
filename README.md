@@ -26,15 +26,24 @@ Para probar que todo se instaló y compiló correctamente:
 
 Si todo se instaló y compiló correctamente, se debería ver un RViz como el siguiente:
 
-<img src="https://github.com/mnegretev/Mobile-Robots-2022-1/blob/master/Media/rviz.png" alt="RViz" width="639"/>
+<img src="https://github.com/mnegretev/Mobile-Robots-2023-1/blob/master/Media/rviz.png" alt="RViz" width="639"/>
 
 Un Gazebo como el siguiente:
 
-<img src="https://github.com/mnegretev/Mobile-Robots-2022-1/blob/master/Media/gazebo.png" alt="Gazebo" width="631"/>
+<img src="https://github.com/mnegretev/Mobile-Robots-2023-1/blob/master/Media/gazebo.png" alt="Gazebo" width="631"/>
 
 Y una GUI como la siguiente:
 
-<img src="https://github.com/mnegretev/Mobile-Robots-2022-1/blob/master/Media/gui.png" alt="GUI" width="319"/>
+<img src="https://github.com/mnegretev/Mobile-Robots-2023-1/blob/master/Media/gui.png" alt="GUI" width="319"/>
+
+## Máquina virtual
+
+Se puede descargar una máquina virtual para [VirtualBox](https://www.virtualbox.org/wiki/Downloads) con Ubuntu y ROs ya instalado de [esta dirección.](https://drive.google.com/drive/folders/1DYhmegVFEz7VA69uncpYsL8Ck0HbaIEz?usp=sharing) <br>
+En esa misma carpeta hay un video con instrucciones para usar la máquina virtual. <br>
+Se recomienda configurar la máquina virtual con 4 CPUs y 4GB de RAM.
+Usuario: cire2022 <br>
+Contraseña: cire2022
+
 
 ## Contacto
 Dr. Marco Negrete<br>
