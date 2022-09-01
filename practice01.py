@@ -44,10 +44,9 @@ def main():
         # Publish the Twist message using the already declared publisher 'pub_cmd_vel'.
         #
         msg_cmd_vel= Twist()
-        msg_cmd_vel.linear.x=0 if obstacle.detected else 0.3
-	pub_cmd.vel.publish(msg_cmd_vel)
-
-	loop.sleep()
+        msg_cmd_vel.linear.x=0 if obstacle_detected else 0.3
+        pub_cmd_vel.publish(msg_cmd_vel)
+        loop.sleep()
 
 
 if __name__ == '__main__':
