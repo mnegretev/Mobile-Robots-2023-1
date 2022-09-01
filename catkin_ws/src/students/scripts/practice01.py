@@ -9,20 +9,32 @@
 # Required publishers and subscribers are already declared and initialized.
 #
 
+#!/usr/bin/env python3
+#
+# MOBILE ROBOTS - FI-UNAM, 2023-1
+# PRACTICE 01 - THE PLATFORM ROS 
+#
+# Instructions:
+# Write a program to move the robot forwards until the laser
+# detects an obstacle in front of it.
+# Required publishers and subscribers are already declared and initialized.
+#
+
 import rospy
 from sensor_msgs.msg   import LaserScan
 from geometry_msgs.msg import Twist
 
-NAME = "MARCO NEGRETE"
+NAME = "Porfirio Diaz Garcia"
 
 def callback_scan(msg):
-    global obstacle_detected
+    global obstacle_detec desde ted
     #
     # TODO:
     # Do something to detect if there is an obstacle in front of the robot.
     # Set the 'obstacle_detected' variable with True or False, accordingly.
     #
-    
+    n=int((msg.angle_max - msg.angle_min)/msg.angle_increment/2)
+    obstacle_detected = msg.ranges[n] < 1.0
     return
 
 def main():
@@ -42,8 +54,10 @@ def main():
         # Use the 'obstacle_detected' variable to check if there is an obstacle. 
         # Publish the Twist message using the already declared publisher 'pub_cmd_vel'.
         #
-        
-        loop.sleep()
+    	msg_cmd_vel=Twist()
+    	msg_cmd_vel.linear.x =0 if obstacle_detected else 0.3
+    	pub_cmd_vel.publish(msg_cmd_vel)    
+    loop.sleep()
 
 
 if __name__ == '__main__':
