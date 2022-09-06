@@ -395,6 +395,24 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /navigation/segmented_lines_marker
+      Name: Marker
+      Namespaces:
+        segmented_lines: true
+      Queue Size: 100
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /voronoi_map
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -423,7 +441,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 11.302241325378418
+      Distance: 22.308618545532227
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -431,17 +449,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.715214490890503
-        Y: 5.060703277587891
-        Z: -2.686965227127075
+        X: 5.948685169219971
+        Y: 4.74340295791626
+        Z: -4.22072696685791
       Focal Shape Fixed Size: false
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.8953981399536133
+      Pitch: 1.4897964000701904
       Target Frame: <Fixed Frame>
-      Yaw: 5.698581218719482
+      Yaw: 4.698568820953369
     Saved: ~
 Window Geometry:
   Displays:
