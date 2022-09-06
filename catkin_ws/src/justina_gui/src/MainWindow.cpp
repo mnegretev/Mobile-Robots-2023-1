@@ -39,6 +39,10 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->navTxtGoalPose, SIGNAL(returnPressed()), this, SLOT(navBtnCalcPath_pressed()));
     QObject::connect(ui->navBtnCalcPath, SIGNAL(clicked()), this, SLOT(navBtnCalcPath_pressed()));
     QObject::connect(ui->navBtnExecPath, SIGNAL(clicked()), this, SLOT(navBtnExecPath_pressed()));
+    QObject::connect(ui->navTxtInflation  , SIGNAL(returnPressed()), this, SLOT(txtSmoothingReturnPressed()));
+    QObject::connect(ui->navTxtNearness   , SIGNAL(returnPressed()), this, SLOT(txtSmoothingReturnPressed()));
+    QObject::connect(ui->navTxtSmoothAlpha, SIGNAL(returnPressed()), this, SLOT(txtSmoothingReturnPressed()));
+    QObject::connect(ui->navTxtSmoothBeta , SIGNAL(returnPressed()), this, SLOT(txtSmoothingReturnPressed()));
 
     QObject::connect(ui->torTxtPos, SIGNAL(valueChanged(double)), this, SLOT(torSbPosValueChanged(double)));
 
@@ -110,6 +114,7 @@ void MainWindow::setRosNode(QtRosNode* qtRosNode)
     //For example, when ros finishes or when a rostopic is received
     QObject::connect(qtRosNode, SIGNAL(onRosNodeFinished()), this, SLOT(close()));
     QObject::connect(qtRosNode, SIGNAL(updateGraphics()), this, SLOT(updateGraphicsReceived()));
+    txtSmoothingReturnPressed();
 }
 
 void MainWindow::setYamlParser(YamlParser* yamlParser)
@@ -395,6 +400,35 @@ void MainWindow::navBtnExecPath_pressed()
 	this->ui->navTxtGoalPose->setText("Invalid format");
 	return;
     }
+}
+
+void MainWindow::txtSmoothingReturnPressed()
+{
+    std::stringstream ssInflation  (this->ui->navTxtInflation  ->text().toStdString());
+    std::stringstream ssNearness   (this->ui->navTxtNearness   ->text().toStdString());
+    std::stringstream ssSmoothAlpha(this->ui->navTxtSmoothAlpha->text().toStdString());
+    std::stringstream ssSmoothBeta (this->ui->navTxtSmoothBeta ->text().toStdString());
+    float smoothing_alpha;
+    float smoothing_beta;
+    float inflation_radius;
+    float nearness_radius;
+ 
+    if(!(ssInflation >> inflation_radius))
+	this->ui->navTxtInflation->setText("Invalid");
+    else
+	qtRosNode->set_param_inflation_radius(inflation_radius);
+    if(!(ssNearness >> nearness_radius))
+	this->ui->navTxtNearness->setText("Invalid");
+    else
+	qtRosNode->set_param_cost_radius(nearness_radius);
+    if(!(ssSmoothAlpha >> smoothing_alpha))
+	this->ui->navTxtSmoothAlpha->setText("Invalid");
+    else
+	qtRosNode->set_param_smoothing_alpha(smoothing_alpha);
+    if(!(ssSmoothBeta >> smoothing_beta))
+	this->ui->navTxtSmoothBeta->setText("Invalid");
+    else
+	qtRosNode->set_param_smoothing_beta(smoothing_beta);
 }
 
 void MainWindow::torSbPosValueChanged(double d)
