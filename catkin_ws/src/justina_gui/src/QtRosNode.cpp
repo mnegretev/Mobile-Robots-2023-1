@@ -123,6 +123,26 @@ void QtRosNode::get_robot_pose(float& robot_x, float& robot_y, float& robot_a)
     robot_a = atan2(q.z(), q.w())*2;
 }
 
+void QtRosNode::set_param_inflation_radius(float inflation_radius)
+{
+    n->setParam("/path_planning/inflation_radius", inflation_radius);
+}
+
+void QtRosNode::set_param_cost_radius(float cost_radius)
+{
+    n->setParam("/path_planning/cost_radius",  cost_radius);
+}
+
+void QtRosNode::set_param_smoothing_alpha(float smoothing_alpha)
+{
+    n->setParam("/path_planning/smoothing_alpha",  smoothing_alpha);
+}
+  
+void QtRosNode::set_param_smoothing_beta(float  smoothing_beta)
+{
+    n->setParam("/path_planning/smoothing_beta" ,  smoothing_beta);
+}
+
 void QtRosNode::publish_torso_position(float tr)
 {
     std_msgs::Float64 msg;
