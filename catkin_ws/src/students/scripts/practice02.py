@@ -15,7 +15,7 @@ from nav_msgs.srv import GetMap
 from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 
-NAME = "FULL_NAME"
+NAME = "Alejandro Miranda Hernandez"
 
 def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
@@ -28,7 +28,12 @@ def get_inflated_map(static_map, inflation_cells):
     # Map is given in 'static_map' as a bidimensional numpy array.
     # Consider as occupied cells all cells with an occupation value greater than 50
     #
-    
+    for row in range(0,height):
+        for col in range(0,width):
+            if(static_map[row,col]>=50):
+                for k1 in range(-inflation_cells,inflation_cells + 1):
+                    for k2 in range(-inflation_cells,inflation_cells + 1):
+                        inflated[row + k1, col + k2] = 100
     return inflated
 
 def callback_inflated_map(req):
@@ -49,6 +54,7 @@ def main():
     loop = rospy.Rate(2)
     
     inflation_radius = 0.1
+    new_inflation_radius = 0.2
     while not rospy.is_shutdown():
         if rospy.has_param("/path_planning/inflation_radius"):
             new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
