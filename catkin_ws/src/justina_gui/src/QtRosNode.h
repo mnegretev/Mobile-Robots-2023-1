@@ -72,6 +72,10 @@ public:
     void start_publishing_cmd_vel(float linear_frontal, float linear_lateral, float angular);
     void stop_publishing_cmd_vel();
     void get_robot_pose(float& robot_x, float& robot_y, float& robot_a);
+    void set_param_inflation_radius(float inflation_radius);
+    void set_param_cost_radius(float cost_radius);
+    void set_param_smoothing_alpha(float smoothing_alpha);
+    void set_param_smoothing_beta(float  smoothing_beta);
 
     void publish_torso_position(float tr);
     void publish_la_goal_angles(float a1, float a2, float a3, float a4, float a5, float a6, float a7);
