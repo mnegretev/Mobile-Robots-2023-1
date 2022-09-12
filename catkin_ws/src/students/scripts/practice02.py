@@ -21,14 +21,12 @@ def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
     inflated = numpy.copy(static_map)
     [height, width] = static_map.shape
-    #
-    # TODO:
-    # Write the code necessary to inflate the obstacles in the map a radius
-    # given by 'inflation_cells' (expressed in number of cells)
-    # Map is given in 'static_map' as a bidimensional numpy array.
-    # Consider as occupied cells all cells with an occupation value greater than 50
-    #
-    
+    for i in range(0,height):
+       for j in range(0,width):
+          if static_map[i,j] == 100:
+             for n in range(-inflation_cells,inflation_cells):
+                for m in range(-inflation_cells,inflation_cells):
+                   inflated[i+n,j+m] = 100
     return inflated
 
 def callback_inflated_map(req):
@@ -47,7 +45,6 @@ def main():
     grid_map = numpy.reshape(numpy.asarray(grid_map.data, dtype='int'), (height, width))
     rospy.Service('/inflated_map', GetMap, callback_inflated_map)
     loop = rospy.Rate(2)
-    
     inflation_radius = 0.1
     while not rospy.is_shutdown():
         if rospy.has_param("/path_planning/inflation_radius"):

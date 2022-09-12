@@ -54,12 +54,12 @@ def brushfire(grid_map):
                 #
                 # TODO: Change the the following line to use Mahattan distance instead of Euclidean distance
                 #
-                distances[i+k1, j+k2] = d + math.sqrt(2.0)
+                distances[i+k1, j+k2] = d + 2.0
             else:
                 #
                 # TODO: Change the the following line to use Mahattan distance instead of Euclidean distance
                 #
-                distances[i+k1, j+k2] = min(distances[i+k1, j+k2], d+math.sqrt(2.0))
+                distances[i+k1, j+k2] = min(distances[i+k1, j+k2], d+2.0)
     return distances
 
 def find_maxima(distances):
