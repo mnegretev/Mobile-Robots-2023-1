@@ -51,6 +51,7 @@ public slots:
     void btnTurnRightReleased();
     void btnCmdVelPressed();
     void btnCmdVelReleased();
+    void btnExecutePathPressed();
 
     void navBtnCalcPath_pressed();
     void navBtnExecPath_pressed();
