@@ -42,7 +42,7 @@ def callback_inflated_map(req):
     return GetMapResponse(map=inflated_map)
 
 def main():
-    global cost_map, inflated_map, new_inflation_radius
+    global cost_map, inflated_map
     print("PRACTICE 02 - " + NAME)
     rospy.init_node("practice02")
     rospy.wait_for_service('/static_map')
