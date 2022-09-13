@@ -25,10 +25,10 @@ def get_inflated_map(static_map, inflation_cells):
     ri = inflation_cells
     for i in range (0, height, 1): # PROCEDE A RECORRER EL MAPA
         for j in ange (0, width, 1):
-            if inflated [i, j] > 51: #CUANDO EXISTE UN OBSTACULO EN EL MAPA ORIGINAL
+            if inflated [i, j] == 100: #CUANDO EXISTE UN OBSTACULO EN EL MAPA ORIGINAL
                 for k1 in range (-ri, ri, 1):#SE RECORREN LAS CELDAS OCUPADAS ALREDEDOR
                     for k2 in range (-ri, ri, 1):
-                        inflated [i + k1, j + k2]=50 #CALCULANDO EL INFLADO
+                        inflated [i + k1, j + k2]=100 #CALCULANDO EL INFLADO
     return inflated
 
 def callback_inflated_map(req):
