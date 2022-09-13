@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->btnTurnRight, SIGNAL(released()), this, SLOT(btnTurnRightReleased()));
     QObject::connect(ui->btnCmdVel, SIGNAL(pressed()), this, SLOT(btnCmdVelPressed()));
     QObject::connect(ui->btnCmdVel, SIGNAL(released()), this, SLOT(btnCmdVelReleased()));
+    QObject::connect(ui->navBtnExecPath, SIGNAL(pressed()), this, SLOT(btnExecutePathPressed()));
 
     QObject::connect(ui->navTxtStartPose, SIGNAL(returnPressed()), this, SLOT(navBtnCalcPath_pressed()));
     QObject::connect(ui->navTxtGoalPose, SIGNAL(returnPressed()), this, SLOT(navBtnCalcPath_pressed()));
@@ -364,7 +365,12 @@ void MainWindow::navBtnCalcPath_pressed()
 	return;
     }
 
+    qtRosNode->call_a_start_path(startX, startY, goalX, goalY);
+}
 
+void MainWindow::btnExecutePathPressed()
+{
+    
 }
 
 void MainWindow::navBtnExecPath_pressed()
