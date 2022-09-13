@@ -54,6 +54,7 @@ public slots:
 
     void navBtnCalcPath_pressed();
     void navBtnExecPath_pressed();
+    void txtSmoothingReturnPressed();
 
     void torSbPosValueChanged(double d);
     
