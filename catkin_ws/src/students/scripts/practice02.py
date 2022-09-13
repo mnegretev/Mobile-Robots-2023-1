@@ -15,12 +15,19 @@ from nav_msgs.srv import GetMap
 from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 
-NAME = "FULL_NAME"
+NAME = "SUAREZ MARTINEZ ENRIQUE"
 
 def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
     inflated = numpy.copy(static_map)
     [height, width] = static_map.shape
+    for i in range(0,height):
+        for j in range(0,width):
+            if static_map[i,j] > 50:
+                for k1 in range (-inflation_cells,inflation_cells):
+                    for k2 in range(-inflation_cells, inflation_cells):
+                        inflated[i+k1,j+k2] = 100
+            
     #
     # TODO:
     # Write the code necessary to inflate the obstacles in the map a radius
@@ -47,11 +54,14 @@ def main():
     grid_map = numpy.reshape(numpy.asarray(grid_map.data, dtype='int'), (height, width))
     rospy.Service('/inflated_map', GetMap, callback_inflated_map)
     loop = rospy.Rate(2)
-    
+    print("Antes de inflated")
+
     inflation_radius = 0.1
+    print("Despues de inflation_radius")
+    new_inflation_radius = 0.5
     while not rospy.is_shutdown():
-        if rospy.has_param("/path_planning/inflation_radius"):
-            new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
+        #If rospy.has_param("/path_planning/inflation_radius"):
+          #  new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
         if new_inflation_radius != inflation_radius:
             inflation_radius  = new_inflation_radius
             inflated_map_data = get_inflated_map(grid_map, int(inflation_radius/res))
