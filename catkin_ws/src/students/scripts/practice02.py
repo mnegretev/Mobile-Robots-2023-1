@@ -21,7 +21,7 @@ def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
     inflated = numpy.copy(static_map)
     [height, width] = static_map.shape
-     ri= inflation_cells                             
+    ri= inflation_cells                             
     for i in range (0,height,1):		#Se recorre el mapa original
     	for j in range (0,width,1):
     	    if inflated[i,j]>51:		#Si en el mapa original existe un obstaculo
