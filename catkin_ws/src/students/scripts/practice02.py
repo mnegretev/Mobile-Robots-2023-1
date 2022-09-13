@@ -54,7 +54,7 @@ def main():
     rospy.Service('/inflated_map', GetMap, callback_inflated_map)
     loop = rospy.Rate(2)
     
-    inflation_radius = 0.1
+    inflation_radius = 3
     while not rospy.is_shutdown():
         if rospy.has_param("/path_planning/inflation_radius"):
             new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
