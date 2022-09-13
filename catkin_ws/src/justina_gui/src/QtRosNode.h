@@ -42,6 +42,7 @@ public:
     ros::Subscriber subLaVoltage;
     ros::Subscriber subRaCurrentQ;
     ros::Subscriber subRaVoltage;
+    ros::ServiceClient cltAStar;
     ros::ServiceClient cltLaIKPose2Pose;
     ros::ServiceClient cltRaIKPose2Pose;
     ros::ServiceClient cltLaIKPose2Traj;
@@ -76,6 +77,7 @@ public:
     void set_param_cost_radius(float cost_radius);
     void set_param_smoothing_alpha(float smoothing_alpha);
     void set_param_smoothing_beta(float  smoothing_beta);
+    void call_a_start_path(float start_x, float start_y, float goal_x, float goal_y);
 
     void publish_torso_position(float tr);
     void publish_la_goal_angles(float a1, float a2, float a3, float a4, float a5, float a6, float a7);
