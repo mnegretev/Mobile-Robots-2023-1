@@ -20,7 +20,7 @@ from nav_msgs.srv import GetMap
 from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 
-NAME = "FULL_NAME"
+NAME = "Ginez Alvarez Adrian"
 
 def brushfire(grid_map):
     print("Executing brushfire algorithm...")
@@ -54,12 +54,14 @@ def brushfire(grid_map):
                 #
                 # TODO: Change the the following line to use Mahattan distance instead of Euclidean distance
                 #
-                distances[i+k1, j+k2] = d + math.sqrt(2.0)
+                distances[i+k1, j+k2] = d + math.sqrt(2.0) #Distancia euclidiana
+                #distances[i+k1, j+k2] = abs(distances[i+k1, j+k2] - d) #Distancia de Manhattan
             else:
                 #
                 # TODO: Change the the following line to use Mahattan distance instead of Euclidean distance
                 #
                 distances[i+k1, j+k2] = min(distances[i+k1, j+k2], d+math.sqrt(2.0))
+                #distances[i+k1, j+k2] = min(distances[i+k1, j+k2], abs(distances[i+k1, j+k2] - d))
     return distances
 
 def find_maxima(distances):
