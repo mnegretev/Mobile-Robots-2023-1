@@ -17,7 +17,7 @@ from sensor_msgs.msg   import LaserScan
 from geometry_msgs.msg import Twist, Point
 from visualization_msgs.msg import Marker
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "Martinez_Juarez"
 
 def adjust_line(points):
     [xm,ym] = numpy.mean(points, 0)
