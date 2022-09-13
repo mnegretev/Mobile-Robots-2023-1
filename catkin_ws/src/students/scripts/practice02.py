@@ -15,7 +15,7 @@ from nav_msgs.srv import GetMap
 from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 
-NAME = "FULL_NAME"
+NAME = "Díaz García Porfirio"
 
 def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
@@ -28,7 +28,13 @@ def get_inflated_map(static_map, inflation_cells):
     # Map is given in 'static_map' as a bidimensional numpy array.
     # Consider as occupied cells all cells with an occupation value greater than 50
     #
-    
+    for i in range(0,height):		#Barremos los renglones de la matriz "Static_Map"
+    	for j in range(0,width):	#Barremos las columnas de la matriz "Static_Map"
+    		if (static_map[i,j] >= 50):	#Se consideran celdas ocupadas si tienen un valor >= 50
+    			for k1 in range(-inflation_cells, inflation_cells):   #Celdas cercanas al robot 
+    				for k2 in range(-inflation_cells, inflation_cells):  #celdas cercanas al roobot
+    					inflated [i + k1, j+k2]=50	#Consideramos el area alrededor del robot
+    		
     return inflated
 
 def callback_inflated_map(req):
@@ -48,10 +54,11 @@ def main():
     rospy.Service('/inflated_map', GetMap, callback_inflated_map)
     loop = rospy.Rate(2)
     
-    inflation_radius = 0.1
+    inflation_radius = 0.2
+    
     while not rospy.is_shutdown():
-        if rospy.has_param("/path_planning/inflation_radius"):
-            new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
+        #if rospy.has_param("/path_planning/inflation_radius"):
+        new_inflation_radius = 0.4 #rospy.get_param("/path_planning/inflation_radius")
         if new_inflation_radius != inflation_radius:
             inflation_radius  = new_inflation_radius
             inflated_map_data = get_inflated_map(grid_map, int(inflation_radius/res))
