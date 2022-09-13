@@ -55,7 +55,7 @@ def main():
     loop = rospy.Rate(2)
     
     inflation_radius = 0.1
-    new_inflation_radius = 0.5
+    new_inflation_radius = 0.3
     while not rospy.is_shutdown():
         #if rospy.has_param("/path_planning/inflation_radius"):
             #new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
