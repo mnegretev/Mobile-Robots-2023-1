@@ -42,7 +42,7 @@ def callback_inflated_map(req):
     return GetMapResponse(map=inflated_map)
 
 def main():
-    global cost_map, inflated_map
+    global cost_map, inflated_map, new_inflation_radius
     print("PRACTICE 02 - " + NAME)
     rospy.init_node("practice02")
     rospy.wait_for_service('/static_map')
@@ -57,7 +57,7 @@ def main():
     inflation_radius = 3
     while not rospy.is_shutdown():
         if rospy.has_param("/path_planning/inflation_radius"):
-            global new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
+            new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
         if new_inflation_radius != inflation_radius:
             inflation_radius  = new_inflation_radius
             inflated_map_data = get_inflated_map(grid_map, int(inflation_radius/res))
