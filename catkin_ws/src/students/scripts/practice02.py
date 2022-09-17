@@ -52,12 +52,12 @@ def main():
     grid_map = numpy.reshape(numpy.asarray(grid_map.data, dtype='int'), (height, width))
     rospy.Service('/inflated_map', GetMap, callback_inflated_map)
     loop = rospy.Rate(2)
-    
+    new_inflation_radius = 0.1
     inflation_radius = 0.1
-    new_inflation_radius = 0.2
+    #new_inflation_radius = 0.2
     while not rospy.is_shutdown():
         if rospy.has_param("/path_planning/inflation_radius"):
-            new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
+             new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
         if new_inflation_radius != inflation_radius:
             inflation_radius  = new_inflation_radius
             inflated_map_data = get_inflated_map(grid_map, int(inflation_radius/res))
