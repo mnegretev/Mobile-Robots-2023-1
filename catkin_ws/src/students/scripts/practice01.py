@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+!/usr/bin/env python3
 #
 # MOBILE ROBOTS - FI-UNAM, 2022-2
 # PRACTICE 01 - THE PLATFORM ROS 
@@ -55,4 +55,7 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
+<<<<<<< HEAD
  
+=======
+>>>>>>> master
