@@ -21,14 +21,12 @@ def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
     inflated = numpy.copy(static_map)
     [height, width] = static_map.shape
-<<<<<<< HEAD
     for i in range(0,height):
        for j in range(0,width):
           if static_map[i,j] == 100:
              for n in range(-inflation_cells,inflation_cells):
                 for m in range(-inflation_cells,inflation_cells):
                    inflated[i+n,j+m] = 100
-=======
     #
     # TODO:
     # Write the code necessary to inflate the obstacles in the map a radius
@@ -42,7 +40,6 @@ def get_inflated_map(static_map, inflation_cells):
        for k1 in range(-inflation_cells,inflation_cells):
         for k2 in range(-inflation_cells,inflation_cells):
          inflated[i+k1,j+k2]=100  
->>>>>>> master
     return inflated
 
 def callback_inflated_map(req):
