@@ -37,6 +37,7 @@ def get_inflated_map(static_map, inflation_cells):
     			for k1 in range(-inflation_cells, inflation_cells):
     				for k2 in range(-inflation_cells, inflation_cells): 
     					inflated[i+k1,j+k2] = 100
+    					
     return inflated
 
 def callback_inflated_map(req):
