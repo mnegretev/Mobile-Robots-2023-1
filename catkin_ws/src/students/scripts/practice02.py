@@ -55,10 +55,10 @@ def main():
     loop = rospy.Rate(2)
     
     inflation_radius = 0.1
-    new_inflation_radius = 0.3
+    #new_inflation_radius = 0.3
     while not rospy.is_shutdown():
-        #if rospy.has_param("/path_planning/inflation_radius"):
-            #new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
+        if rospy.has_param("/path_planning/inflation_radius"):
+            new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
         if new_inflation_radius != inflation_radius:
             inflation_radius  = new_inflation_radius
             inflated_map_data = get_inflated_map(grid_map, int(inflation_radius/res))
