@@ -365,7 +365,9 @@ void MainWindow::navBtnCalcPath_pressed()
 	return;
     }
 
-    qtRosNode->call_a_start_path(startX, startY, goalX, goalY);
+    nav_msgs::Path path;
+    qtRosNode->call_a_start_path(startX, startY, goalX, goalY, path);
+    qtRosNode->call_smooth_path(path,path);
 }
 
 void MainWindow::btnExecutePathPressed()
