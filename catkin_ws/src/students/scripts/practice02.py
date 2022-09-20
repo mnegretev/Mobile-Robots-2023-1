@@ -15,20 +15,29 @@ from nav_msgs.srv import GetMap
 from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 
-NAME = "CHAVOLLA_JIMENEZ_RAUL_DANIEL"
+NAME = "CHAVOLLA JIMENEZ RAÚL DANIEL"
 
 def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
     inflated = numpy.copy(static_map)
     [height, width] = static_map.shape
-    
-    ri = inflation_cells
-    for i in range (0, height, 1): # PROCEDE A RECORRER EL MAPA
-        for j in ange (0, width, 1):
-            if inflated [i, j] == 100: #CUANDO EXISTE UN OBSTACULO EN EL MAPA ORIGINAL
-                for k1 in range (-ri, ri, 1):#SE RECORREN LAS CELDAS OCUPADAS ALREDEDOR
-                    for k2 in range (-ri, ri, 1):
-                        inflated [i + k1, j + k2]=100 #CALCULANDO EL INFLADO
+    #
+    # TODO:
+    # Write the code necessary to inflate the obstacles in the map a radius
+    # given by 'inflation_cells' (expressed in number of cells)
+    # Map is given in 'static_map' as a bidimensional numpy array.
+    # Consider as occupied cells all cells with an occupation value greater than 50
+    #
+    #static_map: Mapa de celdas de ocupaciòn
+    #inflation_cells: radio de inflado
+    #inflated: Mapa inflado
+    for i in range(len(static_map)):
+    	for j in range(len(static_map)):
+    		if(static_map[i,j] == 100):
+    			for k1 in range(-inflation_cells, inflation_cells):
+    				for k2 in range(-inflation_cells, inflation_cells): 
+    					inflated[i+k1,j+k2] = 100
+    					
     return inflated
 
 def callback_inflated_map(req):
@@ -48,7 +57,7 @@ def main():
     rospy.Service('/inflated_map', GetMap, callback_inflated_map)
     loop = rospy.Rate(2)
     
-    inflation_radius = 0.1
+    inflation_radius = 1
     while not rospy.is_shutdown():
         if rospy.has_param("/path_planning/inflation_radius"):
             new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
