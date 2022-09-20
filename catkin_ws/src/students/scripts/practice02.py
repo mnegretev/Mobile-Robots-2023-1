@@ -31,10 +31,10 @@ def get_inflated_map(static_map, inflation_cells):
 
     for i in range(height):
         for j in range(width):
-            if static_map[height, width] == 100:
+            if static_map[ i, j] == 100:
                 for k1 in range(-inflation_cells, inflation_cells):
-                    for K2 in range(-inflation_cells, inflation_cells):
-                        inflated[width + k1, height + k2] = 100
+                    for k2 in range(-inflation_cells, inflation_cells):
+                        inflated[i + k1, j + k2] = 100
     
     
     return inflated
@@ -57,7 +57,7 @@ def main():
     loop = rospy.Rate(2)
     
     inflation_radius = 0.1
-    #new_inflation_radius = 100.0
+    new_inflation_radius = 0.2
     while not rospy.is_shutdown():
         if rospy.has_param("/path_planning/inflation_radius"):
             new_inflation_radius = rospy.get_param("/path_planning/inflation_radius")
