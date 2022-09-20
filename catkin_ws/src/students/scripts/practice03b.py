@@ -17,13 +17,13 @@ from geometry_msgs.msg import PoseStamped, Pose, Point
 from nav_msgs.msg import Path
 from nav_msgs.srv import *
 from collections import deque
+    #
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "MEDINA VAZQUEZ BRAYAN ALEXIS"
 
 msg_path = Path()
 
 def a_star(start_r, start_c, goal_r, goal_c, grid_map, cost_map):
-    #
     # TODO:
     # Review the A* algorithm to find a path in an occupancy grid map given the start cell
     # [start_r, start_c], the goal cell [goal_r, goal_c] and the map 'grid_map'.
@@ -40,8 +40,8 @@ def a_star(start_r, start_c, goal_r, goal_c, grid_map, cost_map):
     # TODO:
     # Modify the list of adjacent node-offsets to use 8-connectiviy instead of 4-connectiviy
     #
-    adjacent_idx   = [[1,0],[0,1],[-1,0],[0,-1]]
-    #adjacent_idx      = [[1,0],[0,1],[-1,0],[0,-1], [1,1], [-1,1], [-1,-1],[1,-1]]
+    #adjacent_idx   = [[1,0],[0,1],[-1,0],[0,-1]]
+    adjacent_idx      = [[1,0],[0,1],[-1,0],[0,-1], [1,1], [-1,1], [-1,-1],[1,-1]]
     #
 
     open_list = [] 
@@ -63,10 +63,10 @@ def a_star(start_r, start_c, goal_r, goal_c, grid_map, cost_map):
             # Modify calculations of 'g' and 'h' to use euclidean distance
             # instead of Manhattan distance
             #
-            g = g_values[row, col] + abs(row-r) + abs(col-c) + cost_map[r][c]
-            h = abs(goal_r - r) + abs(goal_c - c)
-            # g = g_values[row, col] + math.sqrt((row-r)**2 + (col - c)**2) + cost_map[r][c]
-            # h = math.sqrt((goal_r-r)**2 + (goal_c - c)**2)
+            #g = g_values[row, col] + abs(row-r) + abs(col-c) + cost_map[r][c]
+            #h = abs(goal_r - r) + abs(goal_c - c)
+            g = g_values[row, col] + math.sqrt((row-r)**2 + (col - c)**2) + cost_map[r][c]
+            h = math.sqrt((goal_r-r)**2 + (goal_c - c)**2)*0
             #
             
             f = g + h                         
