@@ -15,7 +15,7 @@ from nav_msgs.srv import GetMap
 from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 
-NAME = "FULL_NAME"
+NAME = "Reyes Alonso Katherine"
 
 def get_inflated_map(static_map, inflation_cells):
     print("Inflating map by " + str(inflation_cells) + " cells")
@@ -37,7 +37,7 @@ def callback_inflated_map(req):
 
 def main():
     global cost_map, inflated_map
-    print("PRACTICE 02 - " + NAME)
+    print("PRACTICE 02 - Reyes Alonso Katherine" + NAME)
     rospy.init_node("practice02")
     rospy.wait_for_service('/static_map')
     pub_map  = rospy.Publisher("/inflated_map", OccupancyGrid, queue_size=10)
