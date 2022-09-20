@@ -38,6 +38,7 @@ void QtRosNode::run()
     ros::Rate loop(30);
     pubCmdVel     = n->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
     cltAStar      = n->serviceClient<nav_msgs::GetPlan>("/path_planning/a_star_search");
+    cltSmoothPath = n->serviceClient<custom_msgs::SmoothPath>("/path_planning/smooth_path");
     
     pubTorso      = n->advertise<std_msgs::Float64>("/torso_controller/command", 1);
     pubLaGoalQ    = n->advertise<std_msgs::Float64MultiArray>("/hardware/left_arm/goal_pose", 1);
@@ -146,7 +147,7 @@ void QtRosNode::set_param_smoothing_beta(float  smoothing_beta)
     n->setParam("/path_planning/smoothing_beta" ,  smoothing_beta);
 }
 
-void QtRosNode::call_a_start_path(float start_x, float start_y, float goal_x, float goal_y)
+void QtRosNode::call_a_start_path(float start_x, float start_y, float goal_x, float goal_y, nav_msgs::Path& path)
 {
     nav_msgs::GetPlan srv;
     srv.request.start.pose.position.x = start_x;
@@ -156,6 +157,14 @@ void QtRosNode::call_a_start_path(float start_x, float start_y, float goal_x, fl
     srv.request.goal.pose.position.y = goal_y;
     srv.request.goal.pose.orientation.w = 1.0;
     cltAStar.call(srv);
+    path = srv.response.plan;
+}
+
+void QtRosNode::call_smooth_path(nav_msgs::Path& path, nav_msgs::Path& smoothed_path)
+{
+    custom_msgs::SmoothPath srv;
+    srv.request.path = path;
+    cltSmoothPath.call(srv);
 }
 
 void QtRosNode::publish_torso_position(float tr)
