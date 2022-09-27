@@ -16,7 +16,7 @@ from geometry_msgs.msg import Pose, PoseStamped, Point
 from custom_msgs.srv import SmoothPath
 from custom_msgs.srv import SmoothPathResponse
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "Lopez Cruz"
 
 msg_smooth_path = Path()
 
@@ -36,7 +36,12 @@ def smooth_path(Q, alpha, beta):
     nabla   = numpy.full(Q.shape, float("inf"))
     epsilon = 0.1                       
     steps   = 0
-    
+    nabla[0], nabla[-1] = 0, 0
+    while numpy.linalg.norm(nabla) > tol*len(P) and steps < 100000:
+    	for i in range (1,len(Q)-1):
+    		nabla[i] = alpha*(2*P[i]-P[i-1]-P[i+1])+beta*(P[i]-Q[i])
+    	P=P-epsilon*nabla
+    	steps +=1
     print("Path smoothed succesfully after " + str(steps) + " iterations")
     return P
 
