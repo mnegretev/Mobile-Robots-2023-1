@@ -51,16 +51,16 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     if error_a > math.pi or error_a < -math.pi:
         error_a = (error_a + math.pi)%(2*math.pi)-math.pi
 
-     v = vel_max*math.exp(-error_a*error_a/alpha)
-     w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
+        v = vel_max*math.exp(-error_a*error_a/alpha)
+        w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
 
-     cmd_vel.linear.x = v
-     cmd_vel.linear.y = 0 
-     cmd_vel.linear.z = 0
+        cmd_vel.linear.x = v
+        cmd_vel.linear.y = 0 
+        cmd_vel.linear.z = 0
 
-     cmd_vel.angular.z = w
-     cmd_vel.angular.x = 0 
-     cmd_vel.angular.y = 0
+        cmd_vel.angular.z = w
+        cmd_vel.angular.x = 0 
+        cmd.angular.y = 0
 
 
 
