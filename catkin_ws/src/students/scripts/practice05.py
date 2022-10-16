@@ -51,7 +51,7 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     elif error_a <= -math.pi:
         error_a = error_a+(2*math.pi)
 
-     v = 0.5*math.exp(-error_a/alpha)
+     v = 0.5*math.exp(-error_a*error_a/alpha)
      w = 0.5*(2/(1+math.exp(-error_a/beta))-1)
 
      cmd_vel.linear.x = v
