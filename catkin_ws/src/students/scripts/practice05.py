@@ -42,13 +42,17 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # and return it (check online documentation for the Twist message).
     # Remember to keep error angle in the interval (-pi,pi]
     #
-    v_max = 0.7
-    w_max = 0.9
-    alpha = 1
-    beta = 1
+    #linear and angular speeds
+    v_max = 0.6
+    w_max = 0.8
+    #constants
+    alpha = 0.2
+    beta = 0.2
     error_a = math.atan2(goal_y-robot_y, goal_x-robot_x) - robot_a
+    #Keeping the error angle between (-pi, pi]
     error_a = ( (error_a + math.pi) % (2*math.pi) ) - math.pi
 
+    #Law control
     v = (v_max) * math.exp( -(error_a*error_a / alpha) )
     w = (w_max) * ( ( 2/(1 + math.exp(-(error_a/beta))) ) - 1 )
 
