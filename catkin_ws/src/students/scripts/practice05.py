@@ -18,7 +18,7 @@ from nav_msgs.srv import GetPlan, GetPlanRequest
 from custom_msgs.srv import SmoothPath, SmoothPathRequest
 from geometry_msgs.msg import Twist, PoseStamped, Pose, Point
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "HERRERA GODINA ADRIANA JOCELYN"
 
 pub_goal_reached = None
 pub_cmd_vel = None
@@ -44,8 +44,8 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     #
     v_max= 0.6
     w_max= 0.8
-    alpha=1
-    betha=1
+    alpha=0.25
+    betha=0.25
 
     error_a= math.atan2(goal_y-robot_y, goal_x-robot_x)-robot_a
     error_a=((error_a + math.pi) % (2*math.pi))- math.pi
