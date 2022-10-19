@@ -18,7 +18,7 @@ from nav_msgs.srv import GetPlan, GetPlanRequest
 from custom_msgs.srv import SmoothPath, SmoothPathRequest
 from geometry_msgs.msg import Twist, PoseStamped, Pose, Point
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "MEDINA VAZQUEZ BRAYAN ALEXIS"
 
 pub_goal_reached = None
 pub_cmd_vel = None
@@ -27,13 +27,21 @@ listener    = None
 
 def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
-    
+    alpha = 0.5
+    beta = 1
+    v_max = 0.8
+    w_max = 1
     #
     # TODO:
     # Implement the control law given by:
     #
-    # v = v_max*math.exp(-error_a*error_a/alpha)
-    # w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
+    error_a = math.atan2(goal_y-robot_y,goal_x-robot_x)-robot_a
+    if (error_a <= -math.pi) or (error_a > math.pi):
+        error_a = (error_a+math.pi)%(2*math.pi)-math.pi
+    v = v_max*math.exp(-error_a*error_a/alpha)
+    w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
+    cmd_vel.linear.x = v
+    cmd_vel.angular.z = w
     #
     # where error_a is the angle error and
     # v and w are the linear and angular speeds taken as input signals
