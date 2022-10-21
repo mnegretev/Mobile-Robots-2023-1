@@ -18,6 +18,7 @@ from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 from sensor_msgs.msg import LaserScan
+import numpy as np
 
 NAME = "SANCHEZ TORRES SERGIO DANIEL"
 
@@ -68,12 +69,23 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    zeta = 1
+    zeta = 0.2
+    fX = 0
+    fY = 0
 
-    f_attX = (zeta) * ( (robot_x - goal.x)  / (abs(robot_x - goal_x)) )
-    f_attY = (zeta) * ( (robot_y - goal.y)  / (abs(robot_y - goal_y)) )
+    robot_pos = np.array([robot_x, robot_y])
+    goal_pos = np.array([goal_x, goal_y])
+    resta = robot_pos - goal_pos
+    unitVector = resta / np.linalg.norm(resta)
 
-    return [f_attX, f_attY]
+    f_att = (zeta) * unitVector
+
+    for i in np.nditer(f_att):
+        #print(i)
+        fX = unitVector[0]
+        fY = unitVector[1]
+
+    return [fX, fY]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
@@ -87,18 +99,24 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    eta = 0
-    d0 = 0
-
+    eta = 1
+    d0 = 2
     f_rejX = 0
     f_rejY = 0
 
     for obstacle in laser_readings:
-        f_rejX = (eta) * ( sqrt( (1/d) - (1/d0) ) ) * ( ( - robot_x) / d)
-        f_rejY = (eta) * ( sqrt( (1/d) - (1/d0) ) ) * ( ( - robot_y) / d)
+        d = obstacle[0]
 
-        return [f_rejX, f_rejY]
-    
+        #q0 = np.array([, ])
+        robot_pos = np.array([robot_x, robot_y])
+        #f_rej = (eta) * (sqrt( (1/d) - (1/d0) )) * ( (q0 - robot_pos)/d0 )
+
+        #for i in np.nditer(f_rej):
+            #f_rejX = laser_readings[0]
+            #f_rejY = laser_readings[1]
+
+    #return [f_rejX, f_rejY]
+    #print(obstacle[0])
     return [0, 0]
 
 def callback_pot_fields_goal(msg):
@@ -169,6 +187,8 @@ def get_robot_pose(listener):
 def callback_scan(msg):
     global laser_readings
     laser_readings = [[msg.ranges[i], msg.angle_min+i*msg.angle_increment] for i in range(len(msg.ranges))]
+
+    #print(len(laser_readings))
 
 def draw_force_markers(robot_x, robot_y, attr_x, attr_y, rej_x, rej_y, res_x, res_y, pub_markers):
     pub_markers.publish(get_force_marker(robot_x, robot_y, attr_x, attr_y, [0,0,1,1]  , 0))
