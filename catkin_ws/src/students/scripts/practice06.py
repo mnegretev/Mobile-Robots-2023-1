@@ -19,7 +19,7 @@ from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 from sensor_msgs.msg import LaserScan
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "HERRERA GODINA ADRIANA JOCELYN"
 
 listener    = None
 pub_cmd_vel = None
@@ -52,6 +52,22 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
+    zeta = 0.23
+    
+
+    posicion_robot = np.array([robot_x, robot_y])
+    posicion_meta = np.array([goal_x, goal_y])
+    resta = posicion_robot - posicion_meta
+    Vector_unitario = resta / np.linalg.norm(resta)
+
+    f_att = (zeta) * Vector_unitario
+
+    for i in np.nditer(f_att):
+        
+        f_x = f_att[0]
+        f_y = f_att[1]
+
+    return [f_x, f_y]
     return [0, 0]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
@@ -66,7 +82,29 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    
+    eta = 1
+    d0 = 1
+    rejX = 0
+    rejY = 0
+
+    for elemento in laser_readings:
+        d = elemento[0]
+        x = d * math.cos(elemento[1])
+        y = d * math.sin(elemento[1])
+
+        if(elemento[0] < d0):
+            q0 = np.array([x, y])
+            posicion_robot = np.array([robot_x, robot_y])
+            rj= (eta) * (sqrt( (1/d) - (1/d0) )) * ( (q0 - posicion_robot)/d0 )
+
+            for i in np.nditer(rj):
+                rejX = rj[0]
+                rejY = rj[1]
+        else:
+            rejX = 0
+            rejY = 0
+
+    return [rejX, rejY]
     return [0, 0]
 
 def callback_pot_fields_goal(msg):
