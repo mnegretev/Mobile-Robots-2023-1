@@ -82,8 +82,8 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
 
     for i in np.nditer(f_att):
         #print(i)
-        fX = unitVector[0]
-        fY = unitVector[1]
+        fX = f_att[0]
+        fY = f_att[1]
 
     return [fX, fY]
 
@@ -100,24 +100,29 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     eta = 1
-    d0 = 2
+    d0 = 1
     f_rejX = 0
     f_rejY = 0
 
     for obstacle in laser_readings:
         d = obstacle[0]
+        d_x = d * math.cos(obstacle[1])
+        d_y = d * math.sin(obstacle[1])
 
-        #q0 = np.array([, ])
-        robot_pos = np.array([robot_x, robot_y])
-        #f_rej = (eta) * (sqrt( (1/d) - (1/d0) )) * ( (q0 - robot_pos)/d0 )
+        if(obstacle[0] < d0):
+            q0 = np.array([d_x, d_y])
+            robot_pos = np.array([robot_x, robot_y])
+            f_rej = (eta) * (sqrt( (1/d) - (1/d0) )) * ( (q0 - robot_pos)/d0 )
 
-        #for i in np.nditer(f_rej):
-            #f_rejX = laser_readings[0]
-            #f_rejY = laser_readings[1]
+            for i in np.nditer(f_rej):
+                f_rejX = f_rej[0]
+                f_rejY = f_rej[1]
+        else:
+            f_rejX = 0
+            f_rejY = 0
 
-    #return [f_rejX, f_rejY]
-    #print(obstacle[0])
-    return [0, 0]
+    return [f_rejX, f_rejY]
+    #return [0, 0]
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
