@@ -32,6 +32,17 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # TODO:
     # Implement the control law given by:
     #
+    # Definimos las constantes a utilizar
+    alpha=0.1
+    beta=0.9
+    v_max=1
+    w_max=1
+    #definimos el error de angulo
+    error_a= math.atan2(goal_y - robot_y, goal_x - robot_x) - robot_a
+    #Para asegurar que el angulo este entre -pi y pi, determinamos el residuo
+    # con modulo 2pi
+    error_a=(error_a + math.pi)%(2*math.pi) - math.pi
+    #determinacion de la velocidad lineal y angular
     v = v_max*math.exp(-error_a*error_a/alpha)
     w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
     #
@@ -42,6 +53,9 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # and return it (check online documentation for the Twist message).
     # Remember to keep error angle in the interval (-pi,pi]
     #
+    #vamos a retornar v y w
+    cmd_vel.linear.x=v
+    cmd_vel.angular.z=w
     
     return cmd_vel
 
@@ -53,18 +67,18 @@ def follow_path(path):
     # The publisher for the twist message is already declared as 'pub_cmd_vel'
     # You can use the following steps to perform the path tracking:
     #
-    # Set local goal point as the first point of the path
-    # Set global goal point as the last point of the path
-    # Get robot position with [robot_x, robot_y, robot_a] = get_robot_pose(listener)
+    #Set local goal point as the first point of the path
+    #Set global goal point as the last point of the path
+    #Get robot position with [robot_x, robot_y, robot_a] = get_robot_pose(listener)
     # Calculate global error as the magnitude of the vector from robot pose to global goal point
     # Calculate local  error as the magnitude of the vector from robot pose to local  goal point
     #
-    # WHILE global error > tol and not rospy.is_shutdown() #This keeps the program aware of signals such as Ctrl+C
+    #WHILE global error > tol and not rospy.is_shutdown() #This keeps the program aware of signals such as Ctrl+C
     #     Calculate control signals v and w and publish the corresponding message
-    #     loop.sleep()  #This is important to avoid an overconsumption of processing time
-    #     Get robot position
+    #	loop.sleep()  #This is important to avoid an overconsumption of processing time
+    #	Get robot position
     #     Calculate local error
-    #     If local error is less than 0.3 (you can change this constant)
+    #	If local error is less than 0.3 (you can change this constant)
     #         Change local goal point to the next point in the path
     #     Calculate global error
     # Send zero speeds (otherwise, robot will keep moving after reaching last point)
