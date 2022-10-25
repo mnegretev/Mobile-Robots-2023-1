@@ -35,7 +35,7 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # Definimos las constantes a utilizar
     alpha=0.1
     beta=0.9
-    v_max=1
+    v_max=0.8
     w_max=1
     #definimos el error de angulo
     error_a= math.atan2(goal_y - robot_y, goal_x - robot_x) - robot_a
