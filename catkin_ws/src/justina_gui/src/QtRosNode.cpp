@@ -37,6 +37,9 @@ void QtRosNode::run()
 {    
     ros::Rate loop(30);
     pubCmdVel     = n->advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+    cltAStar      = n->serviceClient<nav_msgs::GetPlan>("/path_planning/a_star_search");
+    cltSmoothPath = n->serviceClient<custom_msgs::SmoothPath>("/path_planning/smooth_path");
+    
     pubTorso      = n->advertise<std_msgs::Float64>("/torso_controller/command", 1);
     pubLaGoalQ    = n->advertise<std_msgs::Float64MultiArray>("/hardware/left_arm/goal_pose", 1);
     pubRaGoalQ    = n->advertise<std_msgs::Float64MultiArray>("/hardware/right_arm/goal_pose", 1);
@@ -56,6 +59,7 @@ void QtRosNode::run()
     cltLaForwardKinematics=n->serviceClient<custom_msgs::ForwardKinematics>("/manipulation/la_forward_kinematics");
     cltRaForwardKinematics=n->serviceClient<custom_msgs::ForwardKinematics>("/manipulation/ra_forward_kinematics");
     cltGetPolynomialTraj  =n->serviceClient<custom_msgs::GetPolynomialTrajectory>("/manipulation/polynomial_trajectory");
+
     cltFindLines          =n->serviceClient<custom_msgs::FindLines>       ("/vision/line_finder/find_lines_ransac");
     cltTrainObject        =n->serviceClient<custom_msgs::TrainObject>     ("/vision/obj_reco/train_object");
     cltRecogObjects       =n->serviceClient<custom_msgs::RecognizeObjects>("/vision/obj_reco/recognize_objects");
@@ -121,6 +125,46 @@ void QtRosNode::get_robot_pose(float& robot_x, float& robot_y, float& robot_a)
     robot_y = t.getOrigin().y();
     q = t.getRotation();
     robot_a = atan2(q.z(), q.w())*2;
+}
+
+void QtRosNode::set_param_inflation_radius(float inflation_radius)
+{
+    n->setParam("/path_planning/inflation_radius", inflation_radius);
+}
+
+void QtRosNode::set_param_cost_radius(float cost_radius)
+{
+    n->setParam("/path_planning/cost_radius",  cost_radius);
+}
+
+void QtRosNode::set_param_smoothing_alpha(float smoothing_alpha)
+{
+    n->setParam("/path_planning/smoothing_alpha",  smoothing_alpha);
+}
+  
+void QtRosNode::set_param_smoothing_beta(float  smoothing_beta)
+{
+    n->setParam("/path_planning/smoothing_beta" ,  smoothing_beta);
+}
+
+void QtRosNode::call_a_start_path(float start_x, float start_y, float goal_x, float goal_y, nav_msgs::Path& path)
+{
+    nav_msgs::GetPlan srv;
+    srv.request.start.pose.position.x = start_x;
+    srv.request.start.pose.position.y = start_y;
+    srv.request.start.pose.orientation.w = 1.0;
+    srv.request.goal.pose.position.x = goal_x;
+    srv.request.goal.pose.position.y = goal_y;
+    srv.request.goal.pose.orientation.w = 1.0;
+    cltAStar.call(srv);
+    path = srv.response.plan;
+}
+
+void QtRosNode::call_smooth_path(nav_msgs::Path& path, nav_msgs::Path& smoothed_path)
+{
+    custom_msgs::SmoothPath srv;
+    srv.request.path = path;
+    cltSmoothPath.call(srv);
 }
 
 void QtRosNode::publish_torso_position(float tr)
