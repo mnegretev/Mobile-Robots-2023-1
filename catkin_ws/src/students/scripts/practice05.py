@@ -45,7 +45,7 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     #
     
     error_a = math.atan2(goal_y-robot_y, goal_x-robot_x)
-    if(error_a > math.pi | error_a <=-math.pi ):
+    if( (error_a > math.pi) or (error_a <=-math.pi) ):
         error_a = (error_a + math.pi)%(2*math.pi)-math.pi
 
     v_max = 4
