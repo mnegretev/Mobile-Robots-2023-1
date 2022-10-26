@@ -65,7 +65,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    zeta = 3
+    zeta = 0.4
     norma = math.sqrt((robot_x-goal_x)**2+(robot_y-goal_y)**2)
     Fx = zeta*((robot_x-goal_x)/norma)
     Fy = zeta*((robot_y-goal_y)/norma)
@@ -83,24 +83,21 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    eta = 1
-    d0 = .5
+    eta = 2
+    d0 = 1
     Fxa = []
     Fya = []
-    for element in laser_readings:
-    	if element[0]<d0:
-    		#Distance componets obtention	
-    		dx = element[0]*math.cos(element[1])
-    		dy = element[0]*math.sin(element[1])
+    for [d,thetai] in laser_readings:
+    	if d<d0:
     		#Storage and calculation of forces
-    		Fxi = eta*math.sqrt((1/abs(dx))-(1/d0))*(dx/abs(dx))
-    		Fyi = eta*math.sqrt((1/abs(dy))-(1/d0))*(dy/abs(dy))
+    		Mag = eta*math.sqrt((1/d)-(1/d0))
+    		Fxi = Mag*math.cos(thetai+robot_a)
+    		Fyi = Mag*math.sin(thetai+robot_a)
     	else:
     		Fxi = 0
     		Fyi = 0
     	Fxa.append(Fxi)
     	Fya.append(Fyi)
-    
     #Getting the mean of the forces
     Fx = sum(Fxa)/len(Fxa)
     Fy = sum(Fya)/len(Fya)
