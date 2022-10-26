@@ -69,7 +69,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    zeta = 0.2
+    zeta = 0.4
     fX = 0
     fY = 0
 
@@ -99,11 +99,10 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    eta = 1
-    d0 = 1
+    eta = 0.6
+    d0 = 1.0
     f_rejX = 0
     f_rejY = 0
-    counter = 0
 
     for obstacle in laser_readings:
         d = obstacle[0]
@@ -113,13 +112,13 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
         if(obstacle[0] < d0):
             f_rejX += eta * ( math.sqrt( (1/obstacle[0]) - (1/d0) ) ) * ang_x
             f_rejY += eta * ( math.sqrt( (1/obstacle[0]) - (1/d0) ) ) * ang_y
-            counter += counter
+            #counter += counter
         else:
             f_rejX = 0
             f_rejY = 0
 
-    f_rejX = f_rejX / counter
-    f_rejY = f_rejY / counter
+    f_rejX = f_rejX / len(laser_readings)
+    f_rejY = f_rejY / len(laser_readings)
 
     return [f_rejX, f_rejY]
 
