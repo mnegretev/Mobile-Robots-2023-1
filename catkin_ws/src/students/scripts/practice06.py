@@ -103,26 +103,26 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     d0 = 1
     f_rejX = 0
     f_rejY = 0
+    counter = 0
 
     for obstacle in laser_readings:
         d = obstacle[0]
-        d_x = d * math.cos(obstacle[1])
-        d_y = d * math.sin(obstacle[1])
+        ang_x = math.cos(obstacle[1] + robot_a)
+        ang_y = math.sin(obstacle[1] + robot_a)
 
         if(obstacle[0] < d0):
-            q0 = np.array([d_x, d_y])
-            robot_pos = np.array([robot_x, robot_y])
-            f_rej = (eta) * (sqrt( (1/d) - (1/d0) )) * ( (q0 - robot_pos)/d0 )
-
-            for i in np.nditer(f_rej):
-                f_rejX = f_rej[0]
-                f_rejY = f_rej[1]
+            f_rejX += eta * ( math.sqrt( (1/obstacle[0]) - (1/d0) ) ) * ang_x
+            f_rejY += eta * ( math.sqrt( (1/obstacle[0]) - (1/d0) ) ) * ang_y
+            counter += counter
         else:
             f_rejX = 0
             f_rejY = 0
 
+    f_rejX = f_rejX / counter
+    f_rejY = f_rejY / counter
+
     return [f_rejX, f_rejY]
-    #return [0, 0]
+
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
