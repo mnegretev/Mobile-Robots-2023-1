@@ -79,7 +79,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # of the resulting attraction force w.r.t. map.
     #
 
-    zeta = 1 # Magnitud de atracción
+    zeta = 0.5 # Magnitud de atracción
     
     # Dirección
     
@@ -111,7 +111,7 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     	
-    eta = 1 # Magnitud de rupulsión
+    eta = 2 # Magnitud de rupulsión
     d0 = 1 # Distancia de influencia
     
     for d_ang in laser_readings:
@@ -130,8 +130,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     		force_x = 0
     		force_y = 0
     
-    force_x /= len(laser_readings)
-    force_y /= len(laser_readings)
+    #force_x /= len(laser_readings)
+    #force_y /= len(laser_readings)
     
     
     return [force_x, force_y]
