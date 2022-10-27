@@ -41,8 +41,22 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # and return it (check online documentation for the Twist message).
     # Remember to keep error angle in the interval (-pi,pi]
     #
+    v_max= 0.6
+    w_max= 0.8
+    alpha=0.25
+    betha=0.25
+
+    error_a= math.atan2(goal_y-robot_y, goal_x-robot_x)-robot_a
+    error_a=((error_a + math.pi) % (2*math.pi))- math.pi
+
+    v = (v_max)*math.exp(-(error_a*error_a/alpha))
+    w = (w_max)*((2/(1 + math.exp(-(error_a/betha)))) - 1)
+
+    cmd_vel.linear.x=v
+    cmd_vel.angular.z=w
+
+    return cmd_vel    
     
-    return cmd_vel
 
 def attraction_force(robot_x, robot_y, goal_x, goal_y):
     #
@@ -52,7 +66,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    zeta = 0.23
+    zeta = 0.2
     
 
     posicion_robot = np.array([robot_x, robot_y])
@@ -82,8 +96,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    eta = 1
-    d0 = 1
+    eta = 0.3
+    d0 = 1.1
     rejX = 0
     rejY = 0
 
@@ -93,19 +107,20 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
         y = d * math.sin(elemento[1])
 
         if(elemento[0] < d0):
-            q0 = np.array([x, y])
-            posicion_robot = np.array([robot_x, robot_y])
-            rj= (eta) * (sqrt( (1/d) - (1/d0) )) * ( (q0 - posicion_robot)/d0 )
+           
+            rejX += eta * ( math.sqrt( (1/obstacle[0]) - (1/d0) ) ) * x
+            rejY += eta * ( math.sqrt( (1/obstacle[0]) - (1/d0) ) ) * y
 
-            for i in np.nditer(rj):
-                rejX = rj[0]
-                rejY = rj[1]
+      
         else:
             rejX = 0
             rejY = 0
 
-    return [rejX, rejY]
-    return [0, 0]
+    rejX = rejX / len(laser_readings)
+    rejY = rejY / len(laser_readings)
+
+    return [rejX,rejY]
+
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
