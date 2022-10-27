@@ -12,6 +12,7 @@
 import rospy
 import tf
 import math
+import numpy
 from std_msgs.msg import Header
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import PoseStamped
@@ -82,15 +83,15 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     
     # Dirección
     
-    robot_i = np.array([robot_x, robot_y])
-    robot_g = np.array([goal_x, goal_y])
+    robot_i = numpy.array([robot_x, robot_y])
+    robot_g = numpy.array([goal_x, goal_y])
     dif = robot_i - robot_g
     
     # Fuerza atracctiva
     
-    f_att = zeta*(dif/np.linalg.norm(dif))
+    f_att = zeta*(dif/numpy.linalg.norm(dif))
     
-    for i in np.nditer(f_att):
+    for i in numpy.nditer(f_att):
     	force_x = f_att[0]
     	force_y = f_att[1]
     
@@ -110,9 +111,30 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     	
+    eta = 1 # Magnitud de rupulsión
+    d0 = 1 # Distancia de influencia
+    
+    for d_ang in laser_readings:
+    	d_ang_x = math.cos(d_ang[1] + robot_a)
+    	d_ang_y = math.sin(d_ang[1] + robot_a)
+    	
+    	if (d_ang[0] < d0):
+    		q_oi = numpy.array([d_ang_x, d_ang_y])
+    		q = numpy.array([robot_x, robot_y])
+    		f_rej = eta*(math.sqrt((1/d_ang[0])-(1/d0)))*((q_oi-q)/d0)
+    		
+    		for i in numpy.nditer(f_rej):
+    			force_x = f_rej[0]
+    			force_y = f_rej[1]
+    	else:	
+    		force_x = 0
+    		force_y = 0
+    
+    force_x /= len(laser_readings)
+    force_y /= len(laser_readings)
     
     
-    return [0, 0]
+    return [force_x, force_y]
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
