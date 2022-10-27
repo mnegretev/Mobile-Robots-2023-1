@@ -113,8 +113,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
 
       
         else:
-            rejX = 0
-            rejY = 0
+            rejX += 0
+            rejY += 0
 
     rejX = rejX / len(laser_readings)
     rejY = rejY / len(laser_readings)
