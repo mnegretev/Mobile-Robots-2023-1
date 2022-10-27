@@ -12,6 +12,7 @@
 import rospy
 import tf
 import math
+import numpy as np
 from std_msgs.msg import Header
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import PoseStamped
@@ -19,7 +20,7 @@ from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 from sensor_msgs.msg import LaserScan
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "MARTINEZ_JUAREZ"
 
 listener    = None
 pub_cmd_vel = None
@@ -42,6 +43,20 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # Remember to keep error angle in the interval (-pi,pi]
     #
     
+    alpha = 0.2
+    beta = 0.2
+    v_max = 0.8
+    w_max = 0.8
+    
+    error_a = math.atan2(goal_y - robot_y, goal_x - robot_x) - robot_a
+    error_a = ((error_a + math.pi) % (2 * math.pi)) - math.pi
+    
+    v = v_max*math.exp(-error_a*error_a/alpha)
+    w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
+    
+    cmd_vel.linear.x = v
+    cmd_vel.angular.z = w
+    
     return cmd_vel
 
 def attraction_force(robot_x, robot_y, goal_x, goal_y):
@@ -52,7 +67,13 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    return [0, 0]
+    
+    zeta = 0.5
+    
+    force_x = zeta * ((robot_x - goal_x) / np.linalg.norm(robot_x - goal_x))
+    force_y = zeta * ((robot_y - goal_y) / np.linalg.norm(robot_y - goal_y))
+    
+    return [force_x, force_y]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
@@ -67,7 +88,26 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     
-    return [0, 0]
+    eta = 0.6
+    d0 = 0.4
+    
+    X = 0
+    Y = 0
+    
+    for obstacle in laser_readings:
+        ang_x = math.cos(obstacle[1] + robot_a)
+        ang_y = math.sin(obstacle[1] + robot_a)
+        if obstacle[0] < d0:
+            X += eta * (math.sqrt((1 / obstacle[0]) - (1 / d0))) * ang_x
+            Y += eta * (math.sqrt((1 / obstacle[0]) - (1 / d0))) * ang_y
+        else:
+            X = 0
+            Y = 0
+        
+    force_x = force_x / len(laser_readings)
+    force_y = force_y / len(laser_readings)
+    
+    return [force_x, force_y]
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
