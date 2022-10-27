@@ -82,7 +82,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
         f_y = f_att[1]
 
     return [f_x, f_y]
-    return [0, 0]
+    
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
