@@ -25,13 +25,16 @@ listener    = None
 pub_cmd_vel = None
 pub_markers = None
 
+
+
+alpha = 0.6
+beta = 0.5
+v_max = 0.5
+w_max = 0.5
+    
 def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
-    alpha = 0.6
-    beta = 0.5
-    v_max = 0.5
-    w_max = 0.5
-    
+  
     error_a=math.atan2(goal_y-robot_y, goal_x-robot_x)-robot_a
     
     if error_a < -math.pi or error_a > math.pi:
@@ -76,7 +79,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     Force_x=x/m
     Force_y=y/m
       
-    return [zeta*Force_x, zeta*Force_y]
+    return [z*Force_x, z*Force_y]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
@@ -90,7 +93,13 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    
+    eta = 0.5
+    d0 = 2
+    n = 0
+    sum_x = 0
+    sum_y = 0
+    force_x = 0
+    force_y = 0
     for [dist, ang] in laser_readings:
       
       if dist<d0:
