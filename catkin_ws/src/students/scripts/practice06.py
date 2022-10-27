@@ -77,7 +77,25 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    return [0, 0]
+
+    zeta = 1 # Magnitud de atracción
+    
+    # Dirección
+    
+    robot_i = np.array([robot_x, robot_y])
+    robot_g = np.array([goal_x, goal_y])
+    dif = robot_i - robot_g
+    
+    # Fuerza atracctiva
+    
+    f_att = zeta*(dif/np.linalg.norm(dif))
+    
+    for i in np.nditer(f_att):
+    	force_x = f_att[0]
+    	force_y = f_att[1]
+    
+    
+    return [force_x, force_y]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
@@ -91,6 +109,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
+    	
+    
     
     return [0, 0]
 
