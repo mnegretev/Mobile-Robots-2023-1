@@ -59,7 +59,7 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel.linear.y = w
     cmd_vel.linear.z = 0
 
-    cmd_vel.angular.x = 0
+    cmd_vel.angular.x = w
     cmd_vel.angular.z = 0
     cmd_vel.angular.y = 0
 
