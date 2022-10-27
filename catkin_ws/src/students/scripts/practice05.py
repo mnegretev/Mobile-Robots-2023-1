@@ -29,8 +29,8 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
     v_max = 0.8
     w_max = 0.8
-    alpha = 0.1 
-    beta = 0.4
+    alpha = 0.2 
+    beta = 1
     #
     # TODO:
     # Implement the control law given by:

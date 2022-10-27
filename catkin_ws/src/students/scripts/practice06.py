@@ -19,7 +19,7 @@ from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 from sensor_msgs.msg import LaserScan
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "Suarez Martinez Enrique "
 
 listener    = None
 pub_cmd_vel = None
@@ -27,20 +27,31 @@ pub_markers = None
 
 def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
+    v_max = 0.8
+    w_max = 0.8
+    alpha = 0.2 
+    beta = 1
     #
     # TODO:
     # Implement the control law given by:
     #
-    # v = v_max*math.exp(-error_a*error_a/alpha)
-    # w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
-    #
+    error_a = math.atan2(goal_y - robot_y, goal_x - robot_x ) - robot_a 
+    error_a = (error_a + math.pi)%(2 * math.pi) - math.pi
+
+    v = v_max*math.exp(-error_a*error_a/alpha)
+    w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
+    
+
     # where error_a is the angle error and
-    # v and w are the linear and angular speeds.
-    # v_max, w_max, alpha and beta, are design constants.
-    # Store the resulting v and w in the Twist message 'cmd_vel'
+    # v and w are the linear and angular speeds taken as input signals
+    # and v_max, w_max, alpha and beta, are tunning constants.
+    # Store the resulting v and w in the Twist message cmd_vel
     # and return it (check online documentation for the Twist message).
     # Remember to keep error angle in the interval (-pi,pi]
     #
+    cmd_vel.linear.x = v 
+    cmd_vel.angular.z = w 
+
     
     return cmd_vel
 
@@ -52,7 +63,11 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    return [0, 0]
+    dseta = 0.5
+    force_x = (dseta / (math.sqrt((robot_x - goal_x)**2+(robot_y - goal_y)**2)))*(robot_x - goal_x)
+    force_y = (dseta / (math.sqrt((robot_x - goal_x)**2+(robot_y - goal_y)**2)))*(robot_y - goal_y)
+
+    return [force_x, force_y]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
@@ -66,8 +81,21 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    
-    return [0, 0]
+    d0 = 1
+    eta = 2
+    Rx = 0
+    Ry = 0
+    for [distance, angle] in laser_readings:
+        if distance < d0 : 
+            Rx += eta * (math.sqrt((1/distance)-(1/d0))) * (math.cos(angle + robot_a)) 
+            Ry += eta * (math.sqrt((1/distance)-(1/d0))) * (math.sin(angle + robot_a))
+        else:
+            Rx += 0 * (math.cos(angle + robot_a))
+            Ry += 0 * (math.sin(angle + robot_a))
+
+    f_x = Rx/len(laser_readings)
+    f_y = Ry/len(laser_readings)
+    return [f_x, f_y]
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
