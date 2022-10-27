@@ -42,6 +42,26 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # Remember to keep error angle in the interval (-pi,pi]
     #
     
+    error_a = math.atan2(goal_y-robot_y, goal_x-robot_x)-robot_a
+    if( (error_a > math.pi) or (error_a <=-math.pi) ):
+        error_a = (error_a + math.pi)%(2*math.pi)-math.pi
+
+    v_max = 0.8
+    w_max = 1
+    alpha = 0.9
+    beta = 0.1
+
+    v = v_max*math.exp(-error_a*error_a/alpha)
+    w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
+
+    cmd_vel.linear.x = v*math.cos(robot_a)
+    cmd_vel.linear.y = v*math.sin(robot_a)
+    cmd_vel.linear.z = 0
+
+    cmd_vel.angular.x = 0
+    cmd_vel.angular.z = w
+    cmd_vel.angular.y = 0
+
     return cmd_vel
 
 def attraction_force(robot_x, robot_y, goal_x, goal_y):
@@ -53,9 +73,15 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # of the resulting attraction force w.r.t. map.
     #
 
-    while():
-            
-    return [0, 0]
+    qM = math.sqrt((robot_x-goal_x)**2 + (robot_y-goal_y)**2 )
+    a = 1
+
+    force_x = a*(robot_x-goal_x)/qM
+    force_y = a*(robot_y-goal_y)/qM
+
+    return [force_x, force_y]
+
+
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
@@ -70,15 +96,28 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     
-    return [0, 0]
+    n = 1
+    do = 1
+
+    c = n*( math.sqrt( (1/laser_readings[0])-1/do) )
+
+    x = laser_readings[0]*math.cos(laser_readings[1])
+    y = laser_readings[0]*math.sin(laser_readings[1])
+
+
+    force_x = c*(x-robot_x)/laser_readings[1]
+    force_y = c*(y-robot_y)/laser_readings[1]
+    
+    return [force_x, force_y]
+
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
     goal_y = msg.pose.position.y
     print("Moving to goal point " + str([goal_x, goal_y]) + " by potential fields")
     loop = rospy.Rate(20)
-    global laser_readings
-
+    global laser_reading
+    
     #
     # TODO:
     # Examine the following code and indentify the different steps to move the
@@ -111,8 +150,9 @@ def callback_pot_fields_goal(msg):
     tolerance = 0.1
     epsilon = 0.5
     while dist_to_goal > tolerance and not rospy.is_shutdown():
+
         afx, afy = attraction_force(robot_x, robot_y, goal_x, goal_y)
-        rfx, rfy = rejection_force (robot_x, robot_y, robot_a, laser_readings)
+        rfx, rfy = rejection_force(robot_x, robot_y, robot_a, laser_reading)
         [fx, fy] = [afx + rfx, afy + rfy]
         [px, py] = [robot_x - epsilon*fx, robot_y - epsilon*fy]
         
@@ -138,8 +178,9 @@ def get_robot_pose(listener):
     return [0,0,0]
 
 def callback_scan(msg):
-    global laser_readings
-    laser_readings = [[msg.ranges[i], msg.angle_min+i*msg.angle_increment] for i in range(len(msg.ranges))]
+    global laser_reading
+    laser_reading = [[msg.ranges[i], msg.angle_min+i*msg.angle_increment] for i in range(len(msg.ranges))]
+
 
 def draw_force_markers(robot_x, robot_y, attr_x, attr_y, rej_x, rej_y, res_x, res_y, pub_markers):
     pub_markers.publish(get_force_marker(robot_x, robot_y, attr_x, attr_y, [0,0,1,1]  , 0))

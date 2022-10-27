@@ -43,24 +43,24 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # Remember to keep error angle in the interval (-pi,pi]
     #
     
-    error_a = math.atan2(goal_y-robot_y, goal_x-robot_x)
+    error_a = math.atan2(goal_y-robot_y, goal_x-robot_x)-robot_a
     if( (error_a > math.pi) or (error_a <=-math.pi) ):
         error_a = (error_a + math.pi)%(2*math.pi)-math.pi
 
-    v_max = 4
-    w_max = 3
+    v_max = 0.8
+    w_max = 1
     alpha = 0.9
     beta = 0.1
 
     v = v_max*math.exp(-error_a*error_a/alpha)
     w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
 
-    cmd_vel.linear.x = v*Math.cos(error_a)
-    cmd_vel.linear.y = v*Math.sin(error_a)
+    cmd_vel.linear.x = v*math.cos(robot_a)
+    cmd_vel.linear.y = v*math.sin(robot_a)
     cmd_vel.linear.z = 0
 
-    cmd_vel.angular.x = w
-    cmd_vel.angular.z = 0
+    cmd_vel.angular.x = 0
+    cmd_vel.angular.z = w
     cmd_vel.angular.y = 0
 
     return cmd_vel
