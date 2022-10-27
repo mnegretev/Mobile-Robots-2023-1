@@ -101,7 +101,7 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
         Forcex += mag*math.cos(angle+robot_a)
         Forcey += mag*math.sin(angle+robot_a)
         
-    [Forcex, Forcey] = [Forcex/len(laser_readings), Forcey/len(laser_reading)]
+    [Forcex, Forcey] = [Forcex/len(laser_readings), Forcey/len(laser_readings)]
         
     return [Forcex, Forcey]
 
