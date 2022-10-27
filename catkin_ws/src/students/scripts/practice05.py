@@ -55,8 +55,8 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     v = v_max*math.exp(-error_a*error_a/alpha)
     w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
 
-    cmd_vel.linear.x = v
-    cmd_vel.linear.y = w
+    cmd_vel.linear.x = v*Math.cos(error_a)
+    cmd_vel.linear.y = v*Math.sin(error_a)
     cmd_vel.linear.z = 0
 
     cmd_vel.angular.x = w
