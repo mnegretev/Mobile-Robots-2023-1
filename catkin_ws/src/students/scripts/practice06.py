@@ -114,8 +114,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
             f_rejY += eta * ( math.sqrt( (1/obstacle[0]) - (1/d0) ) ) * ang_y
             #counter += counter
         else:
-            f_rejX = 0
-            f_rejY = 0
+            f_rejX += 0
+            f_rejY += 0
 
     f_rejX = f_rejX / len(laser_readings)
     f_rejY = f_rejY / len(laser_readings)
