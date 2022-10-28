@@ -58,7 +58,7 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
 
     return cmd_vel
 
-def attraction_force(robot_x, robot_y, goal_x, goal_y):    
+def attraction_force(robot_x, robot_y, goal_x, goal_y):
     #
     # TODO:
     # Calculate the attraction force, given the robot and goal positions.
@@ -66,22 +66,19 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    k1=0.1
-    x = robot_x - goal_x
-    y = robot_y - goal_y
-    modulo = math.sqrt(math.pow(x,2)+ math.pow(y,2))
-    x_unitario=x/modulo
-    y_unitario=y/modulo
+    k1=0.9
+    x=robot_x-goal_x
+    y=robot_y-goal_y
+    # obtenermos la norma del vector (x,y)
+    norma=math.sqrt(math.pow(x,2)+math.pow(y,2))
+    #normalizamos al vector (x,y)
+    x_unitario=x/norma
+    y_unitario=y/norma
     force_x=k1*x_unitario
-    force_y=k1*y_unitari
-    return [force_x,force_y]
+    force_y=k1*y_unitario
+    return [force_x, force_y]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
-    n_forces=0
-    force_x=0
-    force_y=0
-    d0=1
-    k2=0.8
     #
     # TODO:
     # Calculate the total rejection force given by the average
@@ -93,17 +90,26 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    for dist.angle in laser_readings:
-      if dist < d0:
-              n_forces +=1
-              x=dist*math.cos(angle)+robot_a
-              y=dist*math.sin(angle)+robot_a
-              part1=(k2/dist)*(math.sqrt((1/dist)-(1/d0)))
-              force_x += part1*(x -robot_x)
-              force_y += part1*(y -robot_y)    
-    n_forces= n_forces if n_forces > 0 else 1
+    n_forces=0
+    force_x=0
+    force_y=0
+    d0=1
+    k2=1.5
+    for dist,angle in laser_readings:
+    	if dist < d0:
+    		n_forces += 1
+    		#componentes de laser_readings
+    		x=dist*math.cos(angle + robot_a)
+    		y=dist*math.sin(angle + robot_a)
+    		#parte1 de la expresion de la fuerza de repulsion
+    		part1=(k2/dist)*(math.sqrt((1/dist)-(1/d0)))
+    		#componentes de la fuerza de repulsion
+    		force_x += part1*(x - robot_x)
+    		force_y += part1*(y - robot_y)
+    n_forces = n_forces if n_forces > 0 else 1
     force_x = force_x / n_forces
     force_y = force_y / n_forces
+    	
     return [force_x, force_y]
 
 def callback_pot_fields_goal(msg):
@@ -206,4 +212,3 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-
