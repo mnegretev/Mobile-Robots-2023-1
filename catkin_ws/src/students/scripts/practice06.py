@@ -54,8 +54,12 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     v = v_max*math.exp(-error_a*error_a/alpha)
     w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
 
-    cmd_vel.linear.x = v*math.cos(robot_a)
-    cmd_vel.linear.y = v*math.sin(robot_a)
+    #cmd_vel.linear.x = v*math.cos(robot_a)
+    #cmd_vel.linear.y = v*math.sin(robot_a)
+    #cmd_vel.linear.z = 0
+
+    cmd_vel.linear.x = v
+    cmd_vel.linear.y = 0
     cmd_vel.linear.z = 0
 
     cmd_vel.angular.x = 0
@@ -73,9 +77,9 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # of the resulting attraction force w.r.t. map.
     #
 
-    qM = math.sqrt((robot_x-goal_x)**2 + (robot_y-goal_y)**2 )
-    a = 1
+    a = 0.7
 
+    qM = math.sqrt((robot_x-goal_x)**2 + (robot_y-goal_y)**2 )
     force_x = a*(robot_x-goal_x)/qM
     force_y = a*(robot_y-goal_y)/qM
 
@@ -98,16 +102,25 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     
     n = 1
     do = 1
+    force_x = 0
+    force_y = 0
+    for D,A in laser_readings:
 
-    c = n*( math.sqrt( (1/laser_readings[0])-1/do) )
+        if( D < do ):
+            c = n*( math.sqrt( (1/D)-1/do) )
 
-    x = laser_readings[0]*math.cos(laser_readings[1])
-    y = laser_readings[0]*math.sin(laser_readings[1])
+            x = D*math.cos(A + robot_a)
+            y = D*math.sin(A + robot_a)
 
-
-    force_x = c*(x-robot_x)/laser_readings[1]
-    force_y = c*(y-robot_y)/laser_readings[1]
+            force_x += c*(x)
+            force_y += c*(y)
+        else:
+            force_x += 0
+            force_y += 0
     
+    force_x /= len(laser_readings)
+    force_y /= len(laser_readings)
+
     return [force_x, force_y]
 
 
@@ -116,7 +129,7 @@ def callback_pot_fields_goal(msg):
     goal_y = msg.pose.position.y
     print("Moving to goal point " + str([goal_x, goal_y]) + " by potential fields")
     loop = rospy.Rate(20)
-    global laser_reading
+    global laser_readings
     
     #
     # TODO:
@@ -152,7 +165,7 @@ def callback_pot_fields_goal(msg):
     while dist_to_goal > tolerance and not rospy.is_shutdown():
 
         afx, afy = attraction_force(robot_x, robot_y, goal_x, goal_y)
-        rfx, rfy = rejection_force(robot_x, robot_y, robot_a, laser_reading)
+        rfx, rfy = rejection_force(robot_x, robot_y, robot_a, laser_readings)
         [fx, fy] = [afx + rfx, afy + rfy]
         [px, py] = [robot_x - epsilon*fx, robot_y - epsilon*fy]
         
@@ -178,8 +191,8 @@ def get_robot_pose(listener):
     return [0,0,0]
 
 def callback_scan(msg):
-    global laser_reading
-    laser_reading = [[msg.ranges[i], msg.angle_min+i*msg.angle_increment] for i in range(len(msg.ranges))]
+    global laser_readings
+    laser_readings = [[msg.ranges[i], msg.angle_min+i*msg.angle_increment] for i in range(len(msg.ranges))]
 
 
 def draw_force_markers(robot_x, robot_y, attr_x, attr_y, rej_x, rej_y, res_x, res_y, pub_markers):
