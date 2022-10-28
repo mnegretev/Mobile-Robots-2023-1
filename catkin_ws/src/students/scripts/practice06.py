@@ -68,10 +68,13 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # of the resulting attraction force w.r.t. map.
     #
     
-    zeta = 0.5
+    zeta = 1
     
-    force_x = zeta * ((robot_x - goal_x) / np.linalg.norm(robot_x - goal_x))
-    force_y = zeta * ((robot_y - goal_y) / np.linalg.norm(robot_y - goal_y))
+    x = robot_x - goal_x
+    y = robot_y - goal_y
+    
+    force_x = zeta * (x / math.sqrt(math.pow(x,2) + math.pow(y,2)))
+    force_y = zeta * (y / math.sqrt(math.pow(x,2) + math.pow(y,2)))
     
     return [force_x, force_y]
 
@@ -88,24 +91,24 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     
-    eta = 0.6
-    d0 = 0.4
+    eta = 1.5
+    d0 = 1
     
-    X = 0
-    Y = 0
+    x = 0
+    y = 0
     
     for obstacle in laser_readings:
         ang_x = math.cos(obstacle[1] + robot_a)
         ang_y = math.sin(obstacle[1] + robot_a)
         if obstacle[0] < d0:
-            X += eta * (math.sqrt((1 / obstacle[0]) - (1 / d0))) * ang_x
-            Y += eta * (math.sqrt((1 / obstacle[0]) - (1 / d0))) * ang_y
+            x += eta * (math.sqrt((1 / obstacle[0]) - (1 / d0))) * (ang_x - robot_x)
+            y += eta * (math.sqrt((1 / obstacle[0]) - (1 / d0))) * (ang_y - robot_y)
         else:
-            X = 0
-            Y = 0
+            x += 0
+            y += 0
         
-    force_x = force_x / len(laser_readings)
-    force_y = force_y / len(laser_readings)
+    force_x = x / len(laser_readings)
+    force_y = y / len(laser_readings)
     
     return [force_x, force_y]
 
