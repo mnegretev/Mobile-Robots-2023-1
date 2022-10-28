@@ -30,8 +30,8 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
     
     # Parámetros
-    alpha = 0.3
-    beta = 4.0
+    alpha = 1.0
+    beta = 1.0
     v_max = 0.8
     w_max = 1.0
     
@@ -79,7 +79,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # of the resulting attraction force w.r.t. map.
     #
 
-    zeta = 0.5 # Magnitud de atracción
+    zeta = 1 # Magnitud de atracción
     
     # Dirección
     
@@ -111,8 +111,10 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     	
-    eta = 2 # Magnitud de rupulsión
+    eta = 6 # Magnitud de rupulsión
     d0 = 1 # Distancia de influencia
+    force_x = 0
+    force_y = 0
     
     for d_ang in laser_readings:
     	d_ang_x = math.cos(d_ang[1] + robot_a)
@@ -121,17 +123,17 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     	if (d_ang[0] < d0):
     		q_oi = numpy.array([d_ang_x, d_ang_y])
     		q = numpy.array([robot_x, robot_y])
-    		f_rej = eta*(math.sqrt((1/d_ang[0])-(1/d0)))*((q_oi-q)/d0)
+    		f_rej = eta*(math.sqrt((1/d_ang[0])-(1/d0)))*(q_oi-q)
     		
     		for i in numpy.nditer(f_rej):
-    			force_x = f_rej[0]
-    			force_y = f_rej[1]
+    			force_x += f_rej[0]
+    			force_y += f_rej[1]
     	else:	
-    		force_x = 0
-    		force_y = 0
+    		force_x += 0
+    		force_y += 0
     
-    #force_x /= len(laser_readings)
-    #force_y /= len(laser_readings)
+    force_x /= len(laser_readings)
+    force_y /= len(laser_readings)
     
     
     return [force_x, force_y]
