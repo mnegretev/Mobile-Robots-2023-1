@@ -19,20 +19,28 @@ from geometry_msgs.msg import Point
 from visualization_msgs.msg import Marker
 from sensor_msgs.msg import LaserScan
 
-NAME = "APELLIDO_PATERNO_APELLIDO_MATERNO"
+NAME = "Troncoso Moreno Javier Adan"
 
 listener    = None
 pub_cmd_vel = None
 pub_markers = None
 
+v_max = 0.8
+w_max = 1.0
+alpha = 0.2
+beta = 0.5
+
 def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
+    error_a = math.atan2(goal_y - robot_y, goal_x - robot_x) - robot_a
+    if error_a < -math.pi or error_a > math.pi:
+     error_a = (error_a + math.pi)%(2*math.pi) - math.pi
     #
     # TODO:
     # Implement the control law given by:
     #
-    # v = v_max*math.exp(-error_a*error_a/alpha)
-    # w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
+    v = v_max*math.exp(-error_a*error_a/alpha)
+    w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
     #
     # where error_a is the angle error and
     # v and w are the linear and angular speeds.
@@ -41,10 +49,16 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # and return it (check online documentation for the Twist message).
     # Remember to keep error angle in the interval (-pi,pi]
     #
-    
+    cmd_vel.linear.x = v
+    cmd_vel.linear.y = 0.0
+    cmd_vel.linear.z = 0.0
+    cmd_vel.angular.z = w
+    cmd_vel.angular.x = 0.0
+    cmd_vel.angular.y = 0.0
+
     return cmd_vel
 
-def attraction_force(robot_x, robot_y, goal_x, goal_y):
+def attraction_force(robot_x, robot_y, goal_x, goal_y):    
     #
     # TODO:
     # Calculate the attraction force, given the robot and goal positions.
@@ -52,9 +66,22 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    return [0, 0]
+    k1=0.1
+    x = robot_x - goal_x
+    y = robot_y - goal_y
+    modulo = math.sqrt(math.pow(x,2)+ math.pow(y,2))
+    x_unitario=x/modulo
+    y_unitario=y/modulo
+    force_x=k1*x_unitario
+    force_y=k1*y_unitari
+    return [force_x,force_y]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
+    n_forces=0
+    force_x=0
+    force_y=0
+    d0=1
+    k2=0.8
     #
     # TODO:
     # Calculate the total rejection force given by the average
@@ -66,8 +93,18 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # where force_x and force_y are the X and Y components
     # of the resulting rejection force w.r.t. map.
     #
-    
-    return [0, 0]
+    for dist.angle in laser_readings:
+      if dist < d0:
+              n_forces +=1
+              x=dist*math.cos(angle)+robot_a
+              y=dist*math.sin(angle)+robot_a
+              part1=(k2/dist)*(math.sqrt((1/dist)-(1/d0)))
+              force_x += part1*(x -robot_x)
+              force_y += part1*(y -robot_y)    
+    n_forces= n_forces if n_forces > 0 else 1
+    force_x = force_x / n_forces
+    force_y = force_y / n_forces
+    return [force_x, force_y]
 
 def callback_pot_fields_goal(msg):
     goal_x = msg.pose.position.x
@@ -169,4 +206,4 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-    
+
