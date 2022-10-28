@@ -38,11 +38,9 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     error_a=math.atan2(goal_y-robot_y, goal_x-robot_x)-robot_a
     
     if error_a < -math.pi or error_a > math.pi:
-    	error_a=(error_a + math.pi)%(2*math.pi)-math.pi  
+     error_a=(error_a + math.pi)%(2*math.pi)-math.pi  
     
-    # TODO:
-    # Implement the control law given by:
-    #
+    
     v = v_max*math.exp(-error_a*error_a/alpha)
     w = w_max*(2/(1 + math.exp(-error_a/beta)) - 1)
     #
@@ -76,10 +74,10 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     x=robot_x - goal_x
     y=robot_y - goal_y
     mod=math.sqrt(x**2+y**2)
-    Force_x=x/m
-    Force_y=y/m
+    force_x=x/mod
+    force_y=y/mod
       
-    return [z*Force_x, z*Force_y]
+    return [z*force_x, z*force_y]
 
 def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     #
@@ -219,4 +217,3 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-    
