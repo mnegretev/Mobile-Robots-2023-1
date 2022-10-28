@@ -36,11 +36,11 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
         error_a = error_a +2*math.pi
     alpha = 1
     beta = 1
-     v = v_max*math.exp(-error_a/alpha)
-     w = w_max*(2/(1+math.exp(-error_a/beta))-1)
+    v = v_max*math.exp(-error_a/alpha)
+    w = w_max*(2/(1+math.exp(-error_a/beta))-1)
 
-     cmd_vel.linear.x = v
-     cmd_vel.angular.z = w
+    cmd_vel.linear.x = v
+    cmd_vel.angular.z = w
     return cmd_vel
 
 def attraction_force(robot_x, robot_y, goal_x, goal_y):
@@ -66,7 +66,7 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
             repx.append(0)
             repy.append(0)
     
-    [force_x , force_y] = [sum(repx)/len(repx), sum(repxy/len(repy)]
+    [force_x , force_y] = [sum(repx)/len(repx), sum(repxy)/len(repy)]
     return [force_x, force_y]
 
 def callback_pot_fields_goal(msg):
