@@ -41,7 +41,7 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # and return it (check online documentation for the Twist message).
     # Remember to keep error angle in the interval (-pi,pi]
     #
-    alpha=3
+    alpha=1
     beta=0.9
     v_max=0.3
     w_max=0.5
@@ -66,7 +66,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    k1=0.1
+    k1=0.9
     x=robot_x-goal_x
     y=robot_y-goal_y
     # obtenermos la norma del vector (x,y)
@@ -94,13 +94,13 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     force_x=0
     force_y=0
     d0=1
-    k2=0.8
-    for dist,angle in laser_reading:
+    k2=1.5
+    for dist,angle in laser_readings:
     	if dist < d0:
     		n_forces += 1
-    		#componentes de laser_reading
-    		x=dist*math.cos(angle)
-    		y=dist*math.sin(angle)
+    		#componentes de laser_readings
+    		x=dist*math.cos(angle + robot_a)
+    		y=dist*math.sin(angle + robot_a)
     		#parte1 de la expresion de la fuerza de repulsion
     		part1=(k2/dist)*(math.sqrt((1/dist)-(1/d0)))
     		#componentes de la fuerza de repulsion
