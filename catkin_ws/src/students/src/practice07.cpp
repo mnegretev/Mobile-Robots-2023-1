@@ -17,7 +17,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "tf/transform_broadcaster.h"
 
-#define NOMBRE "APELLIDO_PATERNO_APELLIDO_MATERNO"
+#define NOMBRE "SANCHEZ TORRES SERGIO DANIEL"
 
 #define LASER_DOWNSAMPLING  10
 #define SENSOR_NOISE        0.1
@@ -47,6 +47,16 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
      * For the Euler angles (roll, pitch, yaw) = (0,0,theta) the corresponding quaternion is
      * given by (0,0,sin(theta/2), cos(theta/2)). 
      */
+
+    for(int i = 0; i < particles.poses.size(); i++){
+        particles.poses[i].position.x = rnd.uniformReal(min_x, max_x);
+        particles.poses[i].position.y = rnd.uniformReal(min_y, max_y);
+
+        float theta = rnd.uniformReal(min_a, max_a);
+
+        particles.poses[i].orientation.w = cos(theta / 2);
+        particles.poses[i].orientation.z = sin(theta / 2);
+    }
     
     return particles;
 }
@@ -65,6 +75,11 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * http://docs.ros.org/groovy/api/occupancy_grid_utils/html/namespaceoccupancy__grid__utils.html
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
+    for(int i = 0; i < particle.poses.size(); i++){
+        simulated_scans[i] = *occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], 
+real_sensor_info);
+    }
+
     return simulated_scans;
 }
 
@@ -85,6 +100,15 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * IMPORTANT NOTE 2. Both, simulated an real scans, can have infinite ranges. Thus, when comparing readings,
      * ensure both simulated and real ranges are finite values. 
      */
+    double = sum_weights = 0;
+
+    for(int i = 0; i < simulated_scans[i].size(); i++{
+        weights[i] = 0;
+
+        for(int j = 0; j < simulated_scans[i].ranges.size(); j++){
+        
+        }
+    }
     
     return weights;
 }
