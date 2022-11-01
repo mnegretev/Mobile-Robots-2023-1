@@ -17,7 +17,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "tf/transform_broadcaster.h"
 
-#define NOMBRE "APELLIDO_PATERNO_APELLIDO_MATERNO"
+#define NOMBRE "CERVANTES GUATI ROJO"
 
 #define LASER_DOWNSAMPLING  10
 #define SENSOR_NOISE        0.1
@@ -47,14 +47,18 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
      * For the Euler angles (roll, pitch, yaw) = (0,0,theta) the corresponding quaternion is
      * given by (0,0,sin(theta/2), cos(theta/2)). 
      */
-     float theta = rnd.uniformReal(min_a,max_a)
+     float theta = 0.0;
 
      for(int i = 0; i < particles.poses.size(); i++){
-      particles.poses[i].position.x = rnd.uniformReal(min_x,max_x)
-      particles.poses[i].position.y = rnd.uniformReal(min_y,max_y)
+      particles.poses[i].position.x = rnd.uniformReal(min_x,max_x);
+      particles.poses[i].position.y = rnd.uniformReal(min_y,max_y);
       
-      particles.poses[i].orientation.z = sin(theta/2)
-      particles.poses[i].orientation.w = cos(theta/2)
+      theta = rnd.uniformReal(min_a, max_a);
+      
+      particles.poses[i].orientation.x = 0;
+      particles.poses[i].orientation.y = 0;
+      particles.poses[i].orientation.z = sin(theta/2);
+      particles.poses[i].orientation.w = cos(theta/2);
      }
 
     return particles;
@@ -74,6 +78,10 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * http://docs.ros.org/groovy/api/occupancy_grid_utils/html/namespaceoccupancy__grid__utils.html
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
+     for(int i = 0; i < particles.poses.size; i++){
+      simulated_scans[i] = *(occupancy_grid_utils::simulateRangeScan3(map, &particles.poses[i], &real_sensor_info));
+     }
+
     return simulated_scans;
 }
 
@@ -132,6 +140,25 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * given by the quaternion (0,0,sin(theta/2), cos(theta/2)), thus, you should first
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
+     int random_id = 0;
+     float theta = 0.0;
+
+     for(size_t i=0; i< particles.poses.size(); i++){
+        random_id = random_choice(weights);
+        theta = atan2(particles.poses[random_id].orientation.z,particles.poses[random_id].orientation.w)*2;
+
+        resampled_particles.poses[i] = particles.poses[random_id];
+        resampled_particles.poses[i].position.x += rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.y += rnd.gaussian(0, RESAMPLING_NOISE);
+        theta += rnd.gaussian(0, RESAMPLING_NOISE);
+
+        resampled_particles.poses[i].orientation.x = 0;
+        resampled_particles.poses[i].orientation.y = 0;
+        resampled_particles.poses[i].orientation.w = cos(theta/2);
+        resampled_particles.poses[i].orientation.z = sin(theta/2);
+    }
+
+
     return resampled_particles;
 }
 
@@ -147,6 +174,18 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      * is the orientation of the i-th particle.
      * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances. 
      */
+     for(size_t i=0; i<particles.poses.size(); i++){
+    	float theta = atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w)*2;
+
+        particles.poses[i].position.x+=delta_x*cos(theta)- delta_y*sin(theta)+rnd.gaussian(0, MOVEMENT_NOISE);
+    	particles.poses[i].position.y+=delta_x*sin(theta)+ delta_y*cos(theta)+rnd.gaussian(0, MOVEMENT_NOISE);
+    	a+=delta_t+rnd.gaussian(0, MOVEMENT_NOISE);
+
+        particles.poses[i].orientation.x = 0;
+        particles.poses[i].orientation.y = 0;
+    	particles.poses[i].orientation.w=cos(theta/2);
+    	particles.poses[i].orientation.z=sin(theta/2);
+    }
 }
 
 bool check_displacement(geometry_msgs::Pose2D& robot_pose, geometry_msgs::Pose2D& delta_pose)
