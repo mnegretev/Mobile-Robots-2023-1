@@ -76,8 +76,7 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
     for(int i = 0; i < particle.poses.size(); i++){
-        simulated_scans[i] = *occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], 
-real_sensor_info);
+        simulated_scans[i] = *occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], real_sensor_info);
     }
 
     return simulated_scans;
