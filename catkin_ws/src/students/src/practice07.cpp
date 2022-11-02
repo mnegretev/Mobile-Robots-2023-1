@@ -106,10 +106,8 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
         weights[i] = 0;
 
         for(int j = 0; j < simulated_scans[i].ranges.size(); j++){
-            if(real_scan.ranges[j * LASER_DOWNSAMPLING] < real_scan.range_max && 
-simulated_scans[i].ranges[j] < real_scan.range_max){
-                weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j * 
-LASER_DOWNSAMPLING]);
+            if(real_scan.ranges[j * LASER_DOWNSAMPLING] < real_scan.range_max && simulated_scans[i].ranges[j] < real_scan.range_max){
+                weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j * LASER_DOWNSAMPLING]);
             } else {
                 weight[i] += real_scan.range_max;
             }
@@ -171,7 +169,20 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
 
-    
+    for(int i = 0; i < particles.poses.size(); i++){
+        int rndX = random_choice(weights);
+        
+        resampled_particles.poses[i] = particles.poses[rndX];
+        resampled_particles.poses[i].position.x += rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.y += rnd.gaussian(0, RESAMPLING_NOISE);
+
+        float ang = atan2(particles.poses[rndX].orientation.z, particles.poses[rndX].orientation.w) * 2;
+
+        ang += rnd.gaussian(0, RESAMPLING_NOISE);
+
+        resampled_particles.poses[i].orientation.w = cos(ang / 2);
+        resampled_particles.poses[i].orientation.z = sin(ang / 2); 
+    }
     return resampled_particles;
 }
 
@@ -187,6 +198,10 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      * is the orientation of the i-th particle.
      * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances. 
      */
+
+    for(int i = 0; i < particles.poses.size(); i++){
+    
+    }
 }
 
 bool check_displacement(geometry_msgs::Pose2D& robot_pose, geometry_msgs::Pose2D& delta_pose)
