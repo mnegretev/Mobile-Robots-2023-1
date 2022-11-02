@@ -200,7 +200,15 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      */
 
     for(int i = 0; i < particles.poses.size(); i++){
-    
+        float f = atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w) * 2;
+
+        particles.poses[i].position.x += delta_x * cos(f) - delta_y * sin(f) + rnd.gaussian(0, MOVEMENT_NOISE);
+        particles.poses[i].position.y += delta_x * sin(f) + delta_y * cos(f) + rnd.gaussian(0, MOVEMENT_NOISE);
+
+        f += delta_t + rnd.gaussian(0, MOVEMENT_NOISE);
+
+        particles.poses[i].orientation.w = cos(f / 2);
+        particles.poses[i].orientation.z = sin(f / 2);    
     }
 }
 
