@@ -102,12 +102,25 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      */
     double = sum_weights = 0;
 
-    for(int i = 0; i < simulated_scans[i].size(); i++{
+    for(int i = 0; i < simulated_scans.size(); i++){
         weights[i] = 0;
 
         for(int j = 0; j < simulated_scans[i].ranges.size(); j++){
-        
+            if(real_scan.ranges[j * LASER_DOWNSAMPLING] < real_scan.range_max && 
+simulated_scans[i].ranges[j] < real_scan.range_max){
+                weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j * 
+LASER_DOWNSAMPLING]);
+            } else {
+                weight[i] += real_scan.range_max;
+            }
         }
+        weights[i] /= simulated_scans[i].ranges.size();
+        weights[i] = exp(-weights[i] * weights[i] / SENSOR_NOISE);
+        weights_sum += weights[i];
+    }
+
+    for(int i = 0; i < weights.size(); i++){
+        weights[i] /= weights_sums;
     }
     
     return weights;
@@ -124,6 +137,16 @@ int random_choice(std::vector<float>& weights)
      * Probability of picking an integer 'i' is given by the corresponding weights[i] value.
      * Return the chosen integer. 
      */
+
+    float rndInt = rnd.uniformReal(0, 1);
+
+    for(int i = 0; i < weights.size(); i++){
+        if(rndInt < weights[i]){
+            return i;
+        } else {
+            rndInt -= weights[i];
+        }
+    }
     
     return -1;
 }
@@ -147,6 +170,8 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * given by the quaternion (0,0,sin(theta/2), cos(theta/2)), thus, you should first
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
+
+    
     return resampled_particles;
 }
 
