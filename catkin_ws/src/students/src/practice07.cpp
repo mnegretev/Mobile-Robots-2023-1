@@ -17,7 +17,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "tf/transform_broadcaster.h"
 
-#define NOMBRE "APELLIDO_PATERNO_APELLIDO_MATERNO"
+#define NOMBRE "CHAVOLLA_JIMENEZ_RAUL_DANIEL"
 
 #define LASER_DOWNSAMPLING  10
 #define SENSOR_NOISE        0.1
