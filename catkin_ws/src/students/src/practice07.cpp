@@ -117,8 +117,11 @@ int random_choice(std::vector<float>& weights)
      * Probability of picking an integer 'i' is given by the corresponding weights[i] value.
      * Return the chosen integer. 
      */
+     int choice = rnd.uniformInteger(0,weights.size()-1);
+     
     
-    return -1;
+    //return -1;
+    return choice;
 }
 
 geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles, std::vector<float>& weights)
