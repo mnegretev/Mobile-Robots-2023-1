@@ -50,8 +50,8 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
      * given by (0,0,sin(theta/2), cos(theta/2)). 
      */
     float temp_angle = 0;
-    float temp_x=0f;
-    float temp_y=0f;
+    float temp_x=0;
+    float temp_y=0;
 
     for(int i=0; i<N;i++){
         //Get random x
@@ -59,7 +59,7 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
         //Get random y
         temp_y = (float) rnd.uniformReal((double)min_y , (double)max_y);
         //Get random angle
-        temp_a = (float) rnd.uniformReal((double)min_a , (double)max_a);
+        temp_angle = (float) rnd.uniformReal((double)min_a , (double)max_a);
         
         particles.poses[i].position.x = temp_x;
         particles.poses[i].position.y = temp_y;
@@ -118,13 +118,13 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * ensure both simulated and real ranges are finite values. 
      */
     int N = simulated_scans.size();
-    float D = 0f;
-    float S = 0f;
+    float D = 0;
+    float S = 0;
     for (int i = 0; i < N; i++)
     {
         for (int j = 0; j < N; j++)
         {
-            D +=  distance_between_measurements(simulated_scans[i].ranges[j*LASER_DOWNSAMPLING] , real_scan[j]);
+            D +=  distance_between_measurements(simulated_scans[i].ranges[j*LASER_DOWNSAMPLING] , real_scan.ranges[j]);
         }
         D /= N;
         S += N;
@@ -157,7 +157,7 @@ int random_choice(std::vector<float>& weights)
 
     for (int i = 0; i < N; i++)
     {
-        if(weights[i]>x) 
+        if(weights[i]>b) 
             return i;
         if(weights[i]>max_w) 
             max_i = i;
@@ -200,15 +200,15 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
         index = random_choice(weights);
         //Re-muestreo con remplazo
         //x , y
-        resampled_particles[i].position.x = particles[index].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
-        resampled_particles[i].position.y = particles[index].position.y + rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.x = particles.poses[index].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.y = particles.poses[index].position.y + rnd.gaussian(0, RESAMPLING_NOISE);
         //obteniendo el angulo en euler
         z = particles.poses[i].orientation.z;
         w = particles.poses[i].orientation.w;
         temp_angle = quaternion_to_euler(z,w) + rnd.gaussian(0, RESAMPLING_NOISE);
         //obteniendo el angulo en cuaterniones
-        resampled_particles[i].orientation.z = sin(temp_angle/2);
-        resampled_particles[i].orientation.w = cos(temp_angle/2);
+        resampled_particles.poses[i].orientation.z = sin(temp_angle/2);
+        resampled_particles.poses[i].orientation.w = cos(temp_angle/2);
 
     }
     
@@ -402,7 +402,7 @@ int main(int argc, char** argv)
              * END OF TODO
              */
             move_particles(particles, delta_pose.x, delta_pose.y, delta_pose.theta);
-            std::vector<sensor_msgs::LaserScan> simulated_scans = simulate_particle_scans(particles, map_to_odom_transform);
+            std::vector<sensor_msgs::LaserScan> simulated_scans = simulate_particle_scans(particles, static_map);
             std::vector<float> particle_weights = calculate_particle_weights(simulated_scans, real_scan);
             particles = resample_particles(particles, particle_weights);
 
