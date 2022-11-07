@@ -99,7 +99,7 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * IMPORTANT NOTE 2. Both, simulated an real scans, can have infinite ranges. Thus, when comparing readings,
      * ensure both simulated and real ranges are finite values. 
      */
-    double = sum_weights = 0;
+    double sum_weights = 0;
 
     for(int i = 0; i < simulated_scans.size(); i++){
         weights[i] = 0;
@@ -113,11 +113,11 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
         }
         weights[i] /= simulated_scans[i].ranges.size();
         weights[i] = exp(-weights[i] * weights[i] / SENSOR_NOISE);
-        weights_sum += weights[i];
+        sum_weights += weights[i];
     }
 
     for(int i = 0; i < weights.size(); i++){
-        weights[i] /= weights_sums;
+        weights[i] /= sum_weights;
     }
     
     return weights;
@@ -361,7 +361,12 @@ int main(int argc, char** argv)
              * Get the set of weights by calling the calculate_particle_weights function
              * Resample particles by calling the resample_particles function
              */
-
+            //get_initial_distribution();
+            move_particles(particles, delta_pose.x, delta_pose.y, delta_pose.theta);
+            simulated_scans = simulate_particle_scans(particles, static_map);
+            particle_weights = calculate_particle_weights(simulated_scans, real_scan);
+            particles = resample_particles(particles, particle_weights);
+            
             /*
              * END OF TODO
              */
