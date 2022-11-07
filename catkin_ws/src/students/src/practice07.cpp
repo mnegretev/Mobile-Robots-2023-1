@@ -75,7 +75,7 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * http://docs.ros.org/groovy/api/occupancy_grid_utils/html/namespaceoccupancy__grid__utils.html
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
-    for(int i = 0; i < particle.poses.size(); i++){
+    for(int i = 0; i < particles.poses.size(); i++){
         simulated_scans[i] = *occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], real_sensor_info);
     }
 
@@ -108,7 +108,7 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
             if(real_scan.ranges[j * LASER_DOWNSAMPLING] < real_scan.range_max && simulated_scans[i].ranges[j] < real_scan.range_max){
                 weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j * LASER_DOWNSAMPLING]);
             } else {
-                weight[i] += real_scan.range_max;
+                weights[i] += real_scan.range_max;
             }
         }
         weights[i] /= simulated_scans[i].ranges.size();
