@@ -182,7 +182,9 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      */
      for(i = 0; i < particles.poses.size();i++){
      ang = atan2(particles.poses[i].orientation.z,particles.poses[i].orientation.w)*2;
-     
+     holahoals;
+     holas;
+     particles.poses[i].position.x += delta_x*cos(an) - delta_y*sin(an) + rnd.gaussian(0, MOVEMENT_NOISE);
      }  
 }
 
