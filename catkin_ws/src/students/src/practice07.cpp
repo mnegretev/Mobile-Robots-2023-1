@@ -127,8 +127,8 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
             D +=  distance_between_measurements(simulated_scans[i].ranges[j*LASER_DOWNSAMPLING] , real_scan.ranges[j]);
         }
         D /= N;
-        S += N;
         weights[i] = exp(-pow(D,2)/pow(SENSOR_NOISE,2));
+        S += weights[i];
         D = 0;
     }
     for (int i = 0; i < N; i++)
@@ -159,18 +159,20 @@ int random_choice(std::vector<float>& weights)
     {
         if(weights[i]>b) 
             return i;
-        if(weights[i]>max_w) 
+        if(weights[i]>max_w){
             max_i = i;
+            max_w = weights[i];
+        } 
     }
     //De no encontrar una muestra que supere el valor obtenido, simplemente se regresara el que tiene el valor maximo
     return max_i;
 }
 
-inline double quaternion_to_euler(double z, double w){
+/*inline double quaternion_to_euler(double z, double w){
     double siny_cosp = 2 * (w * z);
     double cosy_cosp = 1 - 2 * (z * z);
     return std::atan2(siny_cosp, cosy_cosp);
-}
+}*/
 
 geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles, std::vector<float>& weights)
 {
@@ -205,7 +207,8 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
         //obteniendo el angulo en euler
         z = particles.poses[i].orientation.z;
         w = particles.poses[i].orientation.w;
-        temp_angle = quaternion_to_euler(z,w) + rnd.gaussian(0, RESAMPLING_NOISE);
+        //temp_angle = quaternion_to_euler(z,w) + rnd.gaussian(0, RESAMPLING_NOISE);
+        temp_angle = std::atan2(z,w)*2 + rnd.gaussian(0, RESAMPLING_NOISE);
         //obteniendo el angulo en cuaterniones
         resampled_particles.poses[i].orientation.z = sin(temp_angle/2);
         resampled_particles.poses[i].orientation.w = cos(temp_angle/2);
@@ -235,7 +238,8 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
         //obteniendo el angulo en euler
         z = particles.poses[i].orientation.z;
         w = particles.poses[i].orientation.w;
-        temp_angle = quaternion_to_euler(z,w);
+        //temp_angle = quaternion_to_euler(z,w);
+        temp_angle = std::atan2(z,w)*2;
         //Moviendo en x , y
         particles.poses[i].position.x += delta_x * cos(temp_angle) - delta_y * sin(temp_angle) + rnd.gaussian(0, MOVEMENT_NOISE);
         particles.poses[i].position.y += delta_x * sin(temp_angle) + delta_y * cos(temp_angle) + rnd.gaussian(0, MOVEMENT_NOISE);
