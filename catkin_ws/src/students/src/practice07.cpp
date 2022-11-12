@@ -95,7 +95,7 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * IMPORTANT NOTE 2. Both, simulated an real scans, can have infinite ranges. Thus, when comparing readings,
      * ensure both simulated and real ranges are finite values. 
      */
-     float sum = 0;
+    float sum = 0;
     for(size_t i=0; i < simulated_scans.size(); i++)
     {
         float w = 0;
@@ -180,7 +180,7 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances. 
      */
     float an;
-    for(i=0; i < particles.poses.size(); i++){
+    for(size_t i=0; i < particles.poses.size(); i++){
         an = atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w)*2;
         particles.poses[i].position.x += delta_x*cos(an) - delta_y*sin(an) + rnd.gaussian(0, MOVEMENT_NOISE);
         particles.poses[i].position.y += delta_x*sin(an) + delta_y*cos(an) + rnd.gaussian(0, MOVEMENT_NOISE);
