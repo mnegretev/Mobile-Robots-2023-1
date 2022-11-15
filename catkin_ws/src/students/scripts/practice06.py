@@ -100,12 +100,13 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     # of the resulting rejection force w.r.t. map.
     #
     
-    n = 1
+    n = 1.5
     do = 1
     force_x = 0
     force_y = 0
+    cont = 0
     for D,A in laser_readings:
-
+        cont += 1
         if( D < do ):
             c = n*( math.sqrt( (1/D)-1/do) )
 
@@ -118,8 +119,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
             force_x += 0
             force_y += 0
     
-    force_x /= len(laser_readings)
-    force_y /= len(laser_readings)
+    force_x = force_x / cont
+    force_y = force_y / cont
 
     return [force_x, force_y]
 
