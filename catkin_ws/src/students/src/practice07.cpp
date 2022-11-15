@@ -54,8 +54,8 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
       
       float theta = rnd.uniformReal(min_a, max_a);
       
-      particles.poses[i].orientation.x = 0;
-      particles.poses[i].orientation.y = 0;
+      //particles.poses[i].orientation.x = 0;
+      //particles.poses[i].orientation.y = 0;
       particles.poses[i].orientation.z = sin(theta/2);
       particles.poses[i].orientation.w = cos(theta/2);
      }
@@ -78,7 +78,7 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
      for(int i = 0; i < particles.poses.size(); i++){
-      simulated_scans[i] = *(occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], real_sensor_info));
+      simulated_scans[i] = *occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], real_sensor_info);
      }
 
     return simulated_scans;
@@ -101,22 +101,25 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * IMPORTANT NOTE 2. Both, simulated an real scans, can have infinite ranges. Thus, when comparing readings,
      * ensure both simulated and real ranges are finite values. 
      */
-     float suma = 0;
+     double suma = 0;
 
      for(int i = 0;i < simulated_scans.size(); i++){
       weights[i] = 0;
       for(int j = 0; j < simulated_scans[i].ranges.size(); j++){
        if(simulated_scans[i].ranges[j] < real_scan.range_max && real_scan.ranges[j * LASER_DOWNSAMPLING] < real_scan.range_max)
         weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j * LASER_DOWNSAMPLING]);
-       //else
-        //weights[i] += real_scan.range_max;
+       else
+        weights[i] += real_scan.range_max;
       }
       weights[i] /= simulated_scans[i].ranges.size();
-      weights[i] = exp(-weights[i] * weights[i]/SENSOR_NOISE);
-      suma += weights[i];
+      weights[i] = exp((-weights[i] * weights[i])/SENSOR_NOISE);
+      //suma += weights[i];
      }
 
-     for(int i = 0; i < weights.size(); i++)
+     for(int i = 0; i < simulated_scans.size(); i++)
+      suma += weights[i];
+
+     for(int i = 0; i < simulated_scans.size(); i++)
       weights[i] /= suma;
     
     return weights;
