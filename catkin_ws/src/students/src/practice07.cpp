@@ -158,13 +158,13 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
     {
         int idx = random_choice(weights);
         int idy = random_choice(weights);
-        float a = atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w)*2; 
+        float theta = atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w)*2; 
         resampled_particles.poses[i].position.x = particles.poses[idx].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
         resampled_particles.poses[i].position.y = particles.poses[idy].position.y + rnd.gaussian(0, RESAMPLING_NOISE);
 
-        //Hacer lo mismo, pero no igual, para 'w' y 'z' del cuaternión
-        resampled_particles.poses[i].position.z = sin(a/2) + rnd.gaussian(0, RESAMPLING_NOISE);
-        resampled_particles.poses[i].position.w = cos(a/2) + rnd.gaussian(0, RESAMPLING_NOISE);
+       
+        resampled_particles.poses[i].orientation.z = sin(theta/2) + rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].orientation.w = cos(theta/2) + rnd.gaussian(0, RESAMPLING_NOISE);
     } 
     return resampled_particles;
 }
@@ -182,6 +182,7 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      * is the orientation of the i-th particle.
      * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances. 
      */
+    int i = 0;
     for (i=0; i< particles.poses.size(); i++){
     a = atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w)*2;
     particles.poses[i].position.x += delta_x*cos(a) - delta_y*sin(a) + rnd.gaussian(0, MOVEMENT_NOISE);
@@ -190,8 +191,8 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
 
     particles.poses[i].orientation.w = cos(a/2);
     particles.poses[i].orientation.z = sin(a/2);
+	}
 }
-
 bool check_displacement(geometry_msgs::Pose2D& robot_pose, geometry_msgs::Pose2D& delta_pose)
 {
     static geometry_msgs::Pose2D last_pose;
