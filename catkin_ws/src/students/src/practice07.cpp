@@ -17,7 +17,7 @@
 #include "geometry_msgs/Pose2D.h"
 #include "tf/transform_broadcaster.h"
 
-#define NOMBRE "APELLIDO_PATERNO_APELLIDO_MATERNO"
+#define NOMBRE "Suarez_Martinez_Enrique"
 
 #define LASER_DOWNSAMPLING  10
 #define SENSOR_NOISE        0.1
@@ -47,7 +47,18 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
      * For the Euler angles (roll, pitch, yaw) = (0,0,theta) the corresponding quaternion is
      * given by (0,0,sin(theta/2), cos(theta/2)). 
      */
-    
+    float angulo = 0;
+    for(size_t i = 0 ; i< particles.poses.size() ; i++){
+
+        particles.poses[i].position.x = (float) rnd.uniformReal((double)min_x, (double)max_x);
+        particles.poses[i].position.y = (float) rnd.uniformReal((double)min_y, (double)max_y);
+        angulo = (float) rnd.uniformReal((double)min_a, (double)max_a);
+        particles.poses[i].orientation.z = sin(angulo/2);
+        particles.poses[i].orientation.w = cos(angulo/2);
+        particules.poses[i].orientation.x=0;
+        particules.poses[i].orientation.y=0;
+
+    }
     return particles;
 }
 
@@ -65,6 +76,11 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * http://docs.ros.org/groovy/api/occupancy_grid_utils/html/namespaceoccupancy__grid__utils.html
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
+
+    for (int i = 0; i < particles.poses.size(); ++i)
+    {
+        simulated_scans[i] =*occupancy_grid_utils::simulateRangeScan(map, particles.poses[i],real_sensor_info);
+    }
     return simulated_scans;
 }
 
@@ -85,7 +101,31 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * IMPORTANT NOTE 2. Both, simulated an real scans, can have infinite ranges. Thus, when comparing readings,
      * ensure both simulated and real ranges are finite values. 
      */
-    
+
+    float peso = 0;
+    for (int i = 0; i < simulated_scans.size(); i++)
+    {
+        weights[i] = 0;
+        for (int j = 0; j < simulated_scans[i].ranges.size(); j++)
+        {
+            if (real_scan.ranges[j*LASER_DOWNSAMPLING]<real_scan.range_max && simulated_scans[i].ranges[j]<real_scan.range_max)
+            {
+                weights[i] += fabs (simulated_scans[i].ranges[j] - real_scan.ranges[j*LASER_DOWNSAMPLING]);
+            }else{
+                weights[i] += real_scan.range_max; 
+            }
+        }
+        weights[i] /= simulated_scans[i].ranges.size();
+        weights[i] = exp(-weights[i] * weights[i] / SENSOR_NOISE);
+
+        peso += weights[i];
+    }
+    for (size_t i = 0; i < simulated_scans.size(); ++i)
+    {
+        weights[i] /= peso;
+    }
+
+
     return weights;
 }
 
@@ -100,7 +140,19 @@ int random_choice(std::vector<float>& weights)
      * Probability of picking an integer 'i' is given by the corresponding weights[i] value.
      * Return the chosen integer. 
      */
-    
+    float aux = rnd.uniformReal(0,1);
+    for (size_t i = 0; i < weights.size(); ++i)
+    {
+        if (aux < weights[i]){
+            return i;
+        }
+        else{
+            aux -=weights[i];
+        }
+        
+        
+    }
+
     return -1;
 }
 
@@ -123,6 +175,24 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * given by the quaternion (0,0,sin(theta/2), cos(theta/2)), thus, you should first
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
+    float angulo;
+    int r_x, r_y = 0;
+    for (size_t i = 0; i < particles.poses.size(); ++i)
+    {   
+        r_x = random_choice(weights);
+        r_y = random_choice(weights);
+
+        resampled_particles.poses[i].position.x = particles.poses[r_x].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.y = particles.poses[r_y].position.y + rnd.gaussian(0, RESAMPLING_NOISE);
+
+        angulo = std::atan2(particles.poses[i].orientation.z,particles.poses[i].orientation.w)*2 + rnd.gaussian(0, RESAMPLING_NOISE);
+
+        resampled_particles.poses[i].orientation.z = sin(angulo/2);
+        resampled_particles.poses[i].orientation.w = cos(angulo/2);
+    }
+
+
+
     return resampled_particles;
 }
 
@@ -138,6 +208,22 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      * is the orientation of the i-th particle.
      * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances. 
      */
+    float angulo = 0;
+    for (size_t i = 0; i < particles.poses.size(); ++i){
+
+        angulo = std::atan2(particles.poses[i].orientation.z,particles.poses[i].orientation.w)*2;
+        particles.poses[i].position.x += delta_x * cos(angulo) - delta_y * sin(angulo) + rnd.gaussian(0,MOVEMENT_NOISE);
+        particles.poses[i].position.y += delta_x * sin(angulo) + delta_y * cos(angulo) + rnd.gaussian(0,MOVEMENT_NOISE);
+
+        angulo += rnd.gaussian(0,MOVEMENT_NOISE) + delta_t;
+
+        particles.poses[i].orientation.z = sin(angulo/2);
+        particles.poses[i].orientation.w = cos(angulo/2);
+    }
+    
+
+
+
 }
 
 bool check_displacement(geometry_msgs::Pose2D& robot_pose, geometry_msgs::Pose2D& delta_pose)
@@ -294,6 +380,13 @@ int main(int argc, char** argv)
             /*
              * END OF TODO
              */
+
+            move_particles(particles, delta_pose.x,delta_pose.y,delta_pose.theta);
+            simulated_scans = simulate_particle_scans(particles,static_map);
+            particle_weights = calculate_particle_weights(simulated_scans,real_scan);
+            particles = resample_particles(particles, particle_weights);
+
+
             pub_particles.publish(particles);
             map_to_odom_transform = get_map_to_odom_transform(robot_odom, get_robot_pose_estimation(particles));
         }
