@@ -48,14 +48,14 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
      * given by (0,0,sin(theta/2), cos(theta/2)). 
      */
     
-    for(int i = 0; i < particle.poses.size(); i++){
-        particle.poses[i].position.x = rnd.uniformReal(min_x, max_x);
-        particle.poses[i].position.y = rnd.uniformReal(min_y, max_y);
+    for(int i = 0; i < particles.poses.size(); i++){
+        particles.poses[i].position.x = rnd.uniformReal(min_x, max_x);
+        particles.poses[i].position.y = rnd.uniformReal(min_y, max_y);
 
         float theta = rnd.uniformReal(min_a, max_a);
 
-        particle.poses[i].orientation.z = sin(theta / 2);
-        particle.poses[i].orientation.w = cos(theta / 2);
+        particles.poses[i].orientation.z = sin(theta / 2);
+        particles.poses[i].orientation.w = cos(theta / 2);
     }
 
     return particles;
@@ -76,7 +76,7 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
 
-    for(int i = 0; i < particle.poses.size(); i++){
+    for(int i = 0; i < particles.poses.size(); i++){
         simulated_scans[i] = *(occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], real_sensor_info));
     }
 
@@ -106,12 +106,12 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
     for(int i = 0; i < simulated_scans.size(); i++){
         weights[i] = 0;
 
-        for(int j = 0; j < simulated_scans[i].ranges.size(): j++){
+        for(int j = 0; j < simulated_scans[i].ranges.size(); j++){
             if(simulated_scans[i].ranges[j] < real_scan.range_max && real_scan.ranges[LASER_DOWNSAMPLING * j] < real_scan.range_max){
                 weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[LASER_DOWNSAMPLING * j]);
             }
             weights[i] /= simulated_scans[i].ranges[j];
-            weights[i] = exp(-weights * weights / SENSOR_NOISE);
+            weights[i] = exp(-weights[i] * weights[i] / SENSOR_NOISE);
             sum += weights[i];
         }
     }
@@ -135,9 +135,9 @@ int random_choice(std::vector<float>& weights)
      * Return the chosen integer. 
      */
 
-    float choiceInt = uniformReal(0, 1);
+    float choiceInt = rnd.uniformReal(0, 1);
 
-    for(int i = 0, i < weights.size(); i++){
+    for(int i = 0; i < weights.size(); i++){
         if(choiceInt < weights[i]){
             return i;
         }else{
