@@ -96,8 +96,8 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
 }
 //resta dos floats verificando si alguno tiene un infinito
 inline float distance_between_measurements(float a, float b){
-    a = (a == float('inf')? std::numeric_limits<float>::max() : a);
-    b = (b == float('inf')? std::numeric_limits<float>::max() : b);
+    a = (a == std::numeric_limits<float>::infinity()? 0 : a);
+    b = (b == std::numeric_limits<float>::infinity()? 0 : b);
     return fabs(a-b);
 } 
 std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan>& simulated_scans, sensor_msgs::LaserScan& real_scan)
@@ -152,7 +152,8 @@ int random_choice(std::vector<float>& weights)
      */
     int N = weights.size();
     float b = rnd.uniformReal(0,1);
-    int max_i = 0;
+    
+    /*int max_i = 0;
     float max_w = 0;
 
     for (int i = 0; i < N; i++)
@@ -164,8 +165,28 @@ int random_choice(std::vector<float>& weights)
             max_w = weights[i];
         } 
     }
+    */
     //De no encontrar una muestra que supere el valor obtenido, simplemente se regresara el que tiene el valor maximo
-    return max_i;
+    /*return max_i;
+    
+    while (true)
+    {
+       for (int i = 0; i < N; i++){
+        if(weights[i]>b) 
+            return i;
+       }
+       b = rnd.uniformReal(0,1);
+    }*/
+
+    for (int i = 0; i < N; i++)
+    {
+        if(weights[i]>b) 
+            return i;
+        b -= weights[i];
+    }
+    
+    return -1;
+    
 }
 
 /*inline double quaternion_to_euler(double z, double w){
@@ -406,8 +427,8 @@ int main(int argc, char** argv)
              * END OF TODO
              */
             move_particles(particles, delta_pose.x, delta_pose.y, delta_pose.theta);
-            std::vector<sensor_msgs::LaserScan> simulated_scans = simulate_particle_scans(particles, static_map);
-            std::vector<float> particle_weights = calculate_particle_weights(simulated_scans, real_scan);
+            simulated_scans = simulate_particle_scans(particles, static_map);
+            particle_weights = calculate_particle_weights(simulated_scans, real_scan);
             particles = resample_particles(particles, particle_weights);
 
             pub_particles.publish(particles);
