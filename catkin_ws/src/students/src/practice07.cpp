@@ -4,7 +4,7 @@
  *
  * Instructions:
  * Write the code necessary to implement localization by particle filters.
- * Modify only the sections marked with the TODO comment. 
+ * Modify only the sections marked with the TODO comment.
  */
 
 #include "ros/ros.h"
@@ -19,12 +19,12 @@
 
 #define NOMBRE "Sobrevilla Zarazùa Jorge Alejandro"
 
-#define LASER_DOWNSAMPLING  10
-#define SENSOR_NOISE        0.1
-#define RESAMPLING_NOISE    0.1
-#define MOVEMENT_NOISE      0.1
-#define DISTANCE_THRESHOLD  0.2
-#define ANGLE_THRESHOLD     0.2
+#define LASER_DOWNSAMPLING 10
+#define SENSOR_NOISE 0.1
+#define RESAMPLING_NOISE 0.1
+#define MOVEMENT_NOISE 0.1
+#define DISTANCE_THRESHOLD 0.2
+#define ANGLE_THRESHOLD 0.2
 
 sensor_msgs::LaserScan real_sensor_info;
 sensor_msgs::LaserScan real_scan;
@@ -45,32 +45,32 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
      * To generate uniformly distributed random numbers, you can use the funcion rnd.uniformReal(min, max)
      * Remember that orientation in a Pose message is represented by a quaternion (x,y,z,w)
      * For the Euler angles (roll, pitch, yaw) = (0,0,theta) the corresponding quaternion is
-     * given by (0,0,sin(theta/2), cos(theta/2)). 
+     * given by (0,0,sin(theta/2), cos(theta/2)).
      */
 
-    int i = 0; 
+    int i = 0;
     float x;
     float y;
-    float tetha=0;
-     
-     for(i=1;i<=N;i++){
+    float tetha = 0;
+
+    for (i = 1; i <= N; i++)
+    {
 
         tetha += (max_a + min_a) + rnd.uniformReal(min_a, max_a);
-        particles.poses[i].orientation.z += std::sin(tetha/2);
-        particles.poses[i].orientation.w += std::cos(tetha/2);
+        particles.poses[i].orientation.z += std::sin(tetha / 2);
+        particles.poses[i].orientation.w += std::cos(tetha / 2);
 
-        particles.poses[i].position.x += (max_x-min_x)*std::cos(tetha) - 
-        (max_y-min_y)*std::sin(tetha) + rnd.uniformReal(min_x, max_x);
+        particles.poses[i].position.x += (max_x - min_x) * std::cos(tetha) -
+                                         (max_y - min_y) * std::sin(tetha) + rnd.uniformReal(min_x, max_x);
 
-        particles.poses[i].position.y += (max_x-min_x)*std::sin(tetha) + 
-        (max_y-min_y)*std::cos(tetha) + rnd.uniformReal(min_y, max_y);
-     }
-    
+        particles.poses[i].position.y += (max_x - min_x) * std::sin(tetha) +
+                                         (max_y - min_y) * std::cos(tetha) + rnd.uniformReal(min_y, max_y);
+    }
 
     return particles;
 }
 
-std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseArray& particles, nav_msgs::OccupancyGrid& map)
+std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseArray &particles, nav_msgs::OccupancyGrid &map)
 {
     std::vector<sensor_msgs::LaserScan> simulated_scans;
     simulated_scans.resize(particles.poses.size());
@@ -85,12 +85,15 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
 
-    occupancy_grid_utils::simulateRangeScan(map, particles.poses, real_sensor_info) simulated_scans;
+    for (int i = 0; i < sizeof(particles.poses); i++)
+    {
+        occupancy_grid_utils::simulateRangeScan(  map, particles.poses[i], real_sensor_info, true); 
+    }
 
     return simulated_scans;
 }
 
-std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan>& simulated_scans, sensor_msgs::LaserScan& real_scan)
+std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan> &simulated_scans, sensor_msgs::LaserScan &real_scan)
 {
     std::vector<float> weights;
     weights.resize(simulated_scans.size());
@@ -105,29 +108,41 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * When comparing readings, for each reading in the simulated scan, you should skip LASER_DOWNSAMPLING readings
      * in the real sensor.
      * IMPORTANT NOTE 2. Both, simulated an real scans, can have infinite ranges. Thus, when comparing readings,
-     * ensure both simulated and real ranges are finite values. 
+     * ensure both simulated and real ranges are finite values.
      */
     int i = 0;
     int j = 0;
 
-        for(i=0;i<sizeof(weights);i++){
-            weights[i] = 0;
-                for(j=0;i<simulated_scans[i].ranges.size();j++){
-                    if(simulated_scans[i].ranges[1] < std::max.ranges(0, LASER_DOWNSAMPLING) && real_scan.ranges[10*j] < std::max.ranges(0,LASER_DOWNSAMPLING)){
-                        weights[i] += abs(simulated_scans[i].ranges[j] - real_scan.ranges[10*j] );  
-                    }
-                
-                }
+    for (i = 0; i < sizeof(weights); i++)
+    {
+        weights[i] = 0;
+        for (j = 0; i < simulated_scans[i].ranges.size(); j++)
+        {
 
-            weights[i] /= simulated_scans[i].ranges.size();
-            weights[i]= exp((-weights[i]*weights[i])/SENSOR_NOISE);
+            weights[i] += abs(simulated_scans[i].ranges[j] - real_scan.ranges[10 * j]);
+            
         }
 
-    
+        weights[i] /= simulated_scans[i].ranges.size();
+        weights[i] = exp((-weights[i] * weights[i]) / SENSOR_NOISE);
+    }
+
+    float sum = 0;
+
+    for (i = 0; i < sizeof(weights); i++)
+    {
+        sum += weights[i];
+    }
+
+    for (i = 0; i < sizeof(weights); i++)
+    {
+        weights[i] /= sum;
+    }
+
     return weights;
 }
 
-int random_choice(std::vector<float>& weights)
+int random_choice(std::vector<float> &weights)
 {
     random_numbers::RandomNumberGenerator rnd;
 
@@ -139,23 +154,19 @@ int random_choice(std::vector<float>& weights)
      * Return the chosen integer.
      */
 
-    float sum = 0;
     int i = 0;
+    float x = rnd.uniformReal(0, 10)/10;
 
-    for(i=0;i<sizeof(weights);i++){
-        sum += weights[i];
+    while (x > weights[i])
+    {
+        x -= weights[i];
+        i++;
     }
 
-    for(i=0;i<sizeof(weights);i++){
-        weights[i] /= sum;
-    }
-
-
-    i = weights[rnd(sizeof(weights)) ];    
     return i;
 }
 
-geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles, std::vector<float>& weights)
+geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray &particles, std::vector<float> &weights)
 {
     random_numbers::RandomNumberGenerator rnd;
     geometry_msgs::PoseArray resampled_particles;
@@ -175,20 +186,23 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
 
-    for( int i =0;i<sizeof(particles);i++){
-        weights[i] = random_choices();
-        resampled_particles[i].poses = particles[weigths[i]];
-        resampled_particles[i].poses.x += rnd(0, RESAMPLING_NOISE);
-        resampled_particles[i].poses.y += rnd(0, RESAMPLING_NOISE); 
-        angle = atan2(resampled_particles[i].poses.z, resampled_particles[i].poses.w)*2+rnd(0, RESAMPLING_NOISE); 
-        resampled_particles[i].orientation.z = sin(angle/2);
-        resampled_particles[i].orientation.w = cos(angle/2);
+    float angle = 0;
+
+    for (int i = 0; i < sizeof(particles); i++)
+    {
+        int idx = random_choice(weights);
+        resampled_particles.poses[i] = particles.poses[idx];
+        resampled_particles.poses[i].position.x += rnd.uniformReal(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.y += rnd.uniformReal(0, RESAMPLING_NOISE);
+        angle = atan2(resampled_particles.poses[i].orientation.z, resampled_particles.poses[i].orientation.w) * 2 + rnd.uniformReal(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].orientation.z = sin(angle / 2);
+        resampled_particles.poses[i].orientation.w = cos(angle / 2);
     }
 
     return resampled_particles;
 }
 
-void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float delta_y, float delta_t)
+void move_particles(geometry_msgs::PoseArray &particles, float delta_x, float delta_y, float delta_t)
 {
     random_numbers::RandomNumberGenerator rnd;
     /*
@@ -198,42 +212,44 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      * Displacement is given w.r.t. particles's frame, i.e., to calculate the new position for
      * each particle you need to rotate delta_x and delta_y, on Z axis, an angle theta_i, where theta_i
      * is the orientation of the i-th particle.
-     * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances. 
+     * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances.
      */
-
-
 }
 
-bool check_displacement(geometry_msgs::Pose2D& robot_pose, geometry_msgs::Pose2D& delta_pose)
+bool check_displacement(geometry_msgs::Pose2D &robot_pose, geometry_msgs::Pose2D &delta_pose)
 {
     static geometry_msgs::Pose2D last_pose;
     float delta_x = robot_pose.x - last_pose.x;
     float delta_y = robot_pose.y - last_pose.y;
     float delta_a = robot_pose.theta - last_pose.theta;
-    if(delta_a >  M_PI) delta_a -= 2*M_PI;
-    if(delta_a < -M_PI) delta_a += 2*M_PI;
-    if(sqrt(delta_x*delta_x + delta_y*delta_y) > DISTANCE_THRESHOLD || fabs(delta_a) > ANGLE_THRESHOLD)
+    if (delta_a > M_PI)
+        delta_a -= 2 * M_PI;
+    if (delta_a < -M_PI)
+        delta_a += 2 * M_PI;
+    if (sqrt(delta_x * delta_x + delta_y * delta_y) > DISTANCE_THRESHOLD || fabs(delta_a) > ANGLE_THRESHOLD)
     {
         last_pose = robot_pose;
-        delta_pose.x =  delta_x*cos(robot_pose.theta) + delta_y*sin(robot_pose.theta);
-        delta_pose.y = -delta_x*sin(robot_pose.theta) + delta_y*cos(robot_pose.theta);
+        delta_pose.x = delta_x * cos(robot_pose.theta) + delta_y * sin(robot_pose.theta);
+        delta_pose.y = -delta_x * sin(robot_pose.theta) + delta_y * cos(robot_pose.theta);
         delta_pose.theta = delta_a;
         return true;
     }
     return false;
 }
 
-geometry_msgs::Pose2D get_robot_odometry(tf::TransformListener& listener)
+geometry_msgs::Pose2D get_robot_odometry(tf::TransformListener &listener)
 {
     tf::StampedTransform t;
     geometry_msgs::Pose2D pose;
-    try{
+    try
+    {
         listener.lookupTransform("odom", "base_link", ros::Time(0), t);
         pose.x = t.getOrigin().x();
         pose.y = t.getOrigin().y();
-        pose.theta = atan2(t.getRotation().z(), t.getRotation().w())*2;
+        pose.theta = atan2(t.getRotation().z(), t.getRotation().w()) * 2;
     }
-    catch(std::exception &e){
+    catch (std::exception &e)
+    {
         pose.x = 0;
         pose.y = 0;
         pose.theta = 0;
@@ -241,44 +257,43 @@ geometry_msgs::Pose2D get_robot_odometry(tf::TransformListener& listener)
     return pose;
 }
 
-geometry_msgs::Pose2D get_robot_pose_estimation(geometry_msgs::PoseArray& particles)
+geometry_msgs::Pose2D get_robot_pose_estimation(geometry_msgs::PoseArray &particles)
 {
     geometry_msgs::Pose2D p;
     float z = 0;
     float w = 0;
-    for(size_t i=0; i < particles.poses.size(); i++)
+    for (size_t i = 0; i < particles.poses.size(); i++)
     {
         p.x += particles.poses[i].position.x;
         p.y += particles.poses[i].position.y;
-        z   += particles.poses[i].orientation.z;
-        w   += particles.poses[i].orientation.w;
-        
+        z += particles.poses[i].orientation.z;
+        w += particles.poses[i].orientation.w;
     }
     p.x /= particles.poses.size();
     p.y /= particles.poses.size();
-    z   /= particles.poses.size();
-    w   /= particles.poses.size();
-    p.theta = atan2(z, w)*2;
+    z /= particles.poses.size();
+    w /= particles.poses.size();
+    p.theta = atan2(z, w) * 2;
     return p;
 }
 
-void callback_laser_scan(const sensor_msgs::LaserScan::ConstPtr& msg){real_scan = *msg;}
+void callback_laser_scan(const sensor_msgs::LaserScan::ConstPtr &msg) { real_scan = *msg; }
 
 tf::Transform get_map_to_odom_transform(geometry_msgs::Pose2D odom, geometry_msgs::Pose2D loc)
 {
-    tf::Transform odom_to_base(tf::Quaternion(0,0,sin(odom.theta/2),cos(odom.theta/2)), tf::Vector3(odom.x,odom.y,0));
-    tf::Transform map_to_base(tf::Quaternion(0,0,sin(loc.theta/2),cos(loc.theta/2)), tf::Vector3(loc.x, loc.y, 0));
-    return map_to_base*odom_to_base.inverse();
+    tf::Transform odom_to_base(tf::Quaternion(0, 0, sin(odom.theta / 2), cos(odom.theta / 2)), tf::Vector3(odom.x, odom.y, 0));
+    tf::Transform map_to_base(tf::Quaternion(0, 0, sin(loc.theta / 2), cos(loc.theta / 2)), tf::Vector3(loc.x, loc.y, 0));
+    return map_to_base * odom_to_base.inverse();
 }
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     std::cout << "PRACTICE 07 - " << NOMBRE << std::endl;
     ros::init(argc, argv, "practice07");
     ros::NodeHandle n("~");
     ros::Rate loop(20);
-    ros::Subscriber sub_scan      = n.subscribe("/hardware/scan", 1, callback_laser_scan);
-    ros::Publisher  pub_particles = n.advertise<geometry_msgs::PoseArray>("/particle_cloud", 1); 
+    ros::Subscriber sub_scan = n.subscribe("/hardware/scan", 1, callback_laser_scan);
+    ros::Publisher pub_particles = n.advertise<geometry_msgs::PoseArray>("/particle_cloud", 1);
     tf::TransformListener listener;
     tf::TransformBroadcaster broadcaster;
     nav_msgs::GetMap srv_get_map;
@@ -290,34 +305,34 @@ int main(int argc, char** argv)
     float init_max_y = 2;
     float init_max_a = 1;
     float number_of_particles = 200;
-    if(ros::param::has("~n"))
+    if (ros::param::has("~n"))
         ros::param::get("~n", number_of_particles);
-    if(ros::param::has("~max_x"))
+    if (ros::param::has("~max_x"))
         ros::param::get("~max_x", init_max_x);
-    if(ros::param::has("~min_x"))
+    if (ros::param::has("~min_x"))
         ros::param::get("~min_x", init_min_x);
-    if(ros::param::has("~min_y"))
+    if (ros::param::has("~min_y"))
         ros::param::get("~min_y", init_min_y);
-    if(ros::param::has("~min_a"))
+    if (ros::param::has("~min_a"))
         ros::param::get("~min_a", init_min_a);
-    if(ros::param::has("~max_x"))
+    if (ros::param::has("~max_x"))
         ros::param::get("~max_x", init_max_x);
-    if(ros::param::has("~max_y"))
+    if (ros::param::has("~max_y"))
         ros::param::get("~max_y", init_max_y);
-    if(ros::param::has("~max_a"))
+    if (ros::param::has("~max_a"))
         ros::param::get("~max_a", init_max_a);
 
     /*
      * IMPORTANT VARIABLES FOR THE LOCALIZATION PROCESS
      */
-    geometry_msgs::PoseArray particles;                   //A set of N particles
-    nav_msgs::OccupancyGrid static_map;                   //A static map
-    std::vector<sensor_msgs::LaserScan> simulated_scans;  //A set of simulated laser readings, one scan per particle
-    std::vector<float> particle_weights;                  //A set of weights for each particle
-    geometry_msgs::Pose2D robot_odom;                     //Position estimated by the odometry
-    geometry_msgs::Pose2D delta_pose;                     //Displacement since last pose estimation
-    geometry_msgs::Pose2D robot_pose;                     //Estimated robot position with respect to map
-    tf::Transform map_to_odom_transform;                  //Transformation from map to odom frame (which corrects odometry estimation)
+    geometry_msgs::PoseArray particles;                  // A set of N particles
+    nav_msgs::OccupancyGrid static_map;                  // A static map
+    std::vector<sensor_msgs::LaserScan> simulated_scans; // A set of simulated laser readings, one scan per particle
+    std::vector<float> particle_weights;                 // A set of weights for each particle
+    geometry_msgs::Pose2D robot_odom;                    // Position estimated by the odometry
+    geometry_msgs::Pose2D delta_pose;                    // Displacement since last pose estimation
+    geometry_msgs::Pose2D robot_pose;                    // Estimated robot position with respect to map
+    tf::Transform map_to_odom_transform;                 // Transformation from map to odom frame (which corrects odometry estimation)
 
     /*
      * Sentences for getting the static map, info about real lidar sensor,
@@ -340,10 +355,10 @@ int main(int argc, char** argv)
     map_to_odom_transform = get_map_to_odom_transform(robot_odom, robot_pose);
     check_displacement(robot_odom, delta_pose);
     pub_particles.publish(particles);
-    while(ros::ok())
+    while (ros::ok())
     {
         robot_odom = get_robot_odometry(listener);
-        if(check_displacement(robot_odom, delta_pose))
+        if (check_displacement(robot_odom, delta_pose))
         {
             std::cout << "Displacement detected. Updating pose estimation..." << std::endl;
             /*
@@ -355,12 +370,12 @@ int main(int argc, char** argv)
              * Resample particles by calling the resample_particles function
              */
 
-                move particles( particles, delta_pose.X, delta_pose.Y, delta_pose.tetha );
-                simulated_scans= simulated_particles_scans(particles, static_map);
+            move_particles(particles, delta_pose.x, delta_pose.y, delta_pose.theta);
+            simulated_scans = simulate_particle_scans(particles, static_map);
 
-                particles_weights = calculate_particles_weights( simulated_scans, real_scan );
-                
-                particles = resample_particles(particles, particles_weights);
+            particle_weights = calculate_particle_weights(simulated_scans, real_scan);
+
+            particles = resample_particles(particles, particle_weights);
 
             /*
              * END OF TODO
