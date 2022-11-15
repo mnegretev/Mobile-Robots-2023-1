@@ -51,7 +51,7 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
     float theta;
 
 
-    for (size_t i = 0; i < N; i++)
+    for (size_t i = 0; i < particles.poses.size(); i++)
     {
         particles.poses[i].position.x = rnd.uniformReal(min_x, max_x);
         particles.poses[i].position.y = rnd.uniformReal(min_y, max_y);
@@ -113,27 +113,31 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
    
     /*Suma los datos y divide los datos*/ 
 
-    float ADDW; /*Suma de pesos*/
+    float ADDW = 0; /*Suma de pesos*/
+    weights[i] = 0; 
     
     for (size_t i = 0; i < simulated_scans.size(); i++)
     {
-        weights[i]=0;
         for(size_t j=0; j < simulated_scans[i].ranges.size(); j++)
         {
-            if(real_scan.ranges[j*LASER_DOWNSAMPLING] < real_scan.range_max && simulated_scans[i].ranges[j] < real_scan.range_max)
-                weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j*LASER_DOWNSAMPLING]);
+            if(real_scan.ranges[j*LASER_DOWNSAMPLING] < real_scan.range_max && simulated_scans[i].ranges[j] < real_scan.range_max) /*Nota 2*/
+            {
+            	weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j*LASER_DOWNSAMPLING]); /*1 de cada 10*/
+            }
             else
-                weights[i] += real_scan.range_max;
+            {
+                weights[i] += 0; /*Cuando arroja infinito*/
+            }
         }
         weights[i] /= simulated_scans[i].ranges.size();  
-        weights[i] = exp((-weights[i]*weights[i])/SENSOR_NOISE);  
+        weights[i] = exp((-weights[i]*weights[i])/SENSOR_NOISE);  /*Medida de similitud*/
         ADDW += weights[i];
     }
     
 
-    for (size_t i = 0; i < weights.size(); i++)
+    for (size_t i = 0; i < N-1; i++)
     {
-        weights /= ADDW;    /*Probabilidad*/
+	weights[i] /= ADDW;    /*Distribuciòn de probabilidad*/
     }
     
 
@@ -156,12 +160,12 @@ int random_choice(std::vector<float>& weights)
 
     for (size_t i = 0; i < weights.size(); i++)
     {
-        if (x < weights[i])
+        if (x > weights[i])
         {
-            return i;
+		x -= weights[i];
         }
         else
-            x -= weights[i];
+		return i;
     }
     
     return -1;
