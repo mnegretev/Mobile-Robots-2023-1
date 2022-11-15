@@ -83,7 +83,7 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      */
      
      
-     for (size_t i=0; i<particles.poses.size(); i++)
+     for (int i=0; i<particles.poses.size(); i++)
      {
      	simulated_scans[i] = *occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], real_sensor_info);
      }
@@ -111,19 +111,27 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      * ensure both simulated and real ranges are finite values. 
      */
      
-     float sum = 0;
-     for (size_t i = 0; i < simulated_scans.size(); i++)
+     double sum = 0;
+     for (int i = 0; i < simulated_scans.size(); i++)
      {
-     	float w = 0;
-     	for (size_t j=0, k=0; j <simulated_scans[i].ranges.size(); j++, k += LASER_DOWNSAMPLING)
-     		if(simulated_scans[i].ranges[j] < simulated_scans[i].range_max && real_scan.ranges[k] < real_scan.range_max)
-     			w += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[k]);
-     	w /=simulated_scans[i].ranges.size();
-     	weights[i] = exp(-w*w / SENSOR_NOISE);
+     	weights[i] = 0;
+     	for (int j=0; j <simulated_scans[i].ranges.size(); j++)
+     	{
+     		if(simulated_scans[i].ranges[j] < real_scan.range_max && real_scan.ranges[LASER_DOWNSAMPLING*j] < real_scan.range_max)
+     		{
+     			weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[LASER_DOWNSAMPLING*j]);
+     		}
+     		else
+     		{
+     			weights[i] +=real_scan.range_max;
+     		}
+     	weights[i] /=simulated_scans[i].ranges.size();
+     	weights[i] = exp(-weights[i]*weights[i] / SENSOR_NOISE);
      	sum += weights[i];
+     	}
      }
      
-     for (size_t i=0; i < simulated_scans.size(); i++)
+     for (int i=0; i < weights.size(); i++)
      {
      	//normalizamos el peso asignado a cada partícula
      	weights[i] /= sum;
@@ -145,11 +153,16 @@ int random_choice(std::vector<float>& weights)
      */
     
     float x = rnd.uniformReal(0,1);
-    for (size_t i=0; i < weights.size(); i++)
+    for (int i=0; i < weights.size(); i++)
     {
-    	if (x < weights.size(); i++)
+    	if (x < weights[i])
+    	{
     		return i;
+    	}
+    	else
+    	{
     	x -= weights[i];
+    	}
     }
     
     return -1;
@@ -175,13 +188,14 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
      
-     for (size_t i=0; i < particles.poses.size(); i++)
+     for (int i=0; i < particles.poses.size(); i++)
      {
      	int xx =random_choice(weights);
-     	int yy= random_choice(weights);
-     	float angulo=atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w)*2;
-     	resampled_particles.poses[i].position.x = particles.poses[xx].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
-     	resampled_particles.poses[i].position.y = particles.poses[yy].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
+     	//int yy= random_choice(weights);
+     	float angulo=atan2(particles.poses[xx].orientation.z, particles.poses[xx].orientation.w)*2;
+     	resampled_particles.poses[i]=particles.poses[xx];
+     	resampled_particles.poses[i].position.x += rnd.gaussian(0, RESAMPLING_NOISE);
+     	resampled_particles.poses[i].position.y += rnd.gaussian(0, RESAMPLING_NOISE);
      	resampled_particles.poses[i].orientation.z = sin(angulo/2) + rnd.gaussian (0, RESAMPLING_NOISE);
      	resampled_particles.poses[i].orientation.w = cos(angulo/2) + rnd.gaussian (0, RESAMPLING_NOISE);
      }
@@ -202,7 +216,7 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      */
      
      float theta;
-     for (size_t i=0; i < particles.poses.size(); i++)
+     for (int i=0; i < particles.poses.size(); i++)
      {
      	theta= atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w )*2;
      	particles.poses[i].position.x += delta_x * cos(theta) - delta_y* sin(theta) +rnd.gaussian(0, MOVEMENT_NOISE);
@@ -370,8 +384,8 @@ int main(int argc, char** argv)
              */
             
             move_particles(particles, delta_pose.x, delta_pose.y, delta_pose.theta);
-            std::vector<sensor_msgs::LaserScan> simulate_scans = simulate_particle_scans(particles, static_map);
-            std::vector<float> particle_wights = calculate_particle_weights(simulate_scans, real_scan);
+            simulated_scans = simulate_particle_scans(particles, static_map);
+            particle_weights = calculate_particle_weights(simulated_scans, real_scan);
             particles = resample_particles(particles, particle_weights); 
             pub_particles.publish(particles);
             map_to_odom_transform = get_map_to_odom_transform(robot_odom, get_robot_pose_estimation(particles));
