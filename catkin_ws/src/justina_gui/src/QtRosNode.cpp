@@ -61,6 +61,7 @@ void QtRosNode::run()
     cltGetPolynomialTraj  =n->serviceClient<custom_msgs::GetPolynomialTrajectory>("/manipulation/polynomial_trajectory");
 
     cltFindLines          =n->serviceClient<custom_msgs::FindLines>       ("/vision/line_finder/find_lines_ransac");
+    cltFindObject         =n->serviceClient<custom_msgs::FindObject>      ("/vision/find_object");
     cltTrainObject        =n->serviceClient<custom_msgs::TrainObject>     ("/vision/obj_reco/train_object");
     cltRecogObjects       =n->serviceClient<custom_msgs::RecognizeObjects>("/vision/obj_reco/recognize_objects");
     cltRecogObject        =n->serviceClient<custom_msgs::RecognizeObject >("/vision/obj_reco/recognize_object");
@@ -382,6 +383,21 @@ bool QtRosNode::call_find_lines()
     }
     srv.request.point_cloud = *ptr;
     return cltFindLines.call(srv);
+}
+
+bool QtRosNode::call_find_object(std::string name)
+{
+    custom_msgs::FindObject srv;
+    boost::shared_ptr<sensor_msgs::PointCloud2 const> ptr;
+    ptr = ros::topic::waitForMessage<sensor_msgs::PointCloud2>("/hardware/realsense/points", ros::Duration(1.0));
+    if(ptr==NULL)
+    {
+        std::cout << "JustinaGUI.->Cannot get point cloud before calling find object service..." << std::endl;
+        return false;
+    }
+    srv.request.cloud = *ptr;
+    srv.request.name  = name;
+    return cltFindObject.call(srv);
 }
 
 bool QtRosNode::call_train_object(std::string name)
