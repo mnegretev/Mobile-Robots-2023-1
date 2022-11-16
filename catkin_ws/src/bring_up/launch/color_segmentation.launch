@@ -1,0 +1,20 @@
+<launch>
+  <include file="$(find bring_up)/launch/justina_hardware.launch"/>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find config_files)/rviz/color_segmentation.rviz"/>
+  
+  <node name="justina_gui" pkg="justina_gui" type="justina_gui_node" output="screen">
+    <param name="la_predefined" value="$(find config_files)/manipulation/la_predefined.yaml"/>
+    <param name="ra_predefined" value="$(find config_files)/manipulation/ra_predefined.yaml"/>
+    <param name="hd_predefined" value="$(find config_files)/manipulation/hd_predefined.yaml"/>
+  </node>
+
+  <include file="$(find bring_up)/launch/justina_controllers.launch"/>
+
+  <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find config_files)/maps/appartment.yaml"/>
+  <node name="amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/hardware/scan">
+    <param name="initial_pose_x" value="3.25"/>
+    <param name="initial_pose_y" value="6.30"/>
+    <param name="initial_pose_a" value="-1.57"/>
+  </node>
+</launch>
