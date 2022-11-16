@@ -18,6 +18,7 @@
 #include "custom_msgs/ForwardKinematics.h"
 #include "custom_msgs/GetPolynomialTrajectory.h"
 #include "custom_msgs/FindLines.h"
+#include "custom_msgs/FindObject.h"
 #include "custom_msgs/TrainObject.h"
 #include "custom_msgs/RecognizeObjects.h"
 #include "custom_msgs/RecognizeObject.h"
@@ -54,6 +55,7 @@ public:
     ros::ServiceClient cltRaForwardKinematics;
     ros::ServiceClient cltGetPolynomialTraj;
     ros::ServiceClient cltFindLines;
+    ros::ServiceClient cltFindObject;
     ros::ServiceClient cltTrainObject;
     ros::ServiceClient cltRecogObjects;
     ros::ServiceClient cltRecogObject;
@@ -104,6 +106,7 @@ public:
     bool call_get_polynomial_traj(std::vector<double>& p1, std::vector<double>& p2, trajectory_msgs::JointTrajectory& trajectory);
 
     bool call_find_lines();
+    bool call_find_object(std::string name);
     bool call_train_object(std::string name);
     bool call_recognize_objects();
     bool call_recognize_object(std::string name);
