@@ -345,7 +345,7 @@ int main(int argc, char** argv)
             move_particles(particles, delta_pose.x, delta_pose.y, delta_pose.theta);
             simulated_scans = simulate_particle_scans(particles, static_map);
             particle_weights = calculate_particle_weights(simulated_scans, real_scan);
-            particles = resample_particles(particles, particles_weights);
+            particles = resample_particles(particles, particle_weights);
 
             /*
              * END OF TODO
