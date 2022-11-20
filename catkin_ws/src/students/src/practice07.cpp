@@ -109,11 +109,14 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
         for(int j = 0; j < simulated_scans[i].ranges.size(); j++){
             if(simulated_scans[i].ranges[j] < real_scan.range_max && real_scan.ranges[LASER_DOWNSAMPLING * j] < real_scan.range_max){
                 weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[LASER_DOWNSAMPLING * j]);
+            }else{
+                weights[i] += real_scan.range_max;
             }
-            weights[i] /= simulated_scans[i].ranges[j];
-            weights[i] = exp(-weights[i] * weights[i] / SENSOR_NOISE);
-            sum += weights[i];
         }
+        
+        weights[i] /= simulated_scans[i].ranges.size();
+        weights[i] = exp(-weights[i] * weights[i] / SENSOR_NOISE);
+        sum += weights[i];
     }
 
     for(int i = 0; i < weights.size(); i++){
