@@ -47,13 +47,12 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
      * For the Euler angles (roll, pitch, yaw) = (0,0,theta) the corresponding quaternion is
      * given by (0,0,sin(theta/2), cos(theta/2)). 
      */
+     float theta = 0;
 
-     for(int i = 0; i < N; i++){
+     for(size_t i = 0; i < N; i++){
+      theta = rnd.uniformReal(min_a, max_a);
       particles.poses[i].position.x = rnd.uniformReal(min_x,max_x);
       particles.poses[i].position.y = rnd.uniformReal(min_y,max_y);
-      
-      float theta = rnd.uniformReal(min_a, max_a);
-      
       //particles.poses[i].orientation.x = 0;
       //particles.poses[i].orientation.y = 0;
       particles.poses[i].orientation.z = sin(theta/2);
@@ -77,7 +76,7 @@ std::vector<sensor_msgs::LaserScan> simulate_particle_scans(geometry_msgs::PoseA
      * http://docs.ros.org/groovy/api/occupancy_grid_utils/html/namespaceoccupancy__grid__utils.html
      * Use the variable 'real_sensor_info' (already declared as global variable) for the real sensor information
      */
-     for(int i = 0; i < particles.poses.size(); i++){
+     for(size_t i = 0; i < particles.poses.size(); i++){
       simulated_scans[i] = *occupancy_grid_utils::simulateRangeScan(map, particles.poses[i], real_sensor_info);
      }
 
@@ -103,23 +102,23 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
      */
      double suma = 0;
 
-     for(int i = 0;i < simulated_scans.size(); i++){
+     for(size_t i = 0;i < simulated_scans.size(); i++){
       weights[i] = 0;
-      for(int j = 0; j < simulated_scans[i].ranges.size(); j++){
+      for(size_t j = 0; j < simulated_scans[i].ranges.size(); j++){
        if(simulated_scans[i].ranges[j] < real_scan.range_max && real_scan.ranges[j * LASER_DOWNSAMPLING] < real_scan.range_max)
-        weights[i] += fabs(simulated_scans[i].ranges[j] - real_scan.ranges[j * LASER_DOWNSAMPLING]);
+        weights[i] += fabs(simulated_scans[i].ranges[i] - real_scan.ranges[j * LASER_DOWNSAMPLING]);
        else
         weights[i] += real_scan.range_max;
       }
       weights[i] /= simulated_scans[i].ranges.size();
-      weights[i] = exp((-weights[i] * weights[i])/SENSOR_NOISE);
+      weights[i] = exp(-weights[i] * weights[i]/SENSOR_NOISE);
       //suma += weights[i];
      }
 
-     for(int i = 0; i < simulated_scans.size(); i++)
+     for(size_t i = 0; i < simulated_scans.size(); i++)
       suma += weights[i];
 
-     for(int i = 0; i < simulated_scans.size(); i++)
+     for(size_t i = 0; i < simulated_scans.size(); i++)
       weights[i] /= suma;
     
     return weights;
@@ -167,18 +166,18 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * given by the quaternion (0,0,sin(theta/2), cos(theta/2)), thus, you should first
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
+     float theta = 0;
 
      for(size_t i=0; i< particles.poses.size(); i++){
         int random_id = random_choice(weights);
         resampled_particles.poses[i] = particles.poses[random_id];
         resampled_particles.poses[i].position.x += rnd.gaussian(0, RESAMPLING_NOISE);
         resampled_particles.poses[i].position.y += rnd.gaussian(0, RESAMPLING_NOISE);
-        float theta = atan2(particles.poses[random_id].orientation.z,particles.poses[random_id].orientation.w)*2;
 
-        theta += rnd.gaussian(0, RESAMPLING_NOISE);
+        theta = atan2(particles.poses[random_id].orientation.z,particles.poses[random_id].orientation.w)*2 + rnd.gaussian(0, RESAMPLING_NOISE);
 
-        resampled_particles.poses[i].orientation.x = 0;
-        resampled_particles.poses[i].orientation.y = 0;
+        //resampled_particles.poses[i].orientation.x = 0;
+        //resampled_particles.poses[i].orientation.y = 0;
         resampled_particles.poses[i].orientation.w = cos(theta/2);
         resampled_particles.poses[i].orientation.z = sin(theta/2);
     }
@@ -199,17 +198,17 @@ void move_particles(geometry_msgs::PoseArray& particles, float delta_x, float de
      * is the orientation of the i-th particle.
      * Add gaussian noise to each new position. Use MOVEMENT_NOISE as covariances. 
      */
+     double a = 0;
      for(size_t i=0; i<particles.poses.size(); i++){
     	float theta = atan2(particles.poses[i].orientation.z, particles.poses[i].orientation.w)*2;
 
         particles.poses[i].position.x+=delta_x*cos(theta)- delta_y*sin(theta)+rnd.gaussian(0, MOVEMENT_NOISE);
     	particles.poses[i].position.y+=delta_x*sin(theta)+ delta_y*cos(theta)+rnd.gaussian(0, MOVEMENT_NOISE);
-    	theta+=delta_t+rnd.gaussian(0, MOVEMENT_NOISE);
-
-        particles.poses[i].orientation.x = 0;
-        particles.poses[i].orientation.y = 0;
-    	particles.poses[i].orientation.w=cos(theta/2);
-    	particles.poses[i].orientation.z=sin(theta/2);
+    	a+=delta_t+rnd.gaussian(0, MOVEMENT_NOISE);
+        //particles.poses[i].orientation.x = 0;
+        //particles.poses[i].orientation.y = 0;
+    	particles.poses[i].orientation.w=cos(a/2);
+    	particles.poses[i].orientation.z=sin(a/2);
     }
 }
 
