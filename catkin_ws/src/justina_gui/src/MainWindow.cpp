@@ -96,10 +96,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->hdTxtPan, SIGNAL(valueChanged(double)), this, SLOT(hdSbHeadValueChanged(double)));
     QObject::connect(ui->hdTxtTilt, SIGNAL(valueChanged(double)), this, SLOT(hdSbHeadValueChanged(double)));
 
-    QObject::connect(ui->visBtnFindLines, SIGNAL(clicked()), this, SLOT(visFindLinesClicked()));
-    QObject::connect(ui->visTxtTrainObject, SIGNAL(returnPressed()), this, SLOT(visTrainObjectReturnPressed()));
-    QObject::connect(ui->visBtnRecogObjects, SIGNAL(clicked()), this, SLOT(visRecognizeObjectsClicked()));
-    QObject::connect(ui->visTxtRecognizeObject, SIGNAL(returnPressed()), this, SLOT(visRecognizeObjectReturnPressed()));
+    QObject::connect(ui->visTxtFindObject, SIGNAL(returnPressed()), this, SLOT(visFindObjectReturnPressed()));
 }
 
 MainWindow::~MainWindow()
@@ -882,22 +879,10 @@ void MainWindow::hdSbHeadValueChanged(double d)
     qtRosNode->publish_head_angles(ui->hdTxtPan->value(), ui->hdTxtTilt->value());
 }
 
-void MainWindow::visFindLinesClicked()
+/*
+ * VISION CONTROLS
+ */
+void MainWindow::visFindObjectReturnPressed()
 {
-    qtRosNode->call_find_lines();
-}
-
-void MainWindow::visTrainObjectReturnPressed()
-{
-    qtRosNode->call_train_object(ui->visTxtTrainObject->text().toStdString());
-}
-
-void MainWindow::visRecognizeObjectReturnPressed()
-{
-    qtRosNode->call_recognize_object(ui->visTxtRecognizeObject->text().toStdString());
-}
-
-void MainWindow::visRecognizeObjectsClicked()
-{
-    qtRosNode->call_recognize_objects();
+    qtRosNode->call_find_object(ui->visTxtFindObject->text().toStdString());
 }
