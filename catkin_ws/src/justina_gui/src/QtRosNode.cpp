@@ -58,6 +58,8 @@ void QtRosNode::run()
     cltRaIKPose2Pose      =n->serviceClient<custom_msgs::InverseKinematicsPose2Pose>("/manipulation/ra_ik_pose");
     cltLaForwardKinematics=n->serviceClient<custom_msgs::ForwardKinematics>("/manipulation/la_forward_kinematics");
     cltRaForwardKinematics=n->serviceClient<custom_msgs::ForwardKinematics>("/manipulation/ra_forward_kinematics");
+    cltLaInverseKinematics=n->serviceClient<custom_msgs::InverseKinematics>("/manipulation/la_inverse_kinematics");
+    cltRaInverseKinematics=n->serviceClient<custom_msgs::InverseKinematics>("/manipulation/ra_inverse_kinematics");
     cltGetPolynomialTraj  =n->serviceClient<custom_msgs::GetPolynomialTrajectory>("/manipulation/polynomial_trajectory");
 
     cltFindLines          =n->serviceClient<custom_msgs::FindLines>       ("/vision/line_finder/find_lines_ransac");
@@ -291,31 +293,45 @@ bool QtRosNode::call_ra_ik_trajectory(std::vector<double>& cartesian, trajectory
 
 bool QtRosNode::call_la_ik_pose(std::vector<double>& cartesian, std::vector<double>& articular)
 {
-    custom_msgs::InverseKinematicsPose2Pose srv;
+    custom_msgs::InverseKinematics srv;
     srv.request.x = cartesian[0];
     srv.request.y = cartesian[1];
     srv.request.z = cartesian[2];
     srv.request.roll  = cartesian[3];
     srv.request.pitch = cartesian[4];
     srv.request.yaw   = cartesian[5];
-    if(!cltLaIKPose2Pose.call(srv))
+    if(!cltLaInverseKinematics.call(srv))
         return false;
-    articular = srv.response.q;
+    articular.resize(7);
+    articular[0] = srv.response.q1;
+    articular[1] = srv.response.q2;
+    articular[2] = srv.response.q3;
+    articular[3] = srv.response.q4;
+    articular[4] = srv.response.q5;
+    articular[5] = srv.response.q6;
+    articular[6] = srv.response.q7;
     return true;
 }
 
 bool QtRosNode::call_ra_ik_pose(std::vector<double>& cartesian, std::vector<double>& articular)
 {
-    custom_msgs::InverseKinematicsPose2Pose srv;
+    custom_msgs::InverseKinematics srv;
     srv.request.x = cartesian[0];
     srv.request.y = cartesian[1];
     srv.request.z = cartesian[2];
     srv.request.roll  = cartesian[3];
     srv.request.pitch = cartesian[4];
     srv.request.yaw   = cartesian[5];
-    if(!cltRaIKPose2Pose.call(srv))
+    if(!cltRaInverseKinematics.call(srv))
         return false;
-    articular = srv.response.q;
+    articular.resize(7);
+    articular[0] = srv.response.q1;
+    articular[1] = srv.response.q2;
+    articular[2] = srv.response.q3;
+    articular[3] = srv.response.q4;
+    articular[4] = srv.response.q5;
+    articular[5] = srv.response.q6;
+    articular[6] = srv.response.q7;
     return true;
 }
 
@@ -352,6 +368,14 @@ bool QtRosNode::call_ra_forward_kinematics(std::vector<double>& articular, std::
     cartesian[4] = srv.response.pitch;
     cartesian[5] = srv.response.yaw;
     return true;
+}
+
+bool QtRosNode::call_la_inverse_kinematics(std::vector<double>& cartesian, std::vector<double>& articular)
+{
+}
+
+bool QtRosNode::call_ra_inverse_kinematics(std::vector<double>& cartesian, std::vector<double>& articular)
+{
 }
 
 bool QtRosNode::call_get_polynomial_traj(std::vector<double>& p1, std::vector<double>& p2, trajectory_msgs::JointTrajectory& trajectory)
