@@ -52,11 +52,12 @@ geometry_msgs::PoseArray get_initial_distribution(int N, float min_x, float max_
 
         particles.poses[i].position.x = (float) rnd.uniformReal((double)min_x, (double)max_x);
         particles.poses[i].position.y = (float) rnd.uniformReal((double)min_y, (double)max_y);
+        particles.poses[i].position.z = 0;
         angulo = (float) rnd.uniformReal((double)min_a, (double)max_a);
         particles.poses[i].orientation.z = sin(angulo/2);
         particles.poses[i].orientation.w = cos(angulo/2);
-        particules.poses[i].orientation.x=0;
-        particules.poses[i].orientation.y=0;
+        particles.poses[i].orientation.x=0;
+        particles.poses[i].orientation.y=0;
 
     }
     return particles;
@@ -120,7 +121,7 @@ std::vector<float> calculate_particle_weights(std::vector<sensor_msgs::LaserScan
 
         peso += weights[i];
     }
-    for (size_t i = 0; i < simulated_scans.size(); ++i)
+    for (size_t i = 0; i < weights.size(); ++i)
     {
         weights[i] /= peso;
     }
@@ -176,21 +177,22 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      * get the corresponding angle, then add noise, and the get again the corresponding quaternion.
      */
     float angulo;
-    int r_x, r_y = 0;
+    int r_x = 0;
     for (size_t i = 0; i < particles.poses.size(); ++i)
     {   
         r_x = random_choice(weights);
-        r_y = random_choice(weights);
+        
+        resampled_particles.poses[i] = particles.poses[r_x];
 
-        resampled_particles.poses[i].position.x = particles.poses[r_x].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
-        resampled_particles.poses[i].position.y = particles.poses[r_y].position.y + rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.x += rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].position.y += rnd.gaussian(0, RESAMPLING_NOISE);
 
-        angulo = std::atan2(particles.poses[i].orientation.z,particles.poses[i].orientation.w)*2 + rnd.gaussian(0, RESAMPLING_NOISE);
+        angulo = std::atan2(particles.poses[r_x].orientation.z,particles.poses[r_x].orientation.w)*2 + rnd.gaussian(0, RESAMPLING_NOISE);
 
-        resampled_particles.poses[i].orientation.z = sin(angulo/2);
-        resampled_particles.poses[i].orientation.w = cos(angulo/2);
+        resampled_particles.poses[i].orientation.z = sin(angulo/2) + rnd.gaussian(0, RESAMPLING_NOISE);
+        resampled_particles.poses[i].orientation.w = cos(angulo/2) + rnd.gaussian(0, RESAMPLING_NOISE);
     }
-
+////////////////////////////////////////
 
 
     return resampled_particles;
