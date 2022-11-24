@@ -15,6 +15,7 @@
 #include "tf/transform_listener.h"
 #include "custom_msgs/InverseKinematicsPose2Traj.h"
 #include "custom_msgs/InverseKinematicsPose2Pose.h"
+#include "custom_msgs/InverseKinematics.h"
 #include "custom_msgs/ForwardKinematics.h"
 #include "custom_msgs/GetPolynomialTrajectory.h"
 #include "custom_msgs/FindLines.h"
@@ -53,6 +54,8 @@ public:
     ros::ServiceClient cltRaIKPose2Traj;
     ros::ServiceClient cltLaForwardKinematics;
     ros::ServiceClient cltRaForwardKinematics;
+    ros::ServiceClient cltLaInverseKinematics;
+    ros::ServiceClient cltRaInverseKinematics;
     ros::ServiceClient cltGetPolynomialTraj;
     ros::ServiceClient cltFindLines;
     ros::ServiceClient cltFindObject;
@@ -103,6 +106,8 @@ public:
     bool call_ra_ik_pose(std::vector<double>& cartesian, std::vector<double>& articular);
     bool call_la_forward_kinematics(std::vector<double>& articular, std::vector<double>& cartesian);
     bool call_ra_forward_kinematics(std::vector<double>& articular, std::vector<double>& cartesian);
+    bool call_la_inverse_kinematics(std::vector<double>& cartesian, std::vector<double>& articular);
+    bool call_ra_inverse_kinematics(std::vector<double>& cartesian, std::vector<double>& articular);
     bool call_get_polynomial_traj(std::vector<double>& p1, std::vector<double>& p2, trajectory_msgs::JointTrajectory& trajectory);
 
     bool call_find_lines();
