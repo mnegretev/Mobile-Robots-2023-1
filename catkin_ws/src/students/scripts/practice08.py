@@ -18,12 +18,13 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "FULL_NAME"
+NAME = "Alejandro Miranda Hernandez"
 
 def segment_by_color(img_bgr, points, obj_name):
     #
     # TODO:
     # - Assign lower and upper color limits according to the requested object:
+    #                               B   G    R
     #   If obj_name == 'pringles': [25, 50, 50] - [35, 255, 255]
     #   otherwise                : [10,200, 50] - [20, 255, 255]
     # - Change color space from RGB to HSV.
@@ -40,7 +41,30 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    return [0,0,0,0,0]
+    if obj_name == 'pringles':
+        lower_threshold = numpy.array([[[25, 50, 50]]],numpy.uint8)
+        upper_threshold = numpy.array([[[35, 255, 255]]],numpy.uint8)
+        #upper_threshold = numpy.array([[[103, 253, 203]]],numpy.uint8)
+        #lower_threshold = numpy.array([[[0, 71, 88]]],numpy.uint8)
+    elif obj_name == 'lata':
+        #lower_threshold = numpy.array([[[10,200, 50]]],numpy.uint8)
+        #upper_threshold = numpy.array([[[20, 255, 255]]],numpy.uint8)
+        lower_threshold = numpy.array([[[0,0, 80]]],numpy.uint8)
+        upper_threshold = numpy.array([[[115, 223, 255]]],numpy.uint8)
+    else:
+        return [0,0,0,0,0]
+    
+    lower_threshold = cv2.cvtColor(lower_threshold, cv2.COLOR_BGR2HSV).flatten()
+    upper_threshold = cv2.cvtColor(upper_threshold, cv2.COLOR_BGR2HSV).flatten()
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+
+    mask = cv2.inRange(img_hsv, lower_threshold, upper_threshold)
+
+    index_list = cv2.findNonZero(mask)
+    centroid_pixel_coords = cv2.mean(index_list)
+    centroid_cartesian = points[int(centroid_pixel_coords[0]), int(centroid_pixel_coords[1])]
+
+    return [centroid_pixel_coords[0],centroid_pixel_coords[1],centroid_cartesian[0],centroid_cartesian[1],centroid_cartesian[2]]
 
 def callback_find_object(req):
     global pub_point, img_bgr
