@@ -56,8 +56,8 @@ def segment_by_color(img_bgr, points, obj_name):
     valor_medio = cv2.mean(pixeles)
     #Regresa las coordenadas cartesianas del centroide
     valor_medio_cartesiano = points[int(valor_medio[0]), int(valor_medio[1])]
-    print("Coord_Img centroide ", valor_medio)
-    print("Coord_cart_centroide", valor_medio_cartesiano)
+    print("Coord Img centroide ", valor_medio)
+    print("Coord cartesianas centroide", valor_medio_cartesiano)
     
     return [valor_medio[0],valor_medio[1],valor_medio_cartesiano[0],valor_medio_cartesiano[1], valor_medio_cartesiano[2]]
     
