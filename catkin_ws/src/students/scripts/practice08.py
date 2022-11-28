@@ -18,7 +18,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "FULL_NAME"
+NAME = "Díaz García Porfirio"
 
 def segment_by_color(img_bgr, points, obj_name):
     #
@@ -40,7 +40,27 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    return [0,0,0,0,0]
+    #global img_bgr
+    #Cambia el espacio de color de BGR a HSV
+    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    lower = [25,50,50] if obj_name =="pringles" else [10,200,50]
+    upper = [35,255,255] if obj_name =="pringles" else [20,255,255]
+    lower = numpy.asarray(lower)
+    upper = numpy.asarray(upper)
+    #print("Debugging")
+    #Determina los pixeles cuyo color esta en el rango de colores definido
+    img_bgr = cv2.inRange(img_bgr, lower, upper)
+    #Regresa las coordenadas de los pixeles que están dentro del rango de colores dado
+    pixeles = cv2.findNonZero(img_bgr)
+    #Calcula el punto medio de un objeto (centroide)
+    valor_medio = cv2.mean(pixeles)
+    #Regresa las coordenadas cartesianas del centroide
+    valor_medio_cartesiano = points[int(valor_medio[0]), int(valor_medio[1])]
+    print("Coord_Img centroide ", valor_medio)
+    print("Coord_cart_centroide", valor_medio_cartesiano)
+    
+    return [valor_medio[0],valor_medio[1],valor_medio_cartesiano[0],valor_medio_cartesiano[1], valor_medio_cartesiano[2]]
+    
 
 def callback_find_object(req):
     global pub_point, img_bgr
