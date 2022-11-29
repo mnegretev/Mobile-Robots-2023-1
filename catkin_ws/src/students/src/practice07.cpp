@@ -157,13 +157,14 @@ geometry_msgs::PoseArray resample_particles(geometry_msgs::PoseArray& particles,
      */
     for(size_t i=0; i < particles.poses.size(); i++)
     {
-        int idx = random_choice(weights);
-        resampled_particles.poses[i].position.x = particles.poses[idx].position.x + rnd.gaussian(0, RESAMPLING_NOISE);
-        //Hacer un procesimiento similar para y
-        resampled_particles.poses[i].position.y = particles.poses[idy].position.y + rnd.gaussian(0, RESAMPLING_NOISE);
-        //Hacer Hacer un procesimiento similar para w y z del cuaternion
-        resampled_particles.poses[i].position.w =cos(a/2) + rnd.gaussian(0, RESAMPLING_NOISE);
-        resampled_particles.poses[i].position.z =sin(a/2) + rnd.gaussian(0, RESAMPLING_NOISE);
+         int idxy = random_choice(weights);
+         resampled_particles.poses[i] = particles.poses[idxy];
+         resampled_particles.poses[i].position.x += rnd.gaussian(0, RESAMPLING_NOISE);
+         resampled_particles.poses[i].position.y += rnd.gaussian(0, RESAMPLING_NOISE);
+         
+         float a = atan2(particles.poses[idxy].orientation.z, particles.poses[idxy].orientation.w)*2 + rnd.gaussian(0, RESAMPLING_NOISE);
+         resampled_particles.poses[i].orientation.z = sin(a/2);
+         resampled_particles.poses[i].orientation.w = cos(a/2);
     }
     return resampled_particles;
 }
