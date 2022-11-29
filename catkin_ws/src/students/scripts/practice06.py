@@ -66,7 +66,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    k1=0.2
+    k1=1.5
     x = robot_x - goal_x
     y = robot_y - goal_y
     modulo = math.sqrt(math.pow(x,2)+ math.pow(y,2))
@@ -80,8 +80,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     n_forces=0
     force_x=0
     force_y=0
-    d0=1
-    k2=0.2
+    d0=0.9
+    k2=0.8
     #
     # TODO:
     # Calculate the total rejection force given by the average
