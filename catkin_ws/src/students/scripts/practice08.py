@@ -18,7 +18,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "FULL_NAME"
+NAME = "Saul Coria Pérez"
 
 def segment_by_color(img_bgr, points, obj_name):
     #
@@ -40,7 +40,25 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    return [0,0,0,0,0]
+    color1 = [25,50,50] if obj_name == 'pringles' else [10,200,50]
+    color2 = [35,255,255] if obj_name == 'pringles' else [20,255,255]
+    color1 = numpy.asarray(color1)
+    color2 = numpy.asarray(color2)
+    img_NonZero = cv2.findNonZero(cv2.inRange(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV),color1,color2))
+    img_xy = cv2.mean(img_NonZero)
+    centroid_x, centroid_y, centroid_z = 0, 0, 0
+    for i in img_NonZero:
+     [[c,r]] = i
+     if math.isnan(points[r,c][0]) or math.isnan(points[r,c][1]) or math.isnan(points[r,c][2]):
+      pass
+     else:
+      centroid_x += points[r,c][0]
+      centroid_y += points[r,c][1]
+      centroid_z += points[r,c][2]
+    centroid_x = centroid_x/len(img_NonZero)
+    centroid_y = centroid_y/len(img_NonZero)
+    centroid_z = centroid_z/len(img_NonZero) 
+    return [img_xy[0], img_xy[1], centroid_x, centroid_y, centroid_z]
 
 def callback_find_object(req):
     global pub_point, img_bgr
