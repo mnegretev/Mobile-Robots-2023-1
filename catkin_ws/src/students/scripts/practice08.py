@@ -18,7 +18,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "FULL_NAME"
+NAME = "CERVANTES GUATI ROJO JUAN ANDRES"
 
 def segment_by_color(img_bgr, points, obj_name):
     #
@@ -40,7 +40,30 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    return [0,0,0,0,0]
+    #lower = [25,50,50] if obj_name == "pringles" else [30,50,50]
+    #upper = [35,255,255] if obj_name == "pringles" else [28,96,165]
+    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+
+    if obj_name == 'pringles':
+     lower = [25,50,50]
+     upper = [35,255,255]
+    if obj_name == 'lata':
+     lower = [24,69,115]
+     upper = [38,132,227]
+
+    lower = numpy.asarray(lower)
+    upper = numpy.asarray(upper)
+    
+    #img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    img_bgr = cv2.inRange(img_bgr, lower, upper)
+
+    accepted_pixels = cv2.findNonZero(img_bgr)
+    centroid_pixels = cv2.mean(accepted_pixels)
+
+    centroid_region = points[int(centroid_pixels[0]), int(centroid_pixels[1])]
+
+    return [centroid_pixels[0],centroid_pixels[1],centroid_region[0], centroid_region[1],centroid_region[2]]
+
 
 def callback_find_object(req):
     global pub_point, img_bgr
