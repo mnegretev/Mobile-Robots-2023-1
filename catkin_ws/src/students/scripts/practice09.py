@@ -19,7 +19,7 @@ import urdf_parser_py.urdf
 from geometry_msgs.msg import PointStamped
 from custom_msgs.srv import *
 
-NAME = "FULL_NAME"
+NAME = "SANCHEZ TORRES SERGIO DANIEL"
 
 def get_model_info():
     global joints, transforms
@@ -55,6 +55,14 @@ def forward_kinematics(q, Ti, Wi):
     #     Ti are the Homogeneous Transformations from frame i to frame i-1 when joint i is at zero position
     #     Ri are the Homogeneous Transformations with zero-translation and rotation qi around axis Wi.
     #     Ti[7] is the final Homogeneous Transformation from gripper center to joint 7.
+
+    H = tft.identify_matrix()
+
+    for i in range(len(q)):
+        H = tft = concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
+
+    H = tft.concatenate_matrices(H, Ti[7])
+
     # Hints:
     #     Use the tft.identity_matrix() function to get the 4x4 I
     #     Use the tft.concatenate_matrices() function for multiplying Homogeneous Transformations
@@ -63,7 +71,7 @@ def forward_kinematics(q, Ti, Wi):
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    x,y,z,R,P,Y = 0,0,0,0,0,0
+    x,y,z,R,P,Y = H[0][3], H[1][3], H[2][3], tft.euler_from_matrix(H, 'rxyz'), tft.euler_from_matrix(H, 'rxyz'), tft.euler_from_matrix(H, 'rxyz')
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
@@ -91,6 +99,11 @@ def jacobian(q, Ti, Wi):
     #     RETURN J
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
+    q_next = numpy.asarray(([q,] * len(q))) + (delta_q * numpy.identify(len(q)))
+    q_prev = numpy.asarray(([q,] * len(q))) + (delta_q * numpy.identify(len(q)))
+
+    for i in range(0,7):
+        J[:,i] = (forward_kinematics(q_next[i,:], Ti, Wi) - forward_kinematics(q_prev[i,:], Ti, Wi)) / (2 * delta_q)
     
     return J
 
@@ -109,8 +122,13 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     # You can do the following steps:
     #
     #    Set an initial guess for joints 'q'. Suggested: [-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3]
+    q = numpy.asarray([-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3])
+
     #    Calculate Forward Kinematics 'p' by calling the corresponding function
     #    Calcualte error = p - pd
+    p = forward_kinematics(q, Ti, Wi)
+    error = p - pd
+
     #    Ensure orientation angles of error are in [-pi,pi]
     #    WHILE |error| > TOL and iterations < maximum iterations:
     #        Calculate Jacobian
