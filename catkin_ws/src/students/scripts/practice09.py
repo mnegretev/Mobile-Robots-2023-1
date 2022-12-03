@@ -140,7 +140,37 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    return None
+    while numpy.linalg.norm(error) > tolerance && iterations < max_iterations:
+        J = jacobian(q, Ti, Wi)
+        
+        #Keeping the error between [-pi, pi]
+        for i in range(len(error)):
+            if error[i] >= math.pi:
+                error[i] -= 2*math.pi
+            elif error[i] <= (-math.pi):
+                error[i] += 2*math.pi
+        
+        q = q - numpy.dot(numpy.linalg.pinv(J), error)
+        
+        #Keeping 'q' angles between [-pi, pi]
+        for i in range(len(q)):
+            if q[i] >= math.pi:  
+                q[i] -= 2*math.pi   
+            elif q[i] <= (-math.pi):
+                q[i] += 2*math.pi
+        
+        #Recalculating forward kinematics p
+        p = forward_kinematics(q, Ti, Wi)
+
+        #Recalculating error
+        error = p - pd
+                
+        iterations += 1
+
+    if iterations < max_iteration:
+        return q
+    else:
+        return None
 
 def callback_la_ik_for_pose(req):
     global transforms, joints
