@@ -18,7 +18,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "Najera Santamaria Isaac Israel"
+NAME = "Name"
 
 def segment_by_color(img_bgr, points, obj_name):
     #
@@ -40,18 +40,8 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    lower = [25, 50, 50] if obj_name == "pringles" else [10, 200, 50]
-    upper = [35, 255, 255] if obj_name == "pringles" else [20, 255, 255]
-    lower = numpy.asarray(lower)
-    upper = numpy.asarray(upper)
-    img_bgr = cv2.inRange(img_bgr, lower, upper) 
-    location = cv2.findNonZero(img_bgr)
-    mean_val = cv2.mean(location)
     
-    puntos = points[int(mean_val[0]), int(mean_val[1])]
-    
-    return [mean_val[0],mean_val[1], puntos[0], puntos[1], puntos[2]]
+    return [0,0,0,0,0]
 
 def callback_find_object(req):
     global pub_point, img_bgr
