@@ -40,7 +40,24 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    return [0,0,0,0,0]
+    limiteInferior= [0]
+    limiteSuperior= [0]
+    
+    if obj_name == "pringles":
+        limiteInferior= [25, 50, 50]
+        limiteSuperior= [35, 255, 255]
+    else:
+        limiteInferior= [10, 200, 50]
+        limiteSuperior= [20, 255, 255]
+    
+    img_bgr= cv2.cvtColor(img_bgr, cv2.COLORBGR2HSV)
+    img_bgr=cv2.inRange(img_bgr, numpy.array(limiteInferior), numpy.array(limiteSuperior))  #cv2.inRange pasándole los valores de los pixeles.
+    indice= cv2.findNonZero(img_gr)  #cv2.findNonZero para tomar ciertos índices.
+    valorMedio= cv2.mean(indice)
+    centroide= points[int(valorMedio[0]), int(valorMedio[1])]
+    
+    # return [valorMedio,centroide,0,0,0]
+    return [valorMedio[0], valorMedio[1], centroide[0], centroide[1], centroide[2]]
 
 def callback_find_object(req):
     global pub_point, img_bgr
