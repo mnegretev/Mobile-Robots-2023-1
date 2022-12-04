@@ -18,7 +18,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "FULL_NAME"
+NAME = "HERRERA GODINA ADRIANA JOCELYN"
 
 def segment_by_color(img_bgr, points, obj_name):
     #
