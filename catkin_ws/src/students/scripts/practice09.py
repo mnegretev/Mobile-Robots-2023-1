@@ -66,7 +66,7 @@ def forward_kinematics(q, Ti, Wi):
     H = tft.identity_matrix()
     for i in range(len(q)):
         H = tft.concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
-    H = H * Ti[-1]
+    H = tft.concatenate_matrices(H , Ti[7])
     euler_angles = tft.euler_from_matrix(H,'rxyz')
     x,y,z,R,P,Y = H[0,3],H[1,3],H[2,3],euler_angles[0],euler_angles[1],euler_angles[2]
     return numpy.asarray([x,y,z,R,P,Y])
