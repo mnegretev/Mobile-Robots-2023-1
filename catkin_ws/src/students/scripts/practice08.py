@@ -42,20 +42,12 @@ def segment_by_color(img_bgr, points, obj_name):
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
     if obj_name == 'pringles':
-        lower_threshold = numpy.array([[[25, 50, 50]]],numpy.uint8)
-        upper_threshold = numpy.array([[[35, 255, 255]]],numpy.uint8)
-        #upper_threshold = numpy.array([[[103, 253, 203]]],numpy.uint8)
-        #lower_threshold = numpy.array([[[0, 71, 88]]],numpy.uint8)
-    elif obj_name == 'lata':
-        #lower_threshold = numpy.array([[[10,200, 50]]],numpy.uint8)
-        #upper_threshold = numpy.array([[[20, 255, 255]]],numpy.uint8)
-        lower_threshold = numpy.array([[[0,0, 80]]],numpy.uint8)
-        upper_threshold = numpy.array([[[115, 223, 255]]],numpy.uint8)
-    else:
-        return [0,0,0,0,0]
+        lower_threshold = numpy.array([25, 50, 50],numpy.uint8)
+        upper_threshold = numpy.array([35, 255, 255],numpy.uint8)
+    else :
+        lower_threshold = numpy.array([10,200, 50],numpy.uint8)
+        upper_threshold = numpy.array([20, 255, 255],numpy.uint8)
     
-    lower_threshold = cv2.cvtColor(lower_threshold, cv2.COLOR_BGR2HSV).flatten()
-    upper_threshold = cv2.cvtColor(upper_threshold, cv2.COLOR_BGR2HSV).flatten()
     img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
 
     mask = cv2.inRange(img_hsv, lower_threshold, upper_threshold)
