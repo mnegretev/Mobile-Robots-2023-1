@@ -42,11 +42,14 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     # Remember to keep error angle in the interval (-pi,pi]
     #
     #Def alpha and beta - note harcoding 
-    alpha = 2.5 
-    beta = 0.2
-    v_max = 0.1
-    w_max = 0.4
-
+    #alpha = 2.5 
+    #beta = 0.2
+    #v_max = 0.1
+    #w_max = 0.4
+    alpha = 0.2 
+    beta = 0.32
+    v_max = 0.5
+    w_max = 0.6
     #Calc angle
     error_a = math.atan2(goal_y - robot_y , goal_x - robot_x) - robot_a
     #Keep it between 0 and 2pi
@@ -68,7 +71,7 @@ def attraction_force(robot_x, robot_y, goal_x, goal_y):
     # where force_x and force_y are the X and Y components
     # of the resulting attraction force w.r.t. map.
     #
-    epsilon = 1
+    epsilon = 0.5
     x = robot_x - goal_x
     y = robot_y - goal_y
     force_norm = math.sqrt(math.pow(x,2) + math.pow(y,2))
@@ -92,20 +95,23 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     n_forces = 0
     force_x = 0
     force_y = 0
-    d0 = 0.5
-    n = 0.8
+    d0 = 0.6
+    n = 1.45
+    n2 = 0.5
     for d,angle in laser_readings:
-        if d < d0:
+        if d < d0 and d > 0:
             n_forces += 1
-            x = math.cos(robot_a + angle)
-            y = math.sin(robot_a + angle)
-            var = n * (math.sqrt((1/d)-(1/d0)))
+            x = math.cos(robot_a + angle) + robot_x
+            y = math.sin(robot_a + angle) + robot_y
+            #var = n * (math.sqrt((1/d)-(1/d0)))
+            var = n2 * (((1/d)-(1/d0))**(1/4))
+            #var = 1 / (2* d)
             force_x += var * (x - robot_x)
             force_y += var * (y - robot_y)
 
     n_forces = n_forces if n_forces > 0 else 1
-    force_x = force_x / n_forces
-    force_y = force_y / n_forces
+    force_x = n*force_x / n_forces
+    force_y = n*force_y / n_forces
     return [force_x, force_y]
 
 def callback_pot_fields_goal(msg):
