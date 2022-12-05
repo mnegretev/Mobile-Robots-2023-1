@@ -59,7 +59,7 @@ def forward_kinematics(q, Ti, Wi):
     H = tft.identify_matrix()
 
     for i in range(len(q)):
-        H = tft = concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
+        H = tft.concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
 
     H = tft.concatenate_matrices(H, Ti[7])
 
