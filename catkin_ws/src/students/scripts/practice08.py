@@ -50,9 +50,9 @@ def segment_by_color(img_bgr, points, obj_name):
         limiteInferior= [10, 200, 50]
         limiteSuperior= [20, 255, 255]
     
-    img_bgr= cv2.cvtColor(img_bgr, cv2.COLORBGR2HSV)
+    img_bgr= cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
     img_bgr=cv2.inRange(img_bgr, numpy.array(limiteInferior), numpy.array(limiteSuperior))  #cv2.inRange pasándole los valores de los pixeles.
-    indice= cv2.findNonZero(img_gr)  #cv2.findNonZero para tomar ciertos índices.
+    indice= cv2.findNonZero(img_bgr)  #cv2.findNonZero para tomar ciertos índices.
     valorMedio= cv2.mean(indice)
     centroide= points[int(valorMedio[0]), int(valorMedio[1])]
     
