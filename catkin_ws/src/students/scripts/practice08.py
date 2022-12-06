@@ -18,7 +18,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "FULL_NAME"
+NAME = "Martinez Juarez, Abigail Meztli"
 
 def segment_by_color(img_bgr, points, obj_name):
     #
@@ -40,7 +40,38 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    return [0,0,0,0,0]
+    
+    #Assign lower and upper color limits according to the requested object
+    if obj_name == 'pringles':
+    	lower = [25, 50, 50]
+    	upper = [35, 255, 255]
+    else:
+    	lower = [10, 200, 50]
+    	upper = [20, 255, 255]
+    
+    #Change color space from RGB to HSV
+    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    
+    #Determine the pixels whose color is in the selected color range
+    lower = numpy.asarray(lower)
+    upper = numpy.asarray(upper)
+    img_bgr = cv2.inRange(img_bgr, lower, upper)
+    
+    #Calculate the centroid of all pixels in the given color range (ball position)
+    pixels = cv2.findNonZero(img_bgr)
+    mean_value = cv2.mean(pixels)
+    
+    #Calculate the centroid of the segmented region in the cartesian space
+    centroid = points[int(mean_value[0]), int(mean_value[1])]
+    
+    #Return a tuple of the form: [img_x, img_y, centroid_x, centroid_y, centroid_z]
+    img_x = mean_value[0]
+    img_y = mean_value[1]
+    centroid_x = centroid[0]
+    centroid_y = centroid[1]
+    centroid_z = centroid[2]
+    
+    return [img_x, img_y, centroid_x, centroid_y, centroid_z]
 
 def callback_find_object(req):
     global pub_point, img_bgr
