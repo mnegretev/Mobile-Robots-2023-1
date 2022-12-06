@@ -49,7 +49,7 @@ def segment_by_color(img_bgr, points, obj_name):
     #   using the point cloud 'points'. Use numpy array notation to process the point cloud data.
     #   Example: 'points[240,320][1]' gets the 'y' value of the point corresponding to
     #   the pixel in the center of the image.
-    nz = cv2.findNonZero(img_gr)
+    nz = cv2.findNonZero(img_bgr)
     meanValue = cv2.mean(nz)
 
     centroid = points[int(meanValue[0]), int(meanValue[1])]
