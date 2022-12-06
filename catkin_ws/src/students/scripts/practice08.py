@@ -48,8 +48,8 @@ def segment_by_color(img_bgr, points, obj_name):
      lower = [25,50,50]
      upper = [35,255,255]
     if obj_name == 'lata':
-     lower = [24,69,115]
-     upper = [38,132,227]
+     lower = [10,200,50]
+     upper = [20,255,255]
 
     lower = numpy.asarray(lower)
     upper = numpy.asarray(upper)
