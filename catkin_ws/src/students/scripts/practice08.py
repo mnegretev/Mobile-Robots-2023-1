@@ -40,8 +40,7 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    #lower = [25,50,50] if obj_name == "pringles" else [30,50,50]
-    #upper = [35,255,255] if obj_name == "pringles" else [28,96,165]
+    #Cambia el espacio de color de BGR a HSV
     img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
 
     if obj_name == 'pringles':
@@ -54,12 +53,13 @@ def segment_by_color(img_bgr, points, obj_name):
     lower = numpy.asarray(lower)
     upper = numpy.asarray(upper)
     
-    #img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    #Determina los pixeles cuyo color esta en el rango de colores definido
     img_bgr = cv2.inRange(img_bgr, lower, upper)
-
+    #Regresa las coordenadas de los pixeles que están dentro del rango de colores dado que no son cerp en formato de imagen(x,y)
     accepted_pixels = cv2.findNonZero(img_bgr)
+    #Calcula el punto medio de los pixeles que estan dentro del rango de color (centroide)
     centroid_pixels = cv2.mean(accepted_pixels)
-
+    #Regresa las coordenadas cartesianas del centroide
     centroid_region = points[int(centroid_pixels[0]), int(centroid_pixels[1])]
 
     return [centroid_pixels[0],centroid_pixels[1],centroid_region[0], centroid_region[1],centroid_region[2]]
@@ -99,4 +99,3 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-
