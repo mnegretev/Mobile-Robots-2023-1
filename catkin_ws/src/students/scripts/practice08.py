@@ -49,9 +49,21 @@ def segment_by_color(img_bgr, points, obj_name):
     location = cv2.findNonZero(img_bgr)
     mean_val = cv2.mean(location)
     
-    puntos = points[int(mean_val[0]), int(mean_val[1])]
+    x = 0
+    y = 0
+    z = 0
+    for [[c,r]] in location:
+    	if math.isnan(points[r, c][0]) or math.isnan(points[r, c][1]) or math.isnan(points[r,c][2]):
+    		continue
+    	else:
+    		x= x+points[r, c][0]
+    		y= y+points[r, c][1]
+    		z= z+points[r, c][2]
+    x=x/len(location)
+    y=y/len(location)
+    z=z/len(location)
     
-    return [mean_val[0],mean_val[1], puntos[0], puntos[1], puntos[2]]
+    return [mean_val[0],mean_val[1], x, y, z]
 
 def callback_find_object(req):
     global pub_point, img_bgr
