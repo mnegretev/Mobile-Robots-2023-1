@@ -42,8 +42,10 @@ def segment_by_color(img_bgr, points, obj_name):
     #
     #lower = [25,50,50] if obj_name == "pringles" else [30,50,50]
     #upper = [35,255,255] if obj_name == "pringles" else [28,96,165]
-    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
 
+    #Se cambia el espacio de color de RGB a HSV
+    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    #Se asignan limites de colores para los dos objetos
     if obj_name == 'pringles':
      lower = [25,50,50]
      upper = [35,255,255]
@@ -53,15 +55,32 @@ def segment_by_color(img_bgr, points, obj_name):
 
     lower = numpy.asarray(lower)
     upper = numpy.asarray(upper)
-    #img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    #Se obtienen los pixeles que se encuentran dentro del rango de colores
     img_bgr = cv2.inRange(img_bgr, lower, upper)
+    #Se obtienen los pixeles que son diferentes de cero
+    nonZero_pixels = cv2.findNonZero(img_bgr)
+    #Se obtiene la media de los pixeles para obtene el centroide en 
+    #coordenadas de imagen
+    centroid_pixels = cv2.mean(nonZero_pixels)
 
-    accepted_pixels = cv2.findNonZero(img_bgr)
-    centroid_pixels = cv2.mean(accepted_pixels)
+    #Se calcula el centroide en coordenadas cartesianas obteniendo el promedio
+    #de los pixeles que son diferentes de cero utilizando la nube de puntos
+    x,y,z = 0,0,0
+    for p in nonZero_pixels:
+        [[column,row]] = p
+        if math.isnan(points[row,column][0]) or math.isnan(points[row,column][1]) or math.isnan(points[row,column][2]):
+            pass
+        else:
+            x = x + points[row,column][0]
+            y = y + points[row,column][1]
+            z = z + points[row,column][2]
 
-    centroid_region = points[int(centroid_pixels[0]), int(centroid_pixels[1])]
+    x = x/len(nonZero_pixels)
+    y = y/len(nonZero_pixels)
+    z = z/len(nonZero_pixels)
 
-    return [centroid_pixels[0],centroid_pixels[1],centroid_region[0], centroid_region[1],centroid_region[2]]
+    #Se devuelve el centroide en coordenadas de imagen y coordenadas cartesianas
+    return [centroid_pixels[0],centroid_pixels[1],x,y,z]
 
 
 def callback_find_object(req):
