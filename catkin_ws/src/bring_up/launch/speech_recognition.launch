@@ -1,0 +1,18 @@
+<launch>
+  <node name="speech_recog" pkg="sprec_pocketsphinx" type="asr.py" output="screen">
+    <param name="gram" value="$(find sprec_pocketsphinx)/vocab/voice_cmd.gram"/>
+    <param name="dict" value="$(find sprec_pocketsphinx)/vocab/voice_cmd.dic"/>
+    <param name="grammar" value="voice_cmd"/>
+    <param name="rule" value="move2"/>
+    <param name="lm" value=":default"/>
+  </node>
+
+  <node name="audio_sender" pkg="sprec_pocketsphinx" type="send_audio.py" output="screen"/>
+
+  <node name="justina_gui" pkg="justina_gui" type="justina_gui_node" output="screen">
+    <param name="la_predefined" value="$(find config_files)/manipulation/la_predefined.yaml"/>
+    <param name="ra_predefined" value="$(find config_files)/manipulation/ra_predefined.yaml"/>
+    <param name="hd_predefined" value="$(find config_files)/manipulation/hd_predefined.yaml"/>
+  </node>
+  
+</launch>
