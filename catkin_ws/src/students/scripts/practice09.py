@@ -71,7 +71,9 @@ def forward_kinematics(q, Ti, Wi):
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    x,y,z,R,P,Y = H[0][3], H[1][3], H[2][3], tft.euler_from_matrix(H, 'rxyz'), tft.euler_from_matrix(H, 'rxyz'), tft.euler_from_matrix(H, 'rxyz')
+    x,y,z = H[0][3], H[1][3], H[2][3]
+    R,P,Y = tft.euler_from_matrix(H, 'rxyz')
+
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
@@ -128,7 +130,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Calcualte error = p - pd
     p = forward_kinematics(q, Ti, Wi)
     error = p - pd
-    err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
+    error[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
 
     #    Ensure orientation angles of error are in [-pi,pi]
     #    WHILE |error| > TOL and iterations < maximum iterations:
@@ -144,14 +146,14 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     while numpy.linalg.norm(error) > tolerance and iterations < max_iterations:
         J = jacobian(q, Ti, Wi)
         
-        q = q - numpy.dot(numpy.linalg.pinv(J), error)
+        q = (q - numpy.dot(numpy.linalg.pinv(J), error) + math.pi) % (2*math.pi)
         
         #Recalculating forward kinematics p
         p = forward_kinematics(q, Ti, Wi)
 
         #Recalculating error
         error = p - pd
-        err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
+        error[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
                 
         iterations += 1
 
