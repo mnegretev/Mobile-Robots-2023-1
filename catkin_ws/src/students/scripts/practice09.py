@@ -101,8 +101,8 @@ def jacobian(q, Ti, Wi):
     #     RETURN J
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
-    q_next = numpy.asarray(([q,] * len(q))) + (delta_q * numpy.identify(len(q)))
-    q_prev = numpy.asarray(([q,] * len(q))) + (delta_q * numpy.identify(len(q)))
+    q_next = numpy.asarray(([q,] * len(q))) + delta_q * numpy.identify(len(q))
+    q_prev = numpy.asarray(([q,] * len(q))) - delta_q * numpy.identify(len(q))
 
     for i in range(0,7):
         J[:,i] = (forward_kinematics(q_next[i,:], Ti, Wi) - forward_kinematics(q_prev[i,:], Ti, Wi)) / (2 * delta_q)
@@ -130,7 +130,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Calcualte error = p - pd
     p = forward_kinematics(q, Ti, Wi)
     error = p - pd
-    error[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
+    error[3:6] = (error[3:6] + math.pi)%(2*math.pi) - math.pi
 
     #    Ensure orientation angles of error are in [-pi,pi]
     #    WHILE |error| > TOL and iterations < maximum iterations:
@@ -153,11 +153,11 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
 
         #Recalculating error
         error = p - pd
-        error[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
+        error[3:6] = (error[3:6] + math.pi)%(2*math.pi) - math.pi
                 
         iterations += 1
 
-    if iterations < max_iteration:
+    if iterations < max_iterations:
         return q
     else:
         return None
