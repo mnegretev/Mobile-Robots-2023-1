@@ -143,7 +143,6 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
         for i in range(len(error)):
             error[i] = (error[i] + math.pi)%(2*math.pi) - math.pi	#aseguramos que los valores esten entre -pi y pi
         iterations += 1
-
     return  q if iterations < max_iterations else None
 
 def callback_la_ik_for_pose(req):
