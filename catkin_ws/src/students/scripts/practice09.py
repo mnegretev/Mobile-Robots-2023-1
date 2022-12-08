@@ -56,7 +56,7 @@ def forward_kinematics(q, Ti, Wi):
     #     Ri are the Homogeneous Transformations with zero-translation and rotation qi around axis Wi.
     #     Ti[7] is the final Homogeneous Transformation from gripper center to joint 7.
 
-    H = tft.identify_matrix()
+    H = tft.identity_matrix()
 
     for i in range(len(q)):
         H = tft.concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
@@ -128,6 +128,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Calcualte error = p - pd
     p = forward_kinematics(q, Ti, Wi)
     error = p - pd
+    err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
 
     #    Ensure orientation angles of error are in [-pi,pi]
     #    WHILE |error| > TOL and iterations < maximum iterations:
@@ -140,30 +141,17 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    while numpy.linalg.norm(error) > tolerance && iterations < max_iterations:
+    while numpy.linalg.norm(error) > tolerance and iterations < max_iterations:
         J = jacobian(q, Ti, Wi)
         
-        #Keeping the error between [-pi, pi]
-        for i in range(len(error)):
-            if error[i] >= math.pi:
-                error[i] -= 2*math.pi
-            elif error[i] <= (-math.pi):
-                error[i] += 2*math.pi
-        
         q = q - numpy.dot(numpy.linalg.pinv(J), error)
-        
-        #Keeping 'q' angles between [-pi, pi]
-        for i in range(len(q)):
-            if q[i] >= math.pi:  
-                q[i] -= 2*math.pi   
-            elif q[i] <= (-math.pi):
-                q[i] += 2*math.pi
         
         #Recalculating forward kinematics p
         p = forward_kinematics(q, Ti, Wi)
 
         #Recalculating error
         error = p - pd
+        err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
                 
         iterations += 1
 
