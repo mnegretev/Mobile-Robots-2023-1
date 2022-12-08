@@ -52,6 +52,7 @@ def segment_by_color(img_bgr, points, obj_name):
     x = 0
     y = 0
     z = 0
+    
     for [[c,r]] in location:
     	if math.isnan(points[r, c][0]) or math.isnan(points[r, c][1]) or math.isnan(points[r,c][2]):
     		continue
