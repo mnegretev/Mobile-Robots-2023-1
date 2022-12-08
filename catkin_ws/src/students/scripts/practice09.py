@@ -101,8 +101,8 @@ def jacobian(q, Ti, Wi):
     #     RETURN J
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
-    q_next = numpy.asarray(([q,] * len(q))) + delta_q * numpy.identity(len(q))
-    q_prev = numpy.asarray(([q,] * len(q))) - delta_q * numpy.identity(len(q))
+    q_next = numpy.asarray([q,]*len(q)) + delta_q*numpy.identity(len(q))
+    q_prev = numpy.asarray([q,]*len(q)) - delta_q*numpy.identity(len(q))
 
     for i in range(0,7):
         J[:,i] = (forward_kinematics(q_next[i,:], Ti, Wi) - forward_kinematics(q_prev[i,:], Ti, Wi)) / (2 * delta_q)
@@ -146,7 +146,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     while numpy.linalg.norm(error) > tolerance and iterations < max_iterations:
         J = jacobian(q, Ti, Wi)
         
-        q = (q - numpy.dot(numpy.linalg.pinv(J), error) + math.pi) % (2*math.pi)
+        q = (q - numpy.dot(numpy.linalg.pinv(J), error) + math.pi)%(2*math.pi) - math.pi
         
         #Recalculating forward kinematics p
         p = forward_kinematics(q, Ti, Wi)
