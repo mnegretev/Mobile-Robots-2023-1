@@ -133,7 +133,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    q = [-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3]
+    q = numpy.array[[-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3]]
     p = forward_kinematics(q, Ti, Wi)
     err = p - pd
     err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
