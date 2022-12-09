@@ -47,7 +47,7 @@ def segment_by_color(img_bgr, points, obj_name):
     	upper = [35, 255, 255]
     else:
     	lower = [10, 200, 50]
-    	upper = [15, 255, 255]
+    	upper = [20, 255, 255]
     
     #Change color space from RGB to HSV
     img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
