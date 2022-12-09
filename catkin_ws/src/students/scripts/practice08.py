@@ -50,19 +50,19 @@ def segment_by_color(img_bgr, points, obj_name):
     	upper = [20, 255, 255]
     
     #Change color space from RGB to HSV
-    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
     
     #Determine the pixels whose color is in the selected color range
     lower = numpy.asarray(lower)
     upper = numpy.asarray(upper)
-    img_bgr = cv2.inRange(img_bgr, lower, upper)
+    img_hsv = cv2.inRange(img_hsv, lower, upper)
     
     #Calculate the centroid of all pixels in the given color range (ball position)
-    pixels = cv2.findNonZero(img_bgr)
+    pixels = cv2.findNonZero(img_hsv)
     mean_value = cv2.mean(pixels)
     
     #Calculate the centroid of the segmented region in the cartesian space
-    centroid = points[int(mean_value[0]), int(mean_value[1])]
+    centroid = points[int(mean_value[1]), int(mean_value[0])]
     
     #Return a tuple of the form: [img_x, img_y, centroid_x, centroid_y, centroid_z]
     img_x = mean_value[0]
