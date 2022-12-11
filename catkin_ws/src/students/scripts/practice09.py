@@ -19,7 +19,7 @@ import urdf_parser_py.urdf
 from geometry_msgs.msg import PointStamped
 from custom_msgs.srv import *
 
-NAME = "CHAVOLLA_JIMENEZ_RAUL_DANIEL"
+NAME = "CHAVOLLA JIMENEZ RAUL DANIEL"
 
 def get_model_info():
     global joints, transforms
@@ -64,13 +64,11 @@ def forward_kinematics(q, Ti, Wi):
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
     H= tft.identity_matrix()
-for i in range(len(q)):
+    for i in range(len(q)):
 	H= tft.concatenate_matrices(H,Ti[i],tft.rotation_matrix(q[i],Wi[i]))
     H= tft.concatenate_matrices(H,Ti[7])
     x,y,z = H[0][3],H[1][3],H[2][3]  # Get xyz from resulting H
     R,P,Y = tft.euler_from_matrix(H,'rxyz')  # Get RPY from resulting H
-    return numpy.asarray([x,y,z,R,P,Y])
-    x,y,z,R,P,Y = 0,0,0,0,0,0
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
@@ -101,9 +99,7 @@ def jacobian(q, Ti, Wi):
     qn = numpy.asarray([q,]*len(q)) + delta_q*numpy.identity(len(q))   # q_next as indicated above
     qp = numpy.asarray([q,]*len(q)) - delta_q*numpy.identity(len(q))   # q_prev as indicated above
     for i in range(0,7):
-        	J[:,i]=(forward_kinematics(qn[i,:],Ti,Wi)-forward_kinematics(qp[i,:],Ti,Wi))/(2*delta_q)
-
-    
+	J[:,i]=(forward_kinematics(qn[i,:],Ti,Wi)-forward_kinematics(qp[i,:],Ti,Wi))/(2*delta_q)
     
     return J
 
@@ -112,6 +108,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     tolerance = 0.01
     max_iterations = 20
     iterations = 0
+    q = numpy.asarray([-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3])  # Initial guess
     #
     # TODO:
     # Solve the IK problem given a kinematic description (Ti, Wi) and a desired configuration.
@@ -135,6 +132,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
+
     p = forward_kinematics(q, Ti, Wi)
     err = p - pd
     err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
@@ -150,7 +148,8 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
         return q
     else:
         print("InverseKinematics.->Cannot solve IK. Max attempts exceded. ")
-    return None
+        return None
+
 
 def callback_la_ik_for_pose(req):
     global transforms, joints
@@ -178,7 +177,7 @@ def callback_la_fk(req):
     global transforms, joints
     Ti = transforms['left']                               
     Wi = [joints['left'][i].axis for i in range(len(joints['left']))]  
-    x = forward_kinematics([req.q[0], req.q[1], req.q[2], req.q[3], req.q[4], req.q[5], req.q[6]], Ti, Wi)
+    x = forward_kinematics([req.q1, req.q2, req.q3, req.q4, req.q5, req.q6, req.q7], Ti, Wi)
     resp = ForwardKinematicsResponse()
     [resp.x, resp.y, resp.z, resp.roll, resp.pitch, resp.yaw] = x
     return resp
@@ -187,19 +186,19 @@ def callback_ra_fk(req):
     global transforms, joints
     Ti = transforms['right']                               
     Wi = [joints['right'][i].axis for i in range(len(joints['right']))]  
-    x = forward_kinematics([req.q[0], req.q[1], req.q[2], req.q[3], req.q[4], req.q[5], req.q[6]], Ti, Wi)
+    x = forward_kinematics([req.q1, req.q2, req.q3, req.q4, req.q5, req.q6, req.q7], Ti, Wi)
     resp = ForwardKinematicsResponse()
     [resp.x, resp.y, resp.z, resp.roll, resp.pitch, resp.yaw] = x
     return resp
 
 def main():
-    print("PRACTICE 09" + NAME)
+    print("PRACTICE 08" + NAME)
     rospy.init_node("ik_geometric")
     get_model_info()
     rospy.Service("/manipulation/la_inverse_kinematics", InverseKinematics, callback_la_ik_for_pose)
     rospy.Service("/manipulation/ra_inverse_kinematics", InverseKinematics, callback_ra_ik_for_pose)
-    rospy.Service("/manipulation/la_forward_kinematics", ForwardKinematics, callback_la_fk)
-    rospy.Service("/manipulation/ra_forward_kinematics", ForwardKinematics, callback_ra_fk)
+    rospy.Service("/manipulation/la_direct_kinematics", ForwardKinematics, callback_la_fk)
+    rospy.Service("/manipulation/ra_direct_kinematics", ForwardKinematics, callback_ra_fk)
     loop = rospy.Rate(10)
     while not rospy.is_shutdown():
         loop.sleep()
