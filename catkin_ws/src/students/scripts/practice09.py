@@ -64,11 +64,11 @@ def forward_kinematics(q, Ti, Wi):
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
     H= tft.identity_matrix()
-    for i in range(len(q)):
-	    H= tft.concatenate_matrices(H,Ti[i],tft.rotation_matrix(q[i],Wi[i]))
-        H= tft.concatenate_matrices(H,Ti[7])
-        x,y,z = H[0][3],H[1][3],H[2][3]  # Get xyz from resulting H
-        R,P,Y = tft.euler_from_matrix(H,'rxyz')  # Get RPY from resulting H
+for i in range(len(q)):
+	H= tft.concatenate_matrices(H,Ti[i],tft.rotation_matrix(q[i],Wi[i]))
+    H= tft.concatenate_matrices(H,Ti[7])
+    x,y,z = H[0][3],H[1][3],H[2][3]  # Get xyz from resulting H
+    R,P,Y = tft.euler_from_matrix(H,'rxyz')  # Get RPY from resulting H
     return numpy.asarray([x,y,z,R,P,Y])
     x,y,z,R,P,Y = 0,0,0,0,0,0
     return numpy.asarray([x,y,z,R,P,Y])
