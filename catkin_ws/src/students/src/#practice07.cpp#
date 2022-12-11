@@ -354,19 +354,13 @@ int main(int argc, char** argv)
              * Get the set of simulated scans for each particles. Use the simulate_particle_scans function.
              * Get the set of weights by calling the calculate_particle_weights function
              * Resample particles by calling the resample_particles function
-             */
-
-            /*
-	     
              * END OF TODO
              */
 	 move_particles(particles, delta_pose.x, delta_pose.y, delta_pose.theta);
             simulated_scans = simulate_particle_scans(particles, static_map);
             particle_weights = calculate_particle_weights(simulated_scans, real_scan);
             particles = resample_particles(particles, particle_weights);
-            
-	  
-	      
+	    
             pub_particles.publish(particles);
             map_to_odom_transform = get_map_to_odom_transform(robot_odom, get_robot_pose_estimation(particles));
         }
