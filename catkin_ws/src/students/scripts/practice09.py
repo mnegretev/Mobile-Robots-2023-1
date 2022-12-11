@@ -65,7 +65,7 @@ def forward_kinematics(q, Ti, Wi):
     #
     H= tft.identity_matrix()
     for i in range(len(q)):
-	H= tft.concatenate_matrices(H,Ti[i],tft.rotation_matrix(q[i],Wi[i]))
+        H= tft.concatenate_matrices(H,Ti[i],tft.rotation_matrix(q[i],Wi[i]))
     H= tft.concatenate_matrices(H,Ti[7])
     x,y,z = H[0][3],H[1][3],H[2][3]  # Get xyz from resulting H
     R,P,Y = tft.euler_from_matrix(H,'rxyz')  # Get RPY from resulting H
@@ -99,8 +99,7 @@ def jacobian(q, Ti, Wi):
     qn = numpy.asarray([q,]*len(q)) + delta_q*numpy.identity(len(q))   # q_next as indicated above
     qp = numpy.asarray([q,]*len(q)) - delta_q*numpy.identity(len(q))   # q_prev as indicated above
     for i in range(0,7):
-	J[:,i]=(forward_kinematics(qn[i,:],Ti,Wi)-forward_kinematics(qp[i,:],Ti,Wi))/(2*delta_q)
-    
+	    J[:,i]=(forward_kinematics(qn[i,:],Ti,Wi)-forward_kinematics(qp[i,:],Ti,Wi))/(2*delta_q)
     return J
 
 def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
