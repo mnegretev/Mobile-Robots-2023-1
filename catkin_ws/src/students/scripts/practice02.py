@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# MOBILE ROBOTS - FI-UNAM, 2022-2
+# MOBILE ROBOTS - FI-UNAM, 2023-1
 # PRACTICE 02 - MAPS 
 #
 # Instructions:
