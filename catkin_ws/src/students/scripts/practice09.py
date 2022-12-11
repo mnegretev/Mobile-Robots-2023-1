@@ -96,8 +96,19 @@ def jacobian(q, Ti, Wi):
     #           i-th column of J = ( FK(i-th row of q_next) - FK(i-th row of q_prev) ) / (2*delta_q)
     #     RETURN J
     #     
+    print("PointBreak4")
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
+    #[q,] * len(q) me genera una matriz cuadrada con numero de renglones de tamanio len(q)
+    #delta_q + numpy.identity(len(q)) me permite sumar el delta_q solamente a la diagonal de la matriz
+    q_next = numpy.asarray([q,] * len(q) + ( delta_q * numpy.identity(len(q)) ))
+    q_prev = numpy.asarray([q,] * len(q) - ( delta_q * numpy.identity(len(q)) ))
     
+    print("PointBreak5")
+    #Se calcula el Jacobiano
+    for i in range(len(q)):
+     J[:,i] = (forward_kinematics(q_next[i,:], Ti, Wi) - forward_kinematics(q_prev[i,:], Ti, Wi)) / (2 * delta_q)
+    print("Se calcula el jacobiano")
+    print(J)
     return J
 
 def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
@@ -128,7 +139,31 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    return None
+    print("PointBreak")
+    q = [-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3]
+    p = forward_kinematics(q, Ti, Wi)
+    err = p - pd
+    #Asegurar que los angulos de orientacion se encuentran entre [-pi,pi]
+    #Los angulos se encuentran en err[3:6] -> roll, pitch, yaw
+    err[3:6] = (err[3:6] + math.pi) % (2 * math.pi) - math.pi
+    print("PointBreak2")
+    while(numpy.linalg.norm(err) > tolerance and iterations < max_iterations):
+     #Calculo de Jacobiano
+     J = jacobian(q, Ti, Wi)
+     #Actualizar estimacion de q con la matriz pseudoinversa de J
+     q = q - (numpy.dot(numpy.linalg.pinv(J), err))
+     #Se asegura que los angulos q se encuentren entre [-pi, pi]
+     q = (q + math.pi) % (2 * math.pi) - math.pi
+     #Se recalculan las FK
+     p = forward_kinematics(q, Ti, Wi)
+     #Se recalcula el error y se asegura que los angulos se encuentren entre [-pi, pi]
+     err = p - pd
+     err[3:6] = (err[3:6] + math.pi) % (2 * math.pi) - math.pi
+     #Se incrementan las iteraciones
+     iterations += 1
+    print("PointBreakTerminaIK")
+    #Se devuelve q en caso de que no se excedan las max_iteraciones, caso contrario no se devuelve nada
+    return q if iterations < max_iterations else None
 
 def callback_la_ik_for_pose(req):
     global transforms, joints
