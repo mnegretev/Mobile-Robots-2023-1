@@ -63,7 +63,16 @@ def forward_kinematics(q, Ti, Wi):
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    x,y,z,R,P,Y = 0,0,0,0,0,0
+    H = tft.identity_matriz()
+    
+    for i in range(len(q)):
+    	H = tft.concatenate_matricez(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
+    	
+    H = tft.concatenate_matrices(H, Ti[7])
+    
+    x,y,z = H[0,3], H[1,3], H[2,3]		#Get xyz from resulting H
+    R,P,Y = list(tft.euler_from_matrix(H))	#Get xyz RPY resulting H
+    
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
@@ -91,6 +100,12 @@ def jacobian(q, Ti, Wi):
     #     RETURN J
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
+    
+    q_next = numpy.asarray([q,] * len(q)) + delta_q * numpy.identity(len(q))
+    q_prev = numpy.asarray([q,] * len(q)) - delta_q * numpy.identity(len(q))
+    
+    for i in range(len(q)):
+    	J[:,i] = (forward_kinematics(q_next[1,:], Ti, Wi) - forward_kinematics(q_prev[1,:], Ti, Wi)) / (2 * delta_q)
     
     return J
 
@@ -122,7 +137,23 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    return None
+    q = numpy.asarray(-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3])
+    p = forward_kinematics(q, Ti, Wi)
+    error = p - pd
+    error[3:6] =  (error[3:6] + math.pi) % (2 * math.pi) - math.pi
+    
+    while numpy.linalg.norm(error) > tolerance and iterations < max_iterations:
+    	J = jacobian(q, Ti, Wi)
+    	q = (q - numpy.dot(numpy.linalg.pinv(J), error) + math.pi) % (2 * math-pi) - math.pi
+    	p = forward_kinematics(q, Ti, Wi)
+    	error = p - pd
+    	error[3:6] =  (error[3:6] + math.pi) % (2 * math.pi) - math.pi
+    	iterations += 1
+    	
+    if iterations < max_iterations:
+	return q
+    else:  
+    	return None
 
 def callback_la_ik_for_pose(req):
     global transforms, joints
