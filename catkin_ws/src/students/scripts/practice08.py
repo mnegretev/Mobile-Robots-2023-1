@@ -54,7 +54,7 @@ def segment_by_color(img_bgr, points, obj_name):
 
     index_list = cv2.findNonZero(mask)
     centroid_pixel_coords = cv2.mean(index_list)
-    centroid_cartesian = points[int(centroid_pixel_coords[0]), int(centroid_pixel_coords[1])]
+    centroid_cartesian = points[int(centroid_pixel_coords[1]), int(centroid_pixel_coords[0])]
 
     return [centroid_pixel_coords[0],centroid_pixel_coords[1],centroid_cartesian[0],centroid_cartesian[1],centroid_cartesian[2]]
 
