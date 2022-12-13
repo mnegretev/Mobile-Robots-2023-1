@@ -18,7 +18,7 @@ from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import PointStamped, Point
 from custom_msgs.srv import FindObject, FindObjectResponse
 
-NAME = "FULL_NAME"
+NAME = ""
 
 def segment_by_color(img_bgr, points, obj_name):
     #
@@ -40,7 +40,37 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    return [0,0,0,0,0]
+    LimSup = [0]
+    LimInf = [0]
+
+    if obj_name == "pringles":
+        LimSup = [35, 255, 255]
+        LimInf = [25, 50, 50]
+    else:
+        LimSup = [20, 255, 255]
+        LimInf = [10, 200, 50]
+   
+    imgHsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    imgBin = cv2.inRange(imgHsv, numpy.array(LimSup), numpy.array(LimInf))
+    NonZero = cv2.findNonZero(imgBin)
+    Centroide = cv2.mean(NonZero)
+
+    x, y, z = 0, 0, 0
+
+    for i in NonZero:
+        [[c,r]] = i
+        if math.isnan(points[r,c][0]) or math.isnan(points[r,c][1]) or math.isnan(points[r,c][2]):
+            pass
+        else:
+            x = x + points[r,c][0]
+            y = y + points[r,c][1]
+            z = z + points[r,c][2]
+
+    x = x/len(NonZero)
+    y = y/len(NonZero)
+    z = z/len(NonZero)
+
+    return [Centroide[0], Centroide[1], x, y, z]
 
 def callback_find_object(req):
     global pub_point, img_bgr
@@ -76,4 +106,5 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
+
 
