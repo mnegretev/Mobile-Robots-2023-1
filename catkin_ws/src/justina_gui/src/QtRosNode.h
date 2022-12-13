@@ -24,6 +24,8 @@
 #include "custom_msgs/RecognizeObjects.h"
 #include "custom_msgs/RecognizeObject.h"
 #include "custom_msgs/SmoothPath.h"
+#include "custom_msgs/RecognizedSpeech.h"
+#include "sound_play/SoundRequest.h"
 
 class QtRosNode : public QThread
 {
@@ -42,10 +44,12 @@ public:
     ros::Publisher pubHdGoalQ;
     ros::Publisher pubLaGoalGrip;
     ros::Publisher pubRaGoalGrip;
+    ros::Publisher pubSay;
     ros::Subscriber subLaCurrentQ;
     ros::Subscriber subLaVoltage;
     ros::Subscriber subRaCurrentQ;
     ros::Subscriber subRaVoltage;
+    ros::Subscriber subRecogSpeech;
     ros::ServiceClient cltAStar;
     ros::ServiceClient cltSmoothPath;
     ros::ServiceClient cltLaIKPose2Pose;
@@ -73,6 +77,7 @@ public:
     std::vector<double> ra_current_cartesian;
     double la_voltage;
     double ra_voltage;
+    std::string recognized_sentence;
     
     void run();
     void setNodeHandle(ros::NodeHandle* nh);
@@ -96,10 +101,12 @@ public:
     void publish_la_grip_angles(float a);
     void publish_ra_grip_angles(float a);
     void publish_head_angles(double pan, double tilt);
+    void publish_say(std::string text_to_say);
     void callback_la_current_q(const std_msgs::Float64MultiArray::ConstPtr& msg);
     void callback_la_voltage(const std_msgs::Float64::ConstPtr& msg);
     void callback_ra_current_q(const std_msgs::Float64MultiArray::ConstPtr& msg);
     void callback_ra_voltage(const std_msgs::Float64::ConstPtr& msg);
+    void callback_recog_speech(const custom_msgs::RecognizedSpeech::ConstPtr& msg);
     bool call_la_ik_trajectory(std::vector<double>& cartesian, trajectory_msgs::JointTrajectory& trajectory);
     bool call_ra_ik_trajectory(std::vector<double>& cartesian, trajectory_msgs::JointTrajectory& trajectory);
     bool call_la_ik_pose(std::vector<double>& cartesian, std::vector<double>& articular);
