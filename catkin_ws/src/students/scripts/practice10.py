@@ -51,6 +51,13 @@ class NeuralNetwork(object):
         # Include input x as the first output.
         #
         y = []
+        y.append(x)
+
+        for i in range(len(self.biases)):
+            z = numpy.dot(self.weights[i], x) + self.biases[i]
+            x = 1.0 / (1.0 + numpy.exp(-z))
+            y.append(x)
+
         return y
 
     def backpropagate(self, x, yt):
