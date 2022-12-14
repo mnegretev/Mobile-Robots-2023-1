@@ -96,6 +96,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(ui->hdTxtPan, SIGNAL(valueChanged(double)), this, SLOT(hdSbHeadValueChanged(double)));
     QObject::connect(ui->hdTxtTilt, SIGNAL(valueChanged(double)), this, SLOT(hdSbHeadValueChanged(double)));
 
+    QObject::connect(ui->spgTxtSay, SIGNAL(returnPressed()), this, SLOT(spgTxtSayReturnPressed()));
+
     QObject::connect(ui->visTxtFindObject, SIGNAL(returnPressed()), this, SLOT(visFindObjectReturnPressed()));
 }
 
@@ -200,20 +202,21 @@ void MainWindow::updateGraphicsReceived()
         ui->laPbVoltage->setStyleSheet(safe);*/
     ui->laLblVoltage->setStyleSheet("QLabel{font: 24pt;}");
     ui->raLblVoltage->setStyleSheet("QLabel{font: 24pt;}");
-     if(qtRosNode->la_voltage*10<105)
-   {
-       ui->laLblVoltage->setStyleSheet("QLabel{ color: red; font: 24pt;}");
-   }else
-     {
-       ui->laLblVoltage->setStyleSheet("QLabel{ color : black; font: 24pt;}");
-   }
-if(qtRosNode->ra_voltage*10<105)
-   {
-       ui->raLblVoltage->setStyleSheet("QLabel{ color: red; font: 24pt;}");
-   }else
-   {
-       ui->raLblVoltage->setStyleSheet("QLabel{ color: black; font: 24pt;}");
-   }
+    if(qtRosNode->la_voltage*10<105)
+    {
+        ui->laLblVoltage->setStyleSheet("QLabel{ color: red; font: 24pt;}");
+    }else
+    {
+        ui->laLblVoltage->setStyleSheet("QLabel{ color : black; font: 24pt;}");
+    }
+    if(qtRosNode->ra_voltage*10<105)
+    {
+        ui->raLblVoltage->setStyleSheet("QLabel{ color: red; font: 24pt;}");
+    }else
+    {
+        ui->raLblVoltage->setStyleSheet("QLabel{ color: black; font: 24pt;}");
+    }
+    ui->sprLblLastRecog->setText(qtRosNode->recognized_sentence.c_str());
 }
 
 void MainWindow::btnFwdPressed()
@@ -877,6 +880,14 @@ void MainWindow::raTxtCartesianGoalReturnPressed()
 void MainWindow::hdSbHeadValueChanged(double d)
 {
     qtRosNode->publish_head_angles(ui->hdTxtPan->value(), ui->hdTxtTilt->value());
+}
+
+/*
+ * SPEECH CONTROLS
+ */
+void MainWindow::spgTxtSayReturnPressed()
+{
+    qtRosNode->publish_say(ui->spgTxtSay->text().toStdString());
 }
 
 /*
