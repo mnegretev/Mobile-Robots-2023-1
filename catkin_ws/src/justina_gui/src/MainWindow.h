@@ -96,6 +96,7 @@ public slots:
     void ra_get_IK_and_update_ui(std::vector<double> cartesian);
 
     void hdSbHeadValueChanged(double d);
+    void spgTxtSayReturnPressed();
 
     void visFindObjectReturnPressed();
 private:
