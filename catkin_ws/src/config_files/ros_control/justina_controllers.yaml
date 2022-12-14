@@ -24,27 +24,28 @@
   la_1_controller:
     type: effort_controllers/JointPositionController
     joint: la_1_joint
-    pid: {d: 4.64, i: 4.0200000000000005, p: 19.95}
+#    pid: {d: 4.64, i: 4.0200000000000005, p: 19.95}
+    pid: {d: 10.64, i: 4.0200000000000005, p: 400}
   la_2_controller:
     type: effort_controllers/JointPositionController
     joint: la_2_joint
-    pid: {d: 4.28, i: 6.1, p: 20.32}
+    pid: {d: 4.28, i: 6.1, p: 800}
   la_3_controller:
     type: effort_controllers/JointPositionController
     joint: la_3_joint
-    pid: {d: 0.53, i: 5.0200000000000005, p: 10.169999999999998}
+    pid: {d: 5, i: 5.0200000000000005, p: 1000}
   la_4_controller:
     type: effort_controllers/JointPositionController
     joint: la_4_joint
-    pid: {d: 1.02, i: 2.6900000000000004, p: 20.3}
+    pid: {d: 1.02, i: 2.6900000000000004, p: 1000}
   la_5_controller:
     type: effort_controllers/JointPositionController
     joint: la_5_joint
-    pid: {d: 0.58, i: 8.459999999999999, p: 10.489999999999998}
+    pid: {d: 0.58, i: 8.459999999999999, p: 100}
   la_6_controller:   
     type: effort_controllers/JointPositionController
     joint: la_6_joint
-    pid: {d: 0.6499999999999999, i: 5.63, p: 10.51}
+    pid: {d: 0.6499999999999999, i: 5.63, p: 200}
   la_7_controller:
     type: effort_controllers/JointPositionController
     joint: la_7_joint
