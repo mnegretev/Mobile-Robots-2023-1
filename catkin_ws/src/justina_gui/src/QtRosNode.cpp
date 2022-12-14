@@ -18,16 +18,7 @@ QtRosNode::QtRosNode()
     //ra_voltage_bar = 0;
     la_current_cartesian.resize(6);
     ra_current_cartesian.resize(6);
-    /* QString danger = QProgressBar::chunk
-        {
-            background-color: rgb(115, 210, 22);
-            width: 20px;
-        };
-    QString safe= QProgressBar::chunk
-        {
-            background-color: rgb(204, 0, 0);
-            width: 20px;
-         }*/
+    recognized_sentence = "";
 }
 QtRosNode::~QtRosNode()
 {
@@ -48,10 +39,12 @@ void QtRosNode::run()
     pubHdGoalQ    = n->advertise<std_msgs::Float64MultiArray>("/hardware/head/goal_pose", 1);
     pubLaGoalGrip = n->advertise<std_msgs::Float64>("/hardware/left_arm/goal_gripper", 1);
     pubRaGoalGrip = n->advertise<std_msgs::Float64>("/hardware/right_arm/goal_gripper", 1);
+    pubSay        = n->advertise<sound_play::SoundRequest>("/robotsound", 1);
     subLaCurrentQ = n->subscribe("/hardware/left_arm/current_pose" , 1, &QtRosNode::callback_la_current_q, this);
     subLaVoltage  = n->subscribe("/hardware/left_arm_voltage",1, &QtRosNode::callback_la_voltage,this);
     subRaCurrentQ = n->subscribe("/hardware/right_arm/current_pose", 1, &QtRosNode::callback_ra_current_q, this);
     subRaVoltage  = n->subscribe("/hardware/right_arm_voltage",1, &QtRosNode::callback_ra_voltage,this);
+    subRecogSpeech= n->subscribe("/hri/sp_rec/recognized", 1, &QtRosNode::callback_recog_speech, this);
     cltLaIKPose2Traj      =n->serviceClient<custom_msgs::InverseKinematicsPose2Traj>("/manipulation/la_ik_trajectory");
     cltRaIKPose2Traj      =n->serviceClient<custom_msgs::InverseKinematicsPose2Traj>("/manipulation/ra_ik_trajectory");
     cltLaIKPose2Pose      =n->serviceClient<custom_msgs::InverseKinematicsPose2Pose>("/manipulation/la_ik_pose");
@@ -238,6 +231,17 @@ void QtRosNode::publish_head_angles(double pan, double tilt)
     pubHdGoalQ.publish(msg);
 }
 
+void QtRosNode::publish_say(std::string text_to_say)
+{
+    sound_play::SoundRequest msg;
+    msg.sound   = -3;
+    msg.command = 1;
+    msg.volume  = 1.0;
+    msg.arg2    = "voice_kal_diphone";
+    msg.arg = text_to_say;
+    pubSay.publish(msg);
+}
+
 void QtRosNode::callback_la_current_q(const std_msgs::Float64MultiArray::ConstPtr& msg)
 {
     la_current_q = msg->data;
@@ -259,6 +263,11 @@ void QtRosNode::callback_ra_voltage(const std_msgs::Float64::ConstPtr& msg)
 {
     ra_voltage = msg->data;
 //    ra_voltage_bar = (10*(msg->data));
+}
+
+void QtRosNode::callback_recog_speech(const custom_msgs::RecognizedSpeech::ConstPtr& msg)
+{
+    recognized_sentence = msg->hypothesis[0];
 }
 
 bool QtRosNode::call_la_ik_trajectory(std::vector<double>& cartesian, trajectory_msgs::JointTrajectory& trajectory)
