@@ -1,0 +1,45 @@
+<launch>
+  <param name="/path_planning/inflation_radius" value="0.3"/>
+  <param name="/path_planning/cost_radius" value="0.3"/>
+  <param name="/path_planning/smoothing_alpha" value="0.3"/>
+  <param name="/path_planning/smoothing_beta"  value="0.3"/>
+  <include file="$(find bring_up)/launch/justina_hardware.launch">
+    <arg name="initial_x" value="7.64"/>
+    <arg name="initial_y" value="5.40"/>
+    <arg name="initial_a" value="1.57"/>
+  </include>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find config_files)/rviz/final_project.rviz"/>
+  
+  <node name="justina_gui" pkg="justina_gui" type="justina_gui_node" output="screen">
+    <param name="la_predefined" value="$(find config_files)/manipulation/la_predefined.yaml"/>
+    <param name="ra_predefined" value="$(find config_files)/manipulation/ra_predefined.yaml"/>
+    <param name="hd_predefined" value="$(find config_files)/manipulation/hd_predefined.yaml"/>
+  </node>
+
+  <include file="$(find bring_up)/launch/justina_controllers.launch"/>
+
+  <node name="map_server" pkg="map_server" type="map_server" output="screen" args="$(find config_files)/maps/appartment.yaml"/>
+  <node name="amcl" pkg="amcl" type="amcl" output="screen" args="scan:=/hardware/scan">
+    <param name="initial_pose_x" value="3.25"/>
+    <param name="initial_pose_y" value="5.90"/>
+    <param name="initial_pose_a" value="-1.57"/>
+  </node>
+  <node name="speech_recog" pkg="sprec_pocketsphinx" type="asr.py" output="screen">
+    <param name="gram" value="$(find sprec_pocketsphinx)/vocab/final_project.gram"/>
+    <param name="dict" value="$(find sprec_pocketsphinx)/vocab/voice_cmd.dic"/>
+    <param name="grammar" value="final_project_gram"/>
+    <param name="rule" value="simple_command"/>
+    <param name="lm" value=":default"/>
+  </node>
+  <node name="audio_sender" pkg="sprec_pocketsphinx" type="send_audio.py" output="screen"/>
+  <node name="sound_play" pkg="sound_play" type="soundplay_node.py" output="screen"/>
+
+  <node name="practice02"  pkg="students" type="practice02.py"  output="screen"/>
+  <node name="practice03a" pkg="students" type="practice03a.py" output="screen"/>
+  <node name="practice03b" pkg="students" type="practice03b.py" output="screen"/>
+  <node name="practice04"  pkg="students" type="practice04.py"  output="screen"/>
+  <node name="practice05"  pkg="students" type="practice05.py"  output="screen"/>
+  <node name="practice08"  pkg="students" type="practice08.py"  output="screen"/>
+  <node name="practice09"  pkg="students" type="practice09.py"  output="screen"/>
+</launch>
