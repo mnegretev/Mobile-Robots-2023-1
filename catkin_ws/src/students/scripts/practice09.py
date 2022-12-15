@@ -68,11 +68,11 @@ def forward_kinematics(q, Ti, Wi):
         H = tft.concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
     H = tft.concatenate_matrices(H , Ti[7])
     x,y,z, = H[0,3],H[1,3],H[2,3]
-    R,P,Y = tft.euler_from_matrix(H,'rxyz')
+    R,P,Y = list(tft.euler_from_matrix(H))
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
-    delta_q = 0.001#0.000001
+    delta_q = 0.000001
     #
     # TODO:
     # Calculate the Jacobian given a kinematic description Ti and Wi
@@ -96,8 +96,8 @@ def jacobian(q, Ti, Wi):
     #     RETURN J
     #     
     J = numpy.zeros((6,7))            # J 6x7 full of zeros
-    q_next = numpy.array([[qi for qi in q] for _ in range(len(q))]) + delta_q*numpy.identity(len(q))
-    q_prev = numpy.array([[qi for qi in q] for _ in range(len(q))]) - delta_q*numpy.identity(len(q))
+    q_next = numpy.array([q,]*len(q)) + delta_q*numpy.identity(len(q))
+    q_prev = numpy.array([q,]*len(q)) - delta_q*numpy.identity(len(q))
     for i in range(7):
         J[:,i] = (forward_kinematics(q_next[i],Ti,Wi) - forward_kinematics(q_prev[i],Ti,Wi))/(2*delta_q)
     return J
@@ -105,7 +105,7 @@ def jacobian(q, Ti, Wi):
 def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     pd = numpy.asarray([x,y,z,roll,pitch,yaw])  # Desired configuration
     tolerance = 0.01
-    max_iterations = 20
+    max_iterations = 40
     iterations = 0
     #
     # TODO:
@@ -148,6 +148,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
         print('Solucion encontrada - iteraciones',iterations)
         return q
     else:
+        print("No se llego a la solucion")
         return None
 
 def callback_la_ik_for_pose(req):
