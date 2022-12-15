@@ -63,10 +63,10 @@ def forward_kinematics(q, Ti, Wi):
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    H = tft.identity_matriz()
+    H = tft.identity_matrix()
     
     for i in range(len(q)):
-    	H = tft.concatenate_matricez(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
+    	H = tft.concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
     	
     H = tft.concatenate_matrices(H, Ti[7])
     
@@ -137,7 +137,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    q = numpy.asarray(-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3])
+    q = numpy.asarray([-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3])
     p = forward_kinematics(q, Ti, Wi)
     error = p - pd
     error[3:6] =  (error[3:6] + math.pi) % (2 * math.pi) - math.pi
@@ -151,7 +151,7 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     	iterations += 1
     	
     if iterations < max_iterations:
-	return q
+    	return q
     else:  
     	return None
 
