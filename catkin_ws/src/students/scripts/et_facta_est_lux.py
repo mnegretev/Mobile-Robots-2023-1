@@ -29,13 +29,18 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "SANCHEZ TORRES SERGIO DANIEL"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
+    
+    if executing_task:
+        return
+    new_task = True
+    
     recognized_speech = msg.hypothesis[0]
     print("New command received: " + recognized_speech)
 
@@ -174,7 +179,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -238,8 +243,74 @@ def main():
     #
     # FINAL PROJECT 
     #
+    new_task = False
+    recognized_speech = ""
+    executing_task = False
+    state = "SM_INIT"
     
     while not rospy.is_shutdown():
+        if state == "SM_INIT":
+            print("INITIALIZING MOBILE ROBOTS FINAL PROJECT")
+            print("Waiting for a command...\n")
+            say("Initializing Mobile Robots Final Project. I will be waiting for a command")
+            state("SM_WAIT_FOR_COMMAND")
+
+        elif state == "SM_WAIT_FOR_COMMAND":
+            if new_task:
+                new_task = False
+                executing_task = True
+                print("A COMMAND HAS BEEN RECEIVED\n")
+                say("I have been received a command")
+                state = "SM_PARSING"
+
+        elif state = "SM_PARSING":
+            obj, loc = parse_command(recognized_speech)
+            print("Requested object: " + obj)
+            print("Requested location: " + loc)
+            ro = "The requested object is "
+            ro = ro + obj
+            say(ro)
+            state = "SM_MOVE_HEAD"
+
+        elif state == "SM_MOVE_HEAD":
+            move_head(0, -1)
+            if obj == "pringles":
+                say("I will move my left arm")
+                state = "SM_MOVE_LEFT_ARM"
+            elif obj == "drink":
+                say("I will move my right arm")
+                state = "SM_MOVE_RIGHT_ARM"
+            else:
+                print("I CANNOT FIND THAT OBJECT\nPLEASE TRY AGAIN\n")
+                say("I cannot find that object, try again")
+                state = "SM_INIT"
+
+        elif state == "SM_MOVE_LEFT_ARM":
+            move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
+            x,y,z = find_object(obj)
+            xt,yt,zt = transform_point(x, y, z, "realsense_link", "shoulders_left_link")
+            state = "SM_INVSERSE_KINEMATICS"
+
+        elif state == "SM_MOVE_RIGHT_ARM":
+            move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
+            x,y,z = find_object(obj)
+            xt,yt,zt = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
+            state = "SM_INVERSE_KINEMATICS"
+
+        elif state == "SM_INVERSE_KINEMATICS":
+            if obj == "pringles":
+                q = calculate_inverse_kinematics_left(xt, yt, zt)
+            else obj == "drink":
+                q = calculate_inverse_kinematics_right(xt, yt, zt)
+
+            state = "SM_"
+
+        elif state == "SM_END":
+            None
+
+        else:
+            print("FATAL ERROR!")
+
         loop.sleep()
 
 if __name__ == '__main__':
