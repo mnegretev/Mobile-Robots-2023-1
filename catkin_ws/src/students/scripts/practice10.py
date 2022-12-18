@@ -14,7 +14,7 @@ import numpy
 import rospy
 import rospkg
 
-NAME = "FULL_NAME"
+NAME = "Miranda Hernandez"
 
 class NeuralNetwork(object):
     def __init__(self, layers, weights=None, biases=None):
@@ -33,14 +33,17 @@ class NeuralNetwork(object):
         self.weights=[numpy.random.randn(y,x) for x,y in list(zip(layers[:-1],layers[1:]))] if weights is None else weights
         self.weights = numpy.array(self.weights, dtype=object)
         self.biases  = numpy.array(self.biases , dtype=object)
-        
+
+    def sigmoid(self, x):
+        return 1.0 / (1.0 + numpy.exp(-x))
+    
     def feedforward(self, x):
         #
         # This function gets the output of the network when input is 'x'.
         #
         for i in range(len(self.biases)):
             z = numpy.dot(self.weights[i], x) + self.biases[i]
-            x = 1.0 / (1.0 + numpy.exp(-z))  #output of the current layer is the input of the next one
+            x = self.sigmoid(z)  #output of the current layer is the input of the next one
         return x
 
     def feedforward_verbose(self, x):
@@ -50,7 +53,10 @@ class NeuralNetwork(object):
         # return a list containing the output of each layer, from input to output.
         # Include input x as the first output.
         #
-        y = []
+        y = [x]
+        for i in range(len(self.biases)):
+            z = numpy.dot(self.weights[i], y[i]) + self.biases[i]
+            y.append(self.sigmoid(z))
         return y
 
     def backpropagate(self, x, yt):
@@ -74,7 +80,13 @@ class NeuralNetwork(object):
         #     nabla_b[-l] = delta
         #     nabla_w[-l] = delta*ylpT  where ylpT is the transpose of outputs vector of layer l-1
         #
-
+        delta = (y[-1] - yt)*y[-1]*(1 - y[-1])
+        nabla_b[-1] = delta
+        nabla_w[-1] = delta * numpy.transpose(y[-2])
+        for l in range(2,self.num_layers):
+            delta = numpy.dot(numpy.transpose(self.weights[-l+1]), delta)*y[-l]*(1 - y[-l])
+            nabla_b[-l] = delta
+            nabla_w[-l] = delta * numpy.transpose(y[-l-1])
         return nabla_w, nabla_b
 
     def update_with_batch(self, batch, eta):
@@ -142,7 +154,10 @@ def main():
     epochs        = 3
     batch_size    = 10
     learning_rate = 3.0
+    training = False
     
+    if rospy.has_param("~training"):
+        training = True
     if rospy.has_param("~epochs"):
         epochs = rospy.get_param("~epochs")
     if rospy.has_param("~batch_size"):
@@ -161,8 +176,9 @@ def main():
         nn = NeuralNetwork([784,30,10])
         pass
     
-    nn.train_by_SGD(training_dataset, epochs, batch_size, learning_rate)
-    numpy.savez(dataset_folder + "network",w=nn.weights, b=nn.biases)
+    if training:
+        nn.train_by_SGD(training_dataset, epochs, batch_size, learning_rate)
+        numpy.savez(dataset_folder + "network",w=nn.weights, b=nn.biases)
     
     print("\nPress key to test network or ESC to exit...")
     numpy.set_printoptions(formatter={'float_kind':"{:.3f}".format})
