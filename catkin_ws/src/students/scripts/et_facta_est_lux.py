@@ -313,10 +313,13 @@ def main():
             state = "SM_GO_FORWARD"
 
         elif state == "SM_GO_FORWARD":
-            
+            say("I am going to move")
+            go_to_goal_pose(loc[0], loc[1])
+            say("Now I reached the location")
+            state = "SM_END"
 
         elif state == "SM_END":
-            None
+            state = "SM_INIT"
 
         else:
             print("FATAL ERROR!")
