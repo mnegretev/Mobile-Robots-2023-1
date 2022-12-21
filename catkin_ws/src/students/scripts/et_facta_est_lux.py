@@ -277,22 +277,20 @@ def main():
             if obj == "pringles":
                 say("I will move my left arm")
                 state = "SM_MOVE_LEFT_ARM"
-            elif obj == "drink":
+            else:
                 say("I will move my right arm")
                 state = "SM_MOVE_RIGHT_ARM"
-            else:
-                print("I CANNOT FIND THAT OBJECT\nPLEASE TRY AGAIN\n")
-                say("I cannot find that object, try again")
-                state = "SM_INIT"
 
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
+            move_left_gripper(0.7)
             x,y,z = find_object(obj)
             xt,yt,zt = transform_point(x, y, z, "realsense_link", "shoulders_left_link")
             state = "SM_INVSERSE_KINEMATICS"
 
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
+            move_right_gripper(0.7)
             x,y,z = find_object(obj)
             xt,yt,zt = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
             state = "SM_INVERSE_KINEMATICS"
@@ -300,10 +298,22 @@ def main():
         elif state == "SM_INVERSE_KINEMATICS":
             if obj == "pringles":
                 q = calculate_inverse_kinematics_left(xt, yt, zt)
-            else obj == "drink":
+                move_left_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+                move_left_gripper(-0.4)
+                
+            else:
                 q = calculate_inverse_kinematics_right(xt, yt, zt)
+                move_right_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+                move_right_gripper(-0.4)
+                
+            state = "SM_GO_BACK"
 
-            state = "SM_"
+        elif state == "SM_GO_BACK":
+            move_base(-0.5, 0, 5)
+            state = "SM_GO_FORWARD"
+
+        elif state == "SM_GO_FORWARD":
+            
 
         elif state == "SM_END":
             None
