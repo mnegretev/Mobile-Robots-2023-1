@@ -53,6 +53,8 @@ def segment_by_color(img_bgr, points, obj_name):
     meanValue = cv2.mean(nz)
 
     centroid = points[int(meanValue[0]), int(meanValue[1])]
+    print("Centroid location: ", meanValue)
+    print("Centroid location (cartesian): ", centroid)
 
     # - Return a tuple of the form: [img_x, img_y, centroid_x, centroid_y, centroid_z]
     #   where img_x, img_y are the center of the object in image coordinates and
