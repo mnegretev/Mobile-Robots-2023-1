@@ -29,10 +29,8 @@ class NeuralNetwork(object):
         #
         self.num_layers  = len(layers)
         self.layer_sizes = layers
-        self.biases =[numpy.random.randn(y,1) for y in layers[1:]] if biases is None else biases
-        self.weights=[numpy.random.randn(y,x) for x,y in list(zip(layers[:-1],layers[1:]))] if weights is None else weights
-        self.weights = numpy.array(self.weights, dtype=object)
-        self.biases  = numpy.array(self.biases , dtype=object)
+        self.biases =[numpy.random.randn(y,1) for y in layers[1:]] if biases == None else biases
+        self.weights=[numpy.random.randn(y,x) for x,y in zip(layers[:-1],layers[1:])] if weights==None else weights
         
     def feedforward(self, x):
         #
@@ -51,6 +49,8 @@ class NeuralNetwork(object):
         # Include input x as the first output.
         #
         y = []
+
+        y.append(x)
         for i in range(len(self.biases)):
             z = numpy.dot(self.weights[i], x) + self.biases[i]
             x = 1.0 / (1.0 + numpy.exp(-z))  #output of the current layer is the input of the next one
@@ -77,15 +77,20 @@ class NeuralNetwork(object):
         #     where 'WT' is the transpose of the matrix of weights of layer l+1 and 'yl' is the output of layer l
         #     nabla_b[-l] = delta
         #     nabla_w[-l] = delta*ylpT  where ylpT is the transpose of outputs vector of layer l-1
-        #
-        delta = (y[-1] - yt)y[-1](1 - y[-1])
+        # 
+        nabla_b = [numpy.zeros(b.shape) for b in self.biases]
+        nabla_w = [numpy.zeros(w.shape) for w in self.weights]
+        delta = (y[-1] - yt)*y[-1]*(1 - y[-1])
         nabla_b[-1] = delta
         nabla_w[-1] = delta*y[-2].transpose()
+
+
+
         for i in range(2, self.num_layers):
-            delta = numpy.dot(self.weights[-i+1].transpose(), delta)y[-i](1.0 - y[-i])
+            delta = numpy.dot(self.weights[-i+1].transpose(), delta)*y[-i]*(1.0 - y[-i])
             nabla_b[-i] = delta
-            nabla_w[-i] = numpy.dot(delta,y[-i-1].transpose())
-        return nabla_w, nabla_b
+            nabla_w[-i] = numpy.dot(delta,y[-i-1].transpose())       
+        return nabla_w, nabla_b       
 
     def update_with_batch(self, batch, eta):
         #
@@ -104,8 +109,6 @@ class NeuralNetwork(object):
             nabla_b = [nb+dnb for nb,dnb in zip(nabla_b, delta_nabla_b)]
         self.weights = [w-eta*nw/M for w,nw in zip(self.weights, nabla_w)]
         self.biases  = [b-eta*nb/M for b,nb in zip(self.biases , nabla_b)]
-        self.weights = numpy.array(self.weights, dtype=object)
-        self.biases  = numpy.array(self.biases , dtype=object)
         return nabla_w, nabla_b
 
     def get_gradient_mag(self, nabla_w, nabla_b):
@@ -130,23 +133,23 @@ class NeuralNetwork(object):
 
 
 def load_dataset(folder):
-    print("Loading data set from " + folder)
+    print ("Loading data set from " + folder)
     if not folder.endswith("/"):
         folder += "/"
     training_dataset, training_labels, testing_dataset, testing_labels = [],[],[],[]
     for i in range(10):
-        f_data = [c/255.0 for c in open(folder + "data" + str(i), "rb").read(784000)]
+        f_data = [ord(c)/255.0 for c in open(folder + "data" + str(i), "rb").read(784000)]
         images = [numpy.asarray(f_data[784*j:784*(j+1)]).reshape([784,1]) for j in range(1000)]
         label  = numpy.asarray([1 if i == j else 0 for j in range(10)]).reshape([10,1])
         training_dataset += images[0:len(images)//2]
         training_labels  += [label for j in range(len(images)//2)]
         testing_dataset  += images[len(images)//2:len(images)]
         testing_labels   += [label for j in range(len(images)//2)]
-    return list(zip(training_dataset, training_labels)), list(zip(testing_dataset, testing_labels))
+    return zip(training_dataset, training_labels), zip(testing_dataset, testing_labels)
 
 def main():
-    print("PRACTICE 10 - " + NAME)
-    rospy.init_node("practice10")
+    print("PRACTICE 09 - " + NAME)
+    rospy.init_node("practice09")
     rospack = rospkg.RosPack()
     dataset_folder = rospack.get_path("config_files") + "/handwritten_digits/"
     epochs        = 3
