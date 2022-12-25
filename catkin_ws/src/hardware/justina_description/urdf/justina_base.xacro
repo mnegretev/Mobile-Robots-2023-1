@@ -235,4 +235,3 @@
     <child link="laser_link_rear"/>
   </joint>
 </robot>
-  
