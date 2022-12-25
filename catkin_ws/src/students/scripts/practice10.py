@@ -14,7 +14,7 @@ import numpy
 import rospy
 import rospkg
 
-NAME = "FULL_NAME"
+NAME = "Troncoso Moreno Javier Adan"
 
 class NeuralNetwork(object):
     def __init__(self, layers, weights=None, biases=None):
@@ -51,6 +51,13 @@ class NeuralNetwork(object):
         # Include input x as the first output.
         #
         y = []
+        y.append(x)
+
+        for i in range(len(self.biases)):
+            z = numpy.dot(self.weights[i], x) + self.biases[i]
+            x = 1.0 / (1.0 + numpy.exp(-z))
+            y.append(x)
+
         return y
 
     def backpropagate(self, x, yt):
@@ -74,6 +81,14 @@ class NeuralNetwork(object):
         #     nabla_b[-l] = delta
         #     nabla_w[-l] = delta*ylpT  where ylpT is the transpose of outputs vector of layer l-1
         #
+        delta = (y[-1] - yt) * (y[-1] - pow(y[-1],2))
+        nabla_w[-1] = delta * numpy.transpose(y[-2])
+        nabla_b[-1] = delta
+
+        for i in range(2, len(self.layer_sizes)):
+            delta = numpy.dot( numpy.transpose(self.weights[-i+1]), delta ) * (y[-i] - pow(y[-i], 2))
+            nabla_w[-i] = delta * numpy.transpose(y[-i - 1]) 
+            nabla_b[-i] = delta
 
         return nabla_w, nabla_b
 
