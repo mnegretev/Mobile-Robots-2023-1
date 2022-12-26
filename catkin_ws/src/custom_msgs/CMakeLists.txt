@@ -58,6 +58,7 @@ add_message_files(
   FILES
   VisionObject.msg
   VisionObjects.msg
+  RecognizedSpeech.msg
 )
 
 ## Generate services in the 'srv' folder
