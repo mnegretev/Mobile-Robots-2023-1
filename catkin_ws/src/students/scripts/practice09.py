@@ -19,7 +19,7 @@ import urdf_parser_py.urdf
 from geometry_msgs.msg import PointStamped
 from custom_msgs.srv import *
 
-NAME = "FULL_NAME"
+NAME = "SOTO_MONTERROZA_JOSE"
 
 def get_model_info():
     global joints, transforms
@@ -63,7 +63,13 @@ def forward_kinematics(q, Ti, Wi):
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    x,y,z,R,P,Y = 0,0,0,0,0,0
+    H = tft.identity_matrix() #Inicializo matriz homogènea
+    for i in range(len(q)):
+     H = tft.concatenate_matrices(H,Ti[i],tft.rotation_matrix(q[i],Wi[i]))
+    H = tft.concatenate_matrices(H,Ti[7])
+    x,y,z = H[0,3], H[1,3], H[2,3] #Obtenciòn posiciòn
+    R,P,Y  = tft.euler_from_matrix(H,'rxyz') #Obtenciòn orientaciòn
+    #x,y,z,R,P,Y = 0,0,0,0,0,0
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
@@ -92,6 +98,14 @@ def jacobian(q, Ti, Wi):
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
     
+    #La multiplicaciòn [q,] * len(q) genera una matriz cuadrada del tamaño del vector q
+    #delta_q * numpy.identity(len(q)) permite generar una matriz que permita sumar el incremento 
+    q_n = numpy.asarray([q,] * len(q) + (delta_q * numpy.identity(len(q)) ))
+    q_p = numpy.asarray([q,] * len(q) - (delta_q * numpy.identity(len(q)) ))
+    
+    #Calculo de Jacobiano
+    for i in range(len(q)):
+     J[:,i] = (forward_kinematics(q_n[i,:],Ti,Wi) - forward_kinematics(q_p[i,:],Ti,Wi)) / (2*delta_q)
     return J
 
 def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
@@ -122,7 +136,31 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    return None
+    q = numpy.asarray([-0.5,0.6,0.3,2.0,0.3,0.2,0.3]) #Initial guess
+    #Inicializaciòn
+    p = forward_kinematics(q,Ti,Wi)
+    err = p - pd #Los àngulos se encuentran en err[3:6] (R,P,Y)
+    #Asegurar que los  àngulos se encuentre en [-pi,pi]
+    err[3:6] = (err[3:6]+math.pi) % (2*math.pi) - math.pi
+    #Càlculo
+    while (numpy.linalg.norm(err) > tolerance) and (iterations < max_iterations):
+     J = jacobian(q,Ti,Wi) #Jacobiano
+     #Actualizo estimaciòn con pseudoinversa de J y àngulos de [-pi,pi]
+     q = (q - numpy.dot(numpy.linalg.pinv(J),err) + math.pi ) % (2*math.pi) - math.pi
+     #Actualizo calculo cinemàtica directa
+     p = forward_kinematics(q,Ti,Wi)
+     #Obtengo error con àngulos corregidos
+     err = p - pd
+     err[3:6] = (err[3:6] + math.pi) % (2*math.pi) - math.pi
+     
+     iterations += 1 #Aumento iteraciones
+     
+    if iterations < max_iterations:
+     print("Cinemàtica inversa calculada despuès de " + str(iterations) + " iteraciones; los àngulos son: " + str(q))
+     return q
+    else:
+     print("Nùmero de iteraciones excedido")
+     return None
 
 def callback_la_ik_for_pose(req):
     global transforms, joints
