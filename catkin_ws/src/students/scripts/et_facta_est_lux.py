@@ -253,7 +253,7 @@ def main():
             print("INITIALIZING MOBILE ROBOTS FINAL PROJECT")
             print("Waiting for a command...\n")
             say("Initializing Mobile Robots Final Project. I will be waiting for a command")
-            state("SM_WAIT_FOR_COMMAND")
+            state = "SM_WAIT_FOR_COMMAND"
 
         elif state == "SM_WAIT_FOR_COMMAND":
             if new_task:
@@ -263,7 +263,7 @@ def main():
                 say("I have been received a command")
                 state = "SM_PARSING"
 
-        elif state = "SM_PARSING":
+        elif state == "SM_PARSING":
             obj, loc = parse_command(recognized_speech)
             print("Requested object: " + obj)
             print("Requested location: " + loc)
