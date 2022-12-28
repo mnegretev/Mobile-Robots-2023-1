@@ -254,31 +254,31 @@ def main():
             print("Waiting for a command...\n")
             say("Initializing Mobile Robots Final Project. I will be waiting for a command")
             state = "SM_WAIT_FOR_COMMAND"
-            new_task = True
+            #new_task = True
 
         elif state == "SM_WAIT_FOR_COMMAND":
             if new_task:
-                print("Before parse_command\n\n")
-                obj, loc = parse_command(recognized_speech)
-                print("After parse_command\n\n")
-                print("Requested object: \n")
-                print(obj)
-                print("\nRequested location:")
-                print(loc)
-                state = "SM_MOVE_HEAD"
+                #print("Before parse_command\n\n")
+                #obj, loc = parse_command(recognized_speech)
+                #print("After parse_command\n\n")
+                #print("Requested object: \n")
+                #print(obj)
+                #print("\nRequested location:")
+                #print(loc)
+                #state = "SM_MOVE_HEAD"
                 new_task = False
                 executing_task = True
                 print("A COMMAND HAS BEEN RECEIVED\n")
-                say("I have been received a command")
+                #say("I have been received a command")
+                state = "SM_PARSING"
 
-        #elif state == "SM_PARSING":
-            #obj, loc = parse_command(recognized_speech)
-            #print("Requested object: " + obj)
-            #print("Requested location: " + loc)
-            #ro = "The requested object is "
-            #ro = ro + obj
-            #say(ro)
-            #state = "SM_MOVE_HEAD"
+        elif state == "SM_PARSING":
+            obj, loc = parse_command(recognized_speech)
+            print("Requested object:")
+            print(obj)
+            print("Requested location: ")
+            print(loc)
+            state = "SM_MOVE_HEAD"
 
         elif state == "SM_MOVE_HEAD":
             move_head(0, -1)
