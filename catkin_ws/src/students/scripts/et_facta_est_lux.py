@@ -257,18 +257,16 @@ def main():
 
         elif state == "SM_WAIT_FOR_COMMAND":
             if new_task:
+                print("Before parse_command\n\n")
                 obj, loc = parse_command(recognized_speech)
+                print("After parse_command\n\n")
                 print("Requested object: " + obj)
                 print("Requested location: " + loc)
-                ro = "The requested object is "
-                ro = ro + obj
-                say(ro)
                 state = "SM_MOVE_HEAD"
                 new_task = False
                 executing_task = True
                 print("A COMMAND HAS BEEN RECEIVED\n")
                 say("I have been received a command")
-                #state = "SM_PARSING"
 
         #elif state == "SM_PARSING":
             #obj, loc = parse_command(recognized_speech)
