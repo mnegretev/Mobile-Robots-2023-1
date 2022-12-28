@@ -261,9 +261,9 @@ def main():
                 print("Before parse_command\n\n")
                 obj, loc = parse_command(recognized_speech)
                 print("After parse_command\n\n")
-                print("Requested object:\n)
+                print("Requested object: \n")
                 print(obj)
-                print("\nRequested location:)
+                print("\nRequested location:")
                 print(loc)
                 state = "SM_MOVE_HEAD"
                 new_task = False
