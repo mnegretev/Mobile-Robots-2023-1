@@ -254,6 +254,7 @@ def main():
             print("Waiting for a command...\n")
             say("Initializing Mobile Robots Final Project. I will be waiting for a command")
             state = "SM_WAIT_FOR_COMMAND"
+            new_task = True
 
         elif state == "SM_WAIT_FOR_COMMAND":
             if new_task:
