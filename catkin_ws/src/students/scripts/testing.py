@@ -28,6 +28,7 @@ from geometry_msgs.msg import Twist, PoseStamped, Pose, Point, PointStamped
 from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
+import numpy as np
 
 NAME = "ALEJANDRO_MIRANDA_HERNANDEZ"
 
@@ -151,6 +152,7 @@ def go_to_goal_pose(goal_x, goal_y):
 #
 def say(text):
     global pubSay
+    print('-' +     text)
     msg = SoundRequest()
     msg.sound   = -3
     msg.command = 1
@@ -216,6 +218,13 @@ def transform_point(x,y,z, source_frame, target_frame):
     obj_p = listener.transformPoint(target_frame, obj_p)
     return [obj_p.point.x, obj_p.point.y, obj_p.point.z]
 
+def callback_test(msg):
+    global lst, new_task
+    str = msg.data
+    lst = str.split()
+    new_task = True
+
+
 def main():
     global new_task, recognized_speech, executing_task, goal_reached
     global pubLaGoalPose, pubRaGoalPose, pubHdGoalPose, pubLaGoalGrip, pubRaGoalGrip
@@ -247,12 +256,23 @@ def main():
     recognized_speech = None
     new_task = False
     executing_task = False
-    target_obj, target_loc, target_loc_poss = None
-    target_object_x,target_object_y,target_object_z= None
+    target_obj, target_loc, target_loc_poss = None, None, None
+    target_object_x,target_object_y,target_object_z= None, None, None
     goal_reached = False
 
-    while not rospy.is_shutdown():
+    #Testing
+    #-------------------
+    global lst
+    lst = []
+    rospy.Subscriber('/test', String, callback_test)
+    while not new_task:
+        #print('wating')
         loop.sleep()
+    executing_task = 'Say_comand'
+    target_obj, target_loc, target_loc_poss = parse_command(lst)
+    #-------------------
+
+    while not rospy.is_shutdown():
         
 
         #Recibir comando
@@ -266,24 +286,25 @@ def main():
         #Decir comando
         elif executing_task == 'Say_comand':
             say('New command detected')
-            time.sleep(1)
+            time.sleep(2)
             say('Task')
-            time.sleep(1)
+            time.sleep(2)
             say('Take '+ target_obj + ' to the ' + target_loc)
             executing_task = 'Move_base_back'
+            time.sleep(3)
 
 
         #Mover base atras
         elif executing_task == 'Move_base_back': 
             say('Moving back')
-            move_base(-0.1, 0, 1)
+            move_base(-0.1, 0, 2)
             executing_task = 'Move_head'
 
         
         #Mover cabeza
         elif executing_task == 'Move_head':
             say('Looking down')
-            move_head(0,-0.1)
+            move_head(0,-1.0)
             executing_task = 'Seek_obj'
 
 
@@ -291,8 +312,44 @@ def main():
         elif executing_task == 'Seek_obj':
             say('Looking for ' + target_obj)
             target_object_x,target_object_y,target_object_z = find_object(target_obj)
-            executing_task = 'Transf_coords'
+            target_object_x,target_object_y,target_object_z = find_object(target_obj)
+            print('Recived coords',target_object_x,target_object_y,target_object_z)
+            executing_task = 'move_predef_taking_obj'
 
+        
+        #Mover brazo posicion predefinida
+        elif executing_task == 'move_predef_taking_obj':
+            say('Moving arm to position one')
+            if target_obj == 'pringles':
+                q2 = [-1.2, 0,0,1.6, 0, 0.8, 0]
+                move_left_arm(q2)
+                q2 = [-0.4, 0,0,1.6, 0, 0.8, 0]
+                move_left_arm(q2)
+                q2 = [0 , 0 ,0 ,1.6, 0, 0.4, 0]
+                move_left_arm(q2)
+            else:
+                q2 = [0,0,0,0,0,0,0]
+                move_right_arm(q2)
+                q2 = [-1.2, -0.2,0,1.6, 1, 0, 0]
+                move_right_arm(q2)
+                #q2 = [-0.4, -0.2,0,1.6, 1, 0, 0]
+                #move_right_arm(q2)
+                #q2 = [0 , -0.2 ,-0.1 ,1.4, 1, 0.2, 0]
+                q2 = [0.1 , 0 ,0 ,1.7, 0, 0.4, 0]
+                move_right_arm(q2)
+                
+            executing_task = 'open_griper_taking_obj'
+        
+       
+        #Abrir Griper
+        elif executing_task == 'open_griper_taking_obj':
+            say('Open griper')
+            if target_obj == 'pringles':
+                move_left_gripper(0.2)
+            else:
+                move_right_gripper(0.2)
+            executing_task = 'Transf_coords'
+        
         
         #Transformar coordenadas
         elif executing_task == 'Transf_coords':
@@ -301,16 +358,21 @@ def main():
                 target_object_x,target_object_y,target_object_z = transform_point(target_object_x,
                                                                                 target_object_y,
                                                                                 target_object_z,
-                                                                                'left_arm_grip_center',
+                                                                                "realsense_link",
                                                                                 'shoulders_left_link')
+                target_object_x += 0.085
+                #target_object_z += 0.08
             else:
                 target_object_x,target_object_y,target_object_z = transform_point(target_object_x,
                                                                                 target_object_y,
                                                                                 target_object_z,
-                                                                                'right_arm_grip_center',
+                                                                                'realsense_link',
                                                                                 'shoulders_right_link')
+                target_object_x += 0.07
+                target_object_y -= 0.04
+                target_object_z += 0.2
             executing_task = 'kinematics'
-
+            print('New coords',target_object_x,target_object_y,target_object_z)
         
         #Cinematica inversa
         elif executing_task == 'kinematics':
@@ -325,37 +387,24 @@ def main():
                                                 target_object_y,
                                                 target_object_z,
                                                 0, -1.5, 0)
-            executing_task = 'open_griper_taking_obj'
-
-
-        #Abrir Griper
-        elif executing_task == 'open_griper_taking_obj':
-            say('Open griper')
-            if target_obj == 'pringles':
-                pubLaGoalGrip(0.1)
-            else:
-                pubRaGoalGrip(0.1)
-            executing_task = 'move_predef_taking_obj'
-
-
-        #Mover brazo posicion predefinida
-        elif executing_task == 'move_predef_taking_obj':
-            say('Moving arm to position one')
-            if target_obj == 'pringles':
-                q2 = [-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0]
-                move_left_arm(q2)
-            else:
-                q2 = [-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0]
-                move_right_arm(q2)
             executing_task = 'move_target_taking_obj'
 
 
         #Mover brazo posicion objetivo
         elif executing_task == 'move_target_taking_obj':
             say('Moving arm to target')
+            q1 = np.array(q)
             if target_obj == 'pringles':
+                q2 = np.array([0 , 0 ,0 ,1.6, 0, 0.4, 0])
+                for k in range(4):
+                    move_left_arm(q2.tolist())
+                    q2 = (q2 + q1)/2
                 move_left_arm(q)
             else:
+                q2 = np.array([0.18 , 0 ,0 ,1.7, 0, 0.4, 0])
+                for k in range(4):
+                    move_right_arm(q2.tolist())
+                    q2 = (q2 + q1)/2
                 move_right_arm(q)
             executing_task = 'close_griper_taking_obj'
 
@@ -364,9 +413,10 @@ def main():
         elif executing_task == 'close_griper_taking_obj':
             say('Taking object')
             if target_obj == 'pringles':
-                pubLaGoalGrip(-0.1)
+                move_left_gripper(-0.1)
             else:
-                pubRaGoalGrip(-0.1)
+                #move_base(0.05, 0, 0.2)
+                move_right_gripper(-0.12)
             executing_task = 'move_predef_obj'
 
         
@@ -374,11 +424,23 @@ def main():
         elif executing_task == 'move_predef_obj':
             say('Moving arm to position two')
             if target_obj == 'pringles':
-                q2 = [-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0]
-                move_left_arm(q2)
+                q2 = np.array(q)
+                q2[3] += 0.8
+                q1 = np.array([-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0])
+                for k in range(4):
+                    move_left_arm(q2.tolist())
+                    q2 = (q2 + q1)/2
+                move_left_arm(q1.tolist())
             else:
-                q2 = [-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0]
-                move_right_arm(q2)
+                q2 = np.array(q)
+                q2[3] += 1
+                q1 = np.array([-1.2, -0.2,0,1.6, 1, 0, 0])
+                for k in range(4):
+                    move_right_arm(q2.tolist())
+                    q2 = (q2 + q1)/2
+                move_right_arm(q1.tolist())
+                #q2 = [-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0]
+                #move_right_arm(q2)
             executing_task = 'move_goal'
 
 
@@ -399,13 +461,14 @@ def main():
         elif executing_task == 'open_griper_leaving_obj':
             say('Droping object')
             if target_obj == 'pringles':
-                pubLaGoalGrip(0.1)
+                move_left_gripper(0.1)
             else:
-                pubRaGoalGrip(0.1)
+                move_right_gripper(0.1)
             executing_task = 'end'
 
         
-        time.sleep(1)
+        time.sleep(3)
+        loop.sleep()
     
     
     #end While

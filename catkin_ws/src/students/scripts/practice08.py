@@ -72,6 +72,7 @@ def callback_find_object(req):
     cv2.circle(img_bgr, (int(r), int(c)), 20, [0, 255, 0], thickness=3)
     resp = FindObjectResponse()
     resp.x, resp.y, resp.z = x, y, z
+    print('Found',x,y,z)
     return resp
 
 def main():
