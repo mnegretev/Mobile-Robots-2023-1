@@ -19,7 +19,7 @@ import urdf_parser_py.urdf
 from geometry_msgs.msg import PointStamped
 from custom_msgs.srv import *
 
-NAME = "FULL_NAME"
+NAME = "Sobrevilla Zarazùa Jorge Alejandro"
 
 def get_model_info():
     global joints, transforms
@@ -63,7 +63,14 @@ def forward_kinematics(q, Ti, Wi):
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    x,y,z,R,P,Y = 0,0,0,0,0,0
+
+    H = tft.identity_matrix()
+    for i in range(len(q)):
+        H = tft.concatenate_matrices( H, Ti[i], tft.rotation_matrix(q[i],Wi[i]) )
+    H = tft.concatenate_matrices(H, Ti[7] )
+    x, y, z = H[0, 3], H[1, 3], H[2, 3]
+    R,P,Y = list(tft.euler_from_matrix(H))
+    
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
@@ -92,6 +99,24 @@ def jacobian(q, Ti, Wi):
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
     
+    q_next = [ [q[0]+delta_q, q[1], q[2], q[3], q[4], q[5], q[6]],
+                [q[0], q[1]+delta_q, q[2], q[3], q[4], q[5], q[6]], 
+                [q[0], q[1], q[2]+delta_q, q[3], q[4], q[5], q[6]],
+                [q[0], q[1], q[2], q[3]+delta_q, q[4], q[5], q[6]],
+                [q[0], q[1], q[2], q[3], q[4]+delta_q, q[5], q[6]],
+                [q[0], q[1], q[2], q[3], q[4], q[5]+delta_q, q[6]],
+                [q[0], q[1], q[2], q[3], q[4], q[5], q[6]+delta_q]]
+
+    q_prev = [ [q[0]-delta_q, q[1], q[2], q[3], q[4], q[5], q[6]],
+                [q[0], q[1]-delta_q, q[2], q[3], q[4], q[5], q[6]], 
+                [q[0], q[1], q[2]-delta_q, q[3], q[4], q[5], q[6]],
+                [q[0], q[1], q[2], q[3]-delta_q, q[4], q[5], q[6]],
+                [q[0], q[1], q[2], q[3], q[4]-delta_q, q[5], q[6]],
+                [q[0], q[1], q[2], q[3], q[4], q[5]-delta_q, q[6]],
+                [q[0], q[1], q[2], q[3], q[4], q[5], q[6]-delta_q]]    
+
+    for i in range(0, 6):
+        J[i] = (forward_kinematics(q_next[i,i], Ti, Wi)-forward_kinematics(q_prev[i,i], Ti, Wi))/(2*delta_q)
     return J
 
 def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
@@ -122,7 +147,20 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    return None
+
+    q = [-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3]
+    p = forward_kinematics( q, Ti, Wi )
+
+    print(p)
+    print(pd)
+    print(x, y, z, roll, pitch, yaw)
+    while( abs(p-pd) > tolerance ):
+        J=jacobian(q)
+        q[iterations+1] = q[iterations] - J[p-pd]
+        p = forward_kinematics( q[iterations] )
+        iterations += 1
+
+    return None if max_iterations <= iterations else q
 
 def callback_la_ik_for_pose(req):
     global transforms, joints

@@ -42,6 +42,9 @@ def segment_by_color(img_bgr, points, obj_name):
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
 
+
+    #Regresa 
+
     img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
     lower = [25, 50, 50] if obj_name == "pringles" else [10, 200, 50]
     upper = [35, 255, 255] if obj_name == "pringles" else [20, 255, 255]
@@ -49,17 +52,27 @@ def segment_by_color(img_bgr, points, obj_name):
     upper = numpy.asarray(upper)
     img_bgr = cv2.inRange(img_bgr, lower, upper ) 
     img_fnz = cv2.findNonZero(img_bgr)
-    img_mean = cv2.mean(img_fnz)
-    centroid_x = img_mean[0]
-    centroid_y = img_mean[1]
-    centroid_z = img_mean[2]
+    contador = 0
+    centroid_x = 0
+    centroid_y = 0
+    centroid_z = 0
 
-    print(img_mean)
 
-    image_x = points[240,320][0]
-    image_y = points[240,320][1]
-    #for x in range[ numpy.shape( points )[0] ] 
-        
+    for i in img_fnz:
+        centroid_x += points[i[0][1],i[0][0]][0]
+        centroid_y += points[i[0][1],i[0][0]][1]    
+        centroid_z += points[i[0][1],i[0][0]][2]    
+        contador += 1
+    
+    centroid_x = centroid_x / contador
+    centroid_y = centroid_y / contador
+    centroid_z = centroid_z / contador
+    
+    print(centroid_x, centroid_y, centroid_z, contador, img_mean  )
+    
+
+    image_x=points[240, 320][0]
+    image_y=points[240, 320][1]
 
     return [image_x,image_y,centroid_x,centroid_y,centroid_z]
 
