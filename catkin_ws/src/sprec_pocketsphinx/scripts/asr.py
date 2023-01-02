@@ -5,8 +5,7 @@ import rospy
 import rospkg
 from std_msgs.msg import UInt8MultiArray
 from custom_msgs.msg import RecognizedSpeech
-from pocketsphinx.pocketsphinx import *
-from sphinxbase.sphinxbase import *
+from pocketsphinx import *
 
 def callback_sphinx_audio(msg):
     global decoder, in_speech_bf, pub_recognized
@@ -32,8 +31,8 @@ def main():
     rospack = rospkg.RosPack()
 
     in_speech_bf = False
-    l_model   = ""
-    hmm_folder= "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/"
+    l_model   = "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us.lm.bin"
+    hmm_folder= "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us"
     dict_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/default.dic"
     gram_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/default.gram"
     gram_rule = "default"
@@ -52,9 +51,11 @@ def main():
         gram_name  = rospy.get_param("~grammar")
 
     print("SpRec.->Loading decoder with default config...")
+    #print('\n\n',hmm_folder,'\n',dict_file,end='\n\n\n')
     config = Decoder.default_config()
     config.set_string('-hmm', hmm_folder)
     config.set_string('-dict', dict_file)
+    #config = Config(hmm=hmm_folder, dict=dict_file)
     print("SpRec.->Initializing decoder using grammar: " + gram_file)
     decoder = Decoder(config)
     jsgf = Jsgf(gram_file)
