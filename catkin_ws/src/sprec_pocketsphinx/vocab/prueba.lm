@@ -1,0 +1,57 @@
+Language model created by QuickLM on Mon Jan  2 20:09:14 EST 2023
+Copyright (c) 1996-2010 Carnegie Mellon University and Alexander I. Rudnicky
+
+The model is in standard ARPA format, designed by Doug Paul while he was at MITRE.
+
+The code that was used to produce this language model is available in Open Source.
+Please visit http://www.speech.cs.cmu.edu/tools/ for more information
+
+The (fixed) discount mass is 0.5. The backoffs are computed using the ratio method.
+This model based on a corpus of 8 sentences and 10 words
+
+\data\
+ngram 1=10
+ngram 2=16
+ngram 3=8
+
+\1-grams:
+-0.7782 </s> -0.3010
+-0.7782 <s> -0.2218
+-1.6812 DRINK -0.2218
+-1.6812 KITCHEN -0.2218
+-1.6812 PRINGLES -0.2218
+-1.6812 ROBOT -0.2218
+-1.6812 TABLE -0.2218
+-1.6812 TAKE -0.2218
+-1.6812 THE -0.2218
+-1.6812 TO -0.2218
+
+\2-grams:
+-1.2041 <s> DRINK 0.0000
+-1.2041 <s> KITCHEN 0.0000
+-1.2041 <s> PRINGLES 0.0000
+-1.2041 <s> ROBOT 0.0000
+-1.2041 <s> TABLE 0.0000
+-1.2041 <s> TAKE 0.0000
+-1.2041 <s> THE 0.0000
+-1.2041 <s> TO 0.0000
+-0.3010 DRINK </s> -0.3010
+-0.3010 KITCHEN </s> -0.3010
+-0.3010 PRINGLES </s> -0.3010
+-0.3010 ROBOT </s> -0.3010
+-0.3010 TABLE </s> -0.3010
+-0.3010 TAKE </s> -0.3010
+-0.3010 THE </s> -0.3010
+-0.3010 TO </s> -0.3010
+
+\3-grams:
+-0.3010 <s> DRINK </s>
+-0.3010 <s> KITCHEN </s>
+-0.3010 <s> PRINGLES </s>
+-0.3010 <s> ROBOT </s>
+-0.3010 <s> TABLE </s>
+-0.3010 <s> TAKE </s>
+-0.3010 <s> THE </s>
+-0.3010 <s> TO </s>
+
+\end\

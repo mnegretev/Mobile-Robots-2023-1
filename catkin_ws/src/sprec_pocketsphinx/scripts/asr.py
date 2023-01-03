@@ -31,12 +31,12 @@ def main():
     rospack = rospkg.RosPack()
 
     in_speech_bf = False
-    l_model   = "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us.lm.bin"
-    hmm_folder= "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us"
-    dict_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/default.dic"
-    gram_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/default.gram"
-    gram_rule = "default"
-    gram_name = "default"
+    l_model   ="/home/javiertroncoso/Mobile-Robots-2023-1/catkin_ws/src/sprec_pocketsphinx/vocab/prueba.lm"#/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us.lm.bin"# Modelo de lenguaje
+    hmm_folder= "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us" #carpeta del modelo acústico(en-us)ingles.
+    dict_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/prueba.dic" #Diccionario fonético
+    gram_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/final_project.gram"
+    gram_rule = "simple_command"
+    gram_name = "final_project_gram"
     if rospy.has_param("~hmm"):
         hmm_folder = rospy.get_param("~hmm")
     if rospy.has_param("~lm"):
@@ -51,7 +51,7 @@ def main():
         gram_name  = rospy.get_param("~grammar")
 
     print("SpRec.->Loading decoder with default config...")
-    #print('\n\n',hmm_folder,'\n',dict_file,end='\n\n\n')
+    print('\n\n',hmm_folder,'\n',dict_file,end='\n\n\n')
     config = Decoder.default_config()
     config.set_string('-hmm', hmm_folder)
     config.set_string('-dict', dict_file)
