@@ -141,12 +141,13 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     p = forward_kinematics(q, Ti, Wi)
     error = p - pd
     
+    for i in range(len(error)):
+    	if error[i] > math.pi:
+    		error[i] -= 2 * math.pi
+    	elif error[i] < -math.pi:
+        	error[i] += 2 * math.pi
+    
     while numpy.linalg.norm(error) > tolerance and iterations < max_iterations:
-    	for i in range(len(error)):
-    	    if error[i] > math.pi:
-    	        error[i] -= 2 * math.pi
-    	    elif error[i] < -math.pi:
-    	        error[i] += 2 * math.pi
     	        
     	J = jacobian(q, Ti, Wi)
     	q = q - numpy.dot(numpy.linalg.pinv(J), error)
@@ -159,6 +160,12 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     	      
     	p = forward_kinematics(q, Ti, Wi)
     	error = p - pd
+
+    	for i in range(len(error)):
+    		if error[i] > math.pi:
+    			error[i] -= 2 * math.pi
+    		elif error[i] < -math.pi:
+        		error[i] += 2 * math.pi
 
     	iterations += 1
     	
