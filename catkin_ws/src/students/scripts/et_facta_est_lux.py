@@ -29,7 +29,7 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "CERVANTES GUATI ROJO JUAN ANDRES"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
@@ -238,8 +238,49 @@ def main():
     #
     # FINAL PROJECT 
     #
-    
+    new_task = False
+    recognized_speech = ""
+    executing_task = False
+    state = "SM_INIT"
+
     while not rospy.is_shutdown():
+        if state == "SM_INIT":
+         print("Initializating final project...")
+         print("Waiting for spoken command...")
+         state = "SM_WAIT_FOR_COMMAND"
+        elif state == "SM_WAIT_FOR_COMMAND":
+         if new_task:
+          new_task = False
+          executing_task = True
+          state = "SM_PARSING"
+        elif state == "SM_PARSING":
+         obj, loc = parse_command(recognized_speech)
+         print("Requested object: " + obj)
+         print("Requested location " + str(loc))
+         state = "SM_MOVE_HEAD"
+        elif state == "SM_MOVE_HEAD":
+         move_head(0,-1)
+         if obj == "pringles":
+          state = "SM_MOVE_LEFT_ARM"
+         else:
+          state = "SM_MOVE_RIGHT_ARM"
+        elif state == "SM_MOVE_LEFT_ARM":
+         move_left_arm(-1,0,0,1.5,0,0.8,0)
+         x,y,z = find_object(obj)
+         x,y,z = transform_point(x,y,z,"realsense_link","shoulders_left_link")
+         state = "SM_END"
+        elif state == "SM_MOVE_RIGHT_ARM":
+         move_right_arm(-1,-0.2,0,1.4,1.1,0,0)
+         x,y,z = find_object(obj)
+         x,y,z = transform_point(x,y,z,"realsense_link","shoulders_right_link")
+         state = "SM_END"
+        elif state == "SM_END":
+         None
+        else:
+         print("FATAL ERROR!!!")
+
+
+
         loop.sleep()
 
 if __name__ == '__main__':
