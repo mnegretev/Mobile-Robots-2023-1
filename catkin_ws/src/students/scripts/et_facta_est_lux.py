@@ -36,6 +36,9 @@ NAME = "CERVANTES GUATI ROJO JUAN ANDRES"
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
+    if executing_task:
+     return
+    new_task = True
     recognized_speech = msg.hypothesis[0]
     print("New command received: " + recognized_speech)
 
