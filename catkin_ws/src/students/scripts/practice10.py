@@ -83,10 +83,10 @@ class NeuralNetwork(object):
         nabla_b[-1] = delta
         nabla_w[-1] = delta * y[-2].transpose()
 
-        for i in range(2, len(y)):
-         delta = (self.weights[-i+1].transpose() * delta) * y[-i-1] * (1 - y[-i-1])
-         nabla_b[-i-1] = delta
-         nabla_w[-i-1] = delta * y[-i-2].transpose() 
+        for i in range(2, self.num_layers):
+         delta = numpy.dot(self.weights[-i+1].transpose(), delta) * y[-i] * (1 - y[-i])
+         nabla_b[-i] = delta
+         nabla_w[-i] = numpy.dot(delta, y[-i-1].transpose()) 
 
         return nabla_w, nabla_b
 
