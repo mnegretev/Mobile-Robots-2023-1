@@ -70,8 +70,8 @@ def forward_kinematics(q, Ti, Wi):
     	
     H = tft.concatenate_matrices(H, Ti[7])
     
-    x,y,z = H[0,3], H[1,3], H[2,3]		#Get xyz from resulting H
-    R,P,Y = list(tft.euler_from_matrix(H))	#Get xyz RPY resulting H
+    x,y,z = H[0][3], H[1][3], H[2][3]		#Get xyz from resulting H
+    R,P,Y = tft.euler_from_matrix(H, 'rxyz')	#Get RPY from resulting H
     
     return numpy.asarray([x,y,z,R,P,Y])
 
@@ -140,14 +140,26 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     q = numpy.asarray([-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3])
     p = forward_kinematics(q, Ti, Wi)
     error = p - pd
-    error[3:6] =  (error[3:6] + math.pi) % (2 * math.pi) - math.pi
     
     while numpy.linalg.norm(error) > tolerance and iterations < max_iterations:
+    	for i in range(len(error)):
+    	    if error[i] > math.pi:
+    	        error[i] -= 2 * math.pi
+    	    elif error[i] < -math.pi:
+    	        error[i] += 2 * math.pi
+    	        
     	J = jacobian(q, Ti, Wi)
-    	q = (q - numpy.dot(numpy.linalg.pinv(J), error) + math.pi) % (2 * math-pi) - math.pi
+    	q = q - numpy.dot(numpy.linalg.pinv(J), error)
+    	
+    	for i in range(len(q)):
+    	    if q[i] > math.pi:
+    	        q[i] -= 2 * math.pi
+    	    elif q[i] < -math.pi:
+    	        q[i] += 2 * math.pi
+    	      
     	p = forward_kinematics(q, Ti, Wi)
     	error = p - pd
-    	error[3:6] =  (error[3:6] + math.pi) % (2 * math.pi) - math.pi
+
     	iterations += 1
     	
     if iterations < max_iterations:
