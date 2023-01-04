@@ -46,9 +46,10 @@ def callback_recognized_speech(msg):
 # Global variable 'goal_reached' is set True when the last sent navigation goal is reached
 #
 def callback_goal_reached(msg):
-    global goal_reached
+    global goal_reached, goal_flag
     goal_reached = msg.data
     print("Received goal reached: " + str(goal_reached))
+    goal_flag = True
 
 def parse_command(cmd):
     obj = "pringles" if "PRINGLES" in cmd else "drink"
@@ -177,7 +178,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -215,7 +216,7 @@ def transform_point(x,y,z, source_frame, target_frame):
     return [obj_p.point.x, obj_p.point.y, obj_p.point.z]
 
 def main():
-    global new_task, recognized_speech, executing_task, goal_reached
+    global new_task, recognized_speech, executing_task, goal_reached, goal_flag
     global pubLaGoalPose, pubRaGoalPose, pubHdGoalPose, pubLaGoalGrip, pubRaGoalGrip
     global pubGoalPose, pubCmdVel, pubSay
     print("FINAL PROJECT - " + NAME)
@@ -245,6 +246,7 @@ def main():
     recognized_speech = ""
     executing_task = False
     state = "SM_INIT"
+    goal_flag = False
 
     while not rospy.is_shutdown():
         if state == "SM_INIT":
@@ -264,26 +266,65 @@ def main():
         elif state == "SM_MOVE_HEAD":
          move_head(0,-1)
          if obj == "pringles":
-          state = "SM_MOVE_LEFT_ARM"
+          state = "SM_PREPARE_LEFT_ARM"
          else:
-          state = "SM_MOVE_RIGHT_ARM"
-        elif state == "SM_MOVE_LEFT_ARM":
+          state = "SM_PREPARE_RIGHT_ARM"
+        elif state == "SM_PREPARE_LEFT_ARM":
          move_left_arm(-1,0,0,1.5,0,0.8,0)
          x,y,z = find_object(obj)
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_left_link")
-         state = "SM_END"
-        elif state == "SM_MOVE_RIGHT_ARM":
+         state = "SM_OPEN_LEFT_GRIPPER"
+        elif state == "SM_PREPARE_RIGHT_ARM":
          move_right_arm(-1,-0.2,0,1.4,1.1,0,0)
          x,y,z = find_object(obj)
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_right_link")
+         state = "SM_OPEN_RIGHT_GRIPPER"
+        elif state == "SM_OPEN_LEFT_GRIPPER":
+         move_left_gripper(0.5)
+         state = "SM_MOVE_LEFT_ARM"
+        elif state == "SM_OPEN_RIGHT_GRIPPER":
+         move_right_gripper(0.5)
+         state = "SM_MOVE_RIGHT_ARM"
+        elif state == "SM_MOVE_LEFT_ARM":
+         q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(x,y,z,0,-1.5,0)
+         move_left_arm(q1,q2,q3,q4,q5,q6,q7)
+         state = "SM_CLOSE_LEFT_GRIPPER"
+        elif state == "SM_MOVE_RIGHT_ARM":
+         q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_right(x,y,z,0,-1.5,0)
+         move_right_arm(q1,q2,q3,q4,q5,q6,q7)
+         state = "SM_CLOSE_RIGHT_GRIPPER"
+        elif state == "SM_CLOSE_LEFT_GRIPPER":
+         move_left_gripper(-0.5)
+         state = "SM_RETURN_LEFT_ARM"
+        elif state == "SM_CLOSE_RIGHT_GRIPPER":
+         move_right_gripper(-0.5)
+         state = "SM_RETURN_RIGHT_ARM"
+        elif state == "SM_RETURN_LEFT_ARM":
+         move_left_arm(-1.3,0.2,0,1.6,0,1.2,0)
+         state = "SM_MOVE_BASE_BACK"
+        elif state == "SM_RETURN_RIGHT_ARM":
+         move_right_arm(-1.3,0.2,0,1.6,0,1.2,0)//Checar
+         state = "SM_MOVE_BASE_BACK"
+        elif state == "SM_MOVE_BASE_BACK":
+         move_base(1, 0, 2)//Checar
+         state = "SM_GOTO_LOCATION"
+        elif state == "SM_GOTO_LOCATION":
+         if location == "kitchen":
+          go_to_goal_pose(10,10)//Checar
+          state = "SM_WAIT_FOR_GOAL_REACH"
+        elif state == "SM_WAIT_FOR_GOAL_REACH":
+         if goal_flag:
+          state = "SM_DROP_OBJECT"
+        elif state == "SM_DROP_OBJECT":
+         if object == "pringles":
+          move_left_gripper(0.5)
+         else:
+          move_right_gripper(0.5)
          state = "SM_END"
         elif state == "SM_END":
-         None
+         print("CIRCUIT FINISHED SUCCESSFULLY")
         else:
          print("FATAL ERROR!!!")
-
-
-
         loop.sleep()
 
 if __name__ == '__main__':
