@@ -310,7 +310,7 @@ def main():
          state = "SM_GOTO_LOCATION"
         elif state == "SM_GOTO_LOCATION":
          if location == "kitchen":
-          go_to_goal_pose(10,10)//Checar
+          go_to_goal_pose(1672875291.131834229, 337.078000000)//Checar
           state = "SM_WAIT_FOR_GOAL_REACH"
         elif state == "SM_WAIT_FOR_GOAL_REACH":
          if goal_flag:
