@@ -40,32 +40,37 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    LimiteSuperior = [0]
-    LimiteInferior = [0]
+    upperLimit = [0]
+    lowerLimit = [0]
+
     if obj_name == "pringles":
-        LimiteSuperior = [35, 255, 255]
-        LimiteInferior = [25, 50, 50]
+        upperLimit = [35, 255, 255]
+        lowerLimit = [25, 50, 50]
     else:
-        LimiteSuperior = [20, 255, 255]
-        LimiteInferior = [10, 200, 50]
-    Img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV) 
-    Img_b = cv2.inRange(Img_hsv, numpy.array(LimiteSuperior), numpy.array(LimiteInferior))
-    DifCero = cv2.findNonZero(Img_b)
-    CoorCentroide = cv2.mean(DifCero)
+        upperLimit = [20, 255, 255]
+        lowerLimit = [10, 200, 50]
+   
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    img_bin = cv2.inRange(img_hsv, numpy.array(lowerLimit), numpy.array(upperLimit))
+    nonZero = cv2.findNonZero(img_bin)
+    meanCentroide = cv2.mean(nonZero)
+
     x, y, z = 0, 0, 0
-    for i in DifCero:
-        [[r,c]] = i
+
+    for i in nonZero:
+        [[c,r]] = i
         if math.isnan(points[r,c][0]) or math.isnan(points[r,c][1]) or math.isnan(points[r,c][2]):
             pass
         else:
             x = x + points[r,c][0]
             y = y + points[r,c][1]
             z = z + points[r,c][2]
-    x = x/len(DifCero)
-    y = y/len(DifCero)
-    z = z/len(DifCero)
 
-    return [CoorCentroide[0], CoorCentroide[1], x, y, z]
+    x = x/len(nonZero)
+    y = y/len(nonZero)
+    z = z/len(nonZero)
+
+    return [meanCentroide[0], meanCentroide[1], x, y, z]
 	
 def callback_find_object(req):
     global pub_point, img_bgr
