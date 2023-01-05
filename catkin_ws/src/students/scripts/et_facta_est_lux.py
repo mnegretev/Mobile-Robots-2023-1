@@ -300,11 +300,14 @@ def main():
 
         elif state == "SM_INVERSE_KINEMATICS":
             if obj == "pringles":
-                print("Before inverse_kinematics")
-                q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
-                print("After inverse_kinematics")
-                move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
-                move_left_gripper(-0.4)
+                try:
+                    print("Before inverse_kinematics")
+                    q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+                    print("After inverse_kinematics")
+                    move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+                    move_left_gripper(-0.4)
+                except:
+                    print("An exception has ocurred!!")
                 
             else:
                 q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
