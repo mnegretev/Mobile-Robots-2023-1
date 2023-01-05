@@ -250,35 +250,22 @@ def main():
     
     while not rospy.is_shutdown():
         if state == "SM_INIT":
-            print("INITIALIZING MOBILE ROBOTS FINAL PROJECT")
-            print("Waiting for a command...\n")
+            print("INITIALIZING MOBILE ROBOTS FINAL PROJECT\nWaiting for a command...\n")
             say("Initializing Mobile Robots Final Project. I will be waiting for a command")
             state = "SM_WAIT_FOR_COMMAND"
-            #new_task = True
 
         elif state == "SM_WAIT_FOR_COMMAND":
             if new_task:
-                #print("Before parse_command\n\n")
-                #obj, loc = parse_command(recognized_speech)
-                #print("After parse_command\n\n")
-                #print("Requested object: \n")
-                #print(obj)
-                #print("\nRequested location:")
-                #print(loc)
-                #state = "SM_MOVE_HEAD"
                 new_task = False
                 executing_task = True
                 print("A COMMAND HAS BEEN RECEIVED\n")
-                #say("I have been received a command")
-                state = "SM_PARSING"
-
-        elif state == "SM_PARSING":
-            obj, loc = parse_command(recognized_speech)
-            print("Requested object:")
-            print(obj)
-            print("Requested location: ")
-            print(loc)
-            state = "SM_MOVE_HEAD"
+                
+                obj, loc = parse_command(recognized_speech)
+                print("Requested object:")
+                print(obj)
+                print("Requested location: ")
+                print(str(loc))
+                state = "SM_MOVE_HEAD"
 
         elif state == "SM_MOVE_HEAD":
             move_head(0, -1)
@@ -318,16 +305,17 @@ def main():
 
         elif state == "SM_GO_BACK":
             move_base(-0.5, 0, 5)
+            move_head(0, 0)
             state = "SM_GO_FORWARD"
 
         elif state == "SM_GO_FORWARD":
             say("I am going to move")
             go_to_goal_pose(loc[0], loc[1])
-            say("Now I reached the location")
             state = "SM_END"
 
         elif state == "SM_END":
-            state = "SM_INIT"
+            #state = "SM_INIT"
+            print("\n\nThe program has finished!\n\n")
 
         else:
             print("FATAL ERROR!")
