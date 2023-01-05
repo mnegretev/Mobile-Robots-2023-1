@@ -3,8 +3,7 @@
 from time import sleep
 import pyaudio
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import UInt8MultiArray
+from std_msgs.msg import *
 
 def main():
     print("INITIALIZING AUDIO SENDER NODE BY MARCOSOFT...")
