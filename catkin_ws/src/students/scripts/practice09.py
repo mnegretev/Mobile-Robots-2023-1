@@ -63,14 +63,13 @@ def forward_kinematics(q, Ti, Wi):
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    H= tft.identity_matrix()
-    for iterador in range(len(q)):
-        H=tft.concatenate_matrices(H,Ti[iterador],tft.rotation_matrix(q[iterador],Wi[iterador]))
-    H=tft.concatenate_matrices(H,Ti[7])
-
     
-    x,y,z = H[0][3],H[1][3],H[2][3]  # Get xyz from resulting H
-    R,P,Y = tft.euler_from_matrix(H,'rxyz')  # Get RPY from resulting H
+    H  = tft.identity_matrix()
+    for i in range(len(q)):
+        H  = tft.concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
+    H  = tft.concatenate_matrices(H, Ti[7])
+    x,y,z = H[0,3], H[1,3], H[2,3]          # Get xyz from resulting H
+    R,P,Y = list(tft.euler_from_matrix(H))  # Get RPY from resulting H
     return numpy.asarray([x,y,z,R,P,Y])
 
 def jacobian(q, Ti, Wi):
@@ -100,9 +99,8 @@ def jacobian(q, Ti, Wi):
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
     qn = numpy.asarray([q,]*len(q)) + delta_q*numpy.identity(len(q))   # q_next as indicated above
     qp = numpy.asarray([q,]*len(q)) - delta_q*numpy.identity(len(q))   # q_prev as indicated above
-    
-    for i in range(0,7):
-        J[:,i]=(forward_kinematics(qn[i,:],Ti,Wi)-forward_kinematics(qp[i,:],Ti,Wi))/(2*delta_q)
+    for i in range(len(q)):
+        J[:,i] = (forward_kinematics(qn[i], Ti, Wi) - forward_kinematics(qp[i], Ti, Wi))/delta_q/2.0
     return J
 
 def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
@@ -134,35 +132,22 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    p= forward_kinematics(q,Ti,Wi)
-    error=p-pd
-    while numpy.linalg.norm(error)>tolerance and iterations<max_iterations:
-
-        for iteracion in range(len(error)):
-            if error[iteracion] >math.pi:
-                error[iteracion]-=2*math.pi 
-            elif error[iteracion]<(-math.pi):
-                error[iteracion]+=2*math.pi 
-
-        J = jacobian(q,Ti,Wi)
-        q=q-numpy.dot(numpy.linalg.pinv(J),error)
-
-        for i in range(len(q)):
-            if q[i]>math.pi:
-                q[i]-=2*math.pi 
-            elif q[i] <(-math.pi):
-                q[i]+=2*math.pi
-
-        p=forward_kinematics(q,Ti,Wi)
-        error=p-pd
-
-        iterations+=1
-
-    if(iterations <max_iterations):
+    p = forward_kinematics(q, Ti, Wi)
+    err = p - pd
+    err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
+    while numpy.linalg.norm(err) > tolerance and iterations < max_iterations:
+        J = jacobian(q, Ti, Wi)
+        q = (q - numpy.dot(numpy.linalg.pinv(J), err) + math.pi)%(2*math.pi) - math.pi
+        p = forward_kinematics(q, Ti, Wi)
+        err = p - pd
+        err[3:6] = (err[3:6] + math.pi)%(2*math.pi) - math.pi
+        iterations +=1
+    if iterations < max_iterations:
+        print("InverseKinematics.->IK solved after " + str(iterations) + " iterations: " + str(q))
         return q
-
-    else:  
-        return None
+    else:
+        print("InverseKinematics.->Cannot solve IK. Max attempts exceeded. ")    
+    return None
 
 def callback_la_ik_for_pose(req):
     global transforms, joints
