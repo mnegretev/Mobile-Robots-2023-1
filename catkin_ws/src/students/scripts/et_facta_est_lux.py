@@ -165,6 +165,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -265,12 +266,16 @@ def main():
                 print(obj)
                 print("Requested location: ")
                 print(str(loc))
+                print("Before SM_MOVE_HEAD")
                 state = "SM_MOVE_HEAD"
+                print("After SM_MOVE_HEAD")
 
         elif state == "SM_MOVE_HEAD":
+            print("Inside SM_MOVE_HEAD")
             move_head(0, -1)
             if obj == "pringles":
-                say("I will move my left arm")
+                print("Inside pringles if")
+                print("I will move my left arm")
                 state = "SM_MOVE_LEFT_ARM"
             else:
                 say("I will move my right arm")
@@ -278,39 +283,47 @@ def main():
 
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
+            print("I moved mi left arm")
             move_left_gripper(0.7)
             x,y,z = find_object(obj)
-            xt,yt,zt = transform_point(x, y, z, "realsense_link", "shoulders_left_link")
-            state = "SM_INVSERSE_KINEMATICS"
+            print("I found the object: " + str(obj))
+            x,y,z = transform_point(x, y, z, "realsense_link", "shoulders_left_link")
+            print("After transform _point()")
+            state = "SM_INVERSE_KINEMATICS"
 
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
             move_right_gripper(0.7)
             x,y,z = find_object(obj)
-            xt,yt,zt = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
+            x,y,z = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
             state = "SM_INVERSE_KINEMATICS"
 
         elif state == "SM_INVERSE_KINEMATICS":
             if obj == "pringles":
-                q = calculate_inverse_kinematics_left(xt, yt, zt)
-                move_left_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+                print("Before inverse_kinematics")
+                q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+                print("After inverse_kinematics")
+                move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
                 move_left_gripper(-0.4)
                 
             else:
-                q = calculate_inverse_kinematics_right(xt, yt, zt)
-                move_right_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+                q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
+                move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
                 move_right_gripper(-0.4)
                 
             state = "SM_GO_BACK"
 
         elif state == "SM_GO_BACK":
+            print("I'm gonna move backward")
             move_base(-0.5, 0, 5)
+            print("I moved backward")
             move_head(0, 0)
             state = "SM_GO_FORWARD"
 
         elif state == "SM_GO_FORWARD":
-            say("I am going to move")
+            print("I am going to move forward")
             go_to_goal_pose(loc[0], loc[1])
+            print("I reached my goal!!!!!!!")
             state = "SM_END"
 
         elif state == "SM_END":
