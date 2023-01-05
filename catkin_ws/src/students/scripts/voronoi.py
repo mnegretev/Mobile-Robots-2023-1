@@ -20,7 +20,7 @@ from nav_msgs.srv import GetMap
 from nav_msgs.srv import GetMapResponse
 from nav_msgs.srv import GetMapRequest
 
-NAME = "Najera Santamaria Isaac Israel"
+NAME = "FULL NAME"
 
 def brushfire(grid_map):
     print("Executing brushfire algorithm...")
@@ -101,9 +101,7 @@ def main():
     distances = brushfire(grid_map)
     voronoi_data = find_maxima(distances)
     print("Executed brushfire succesfully")
-
     voronoi_data = numpy.ravel(numpy.reshape(voronoi_data, (width*height, 1)))
-    print("Distances shape " + str(voronoi_data.shape))
     voronoi_map  = OccupancyGrid(info=map_info, data=voronoi_data)
     loop = rospy.Rate(1)
     while not rospy.is_shutdown():
