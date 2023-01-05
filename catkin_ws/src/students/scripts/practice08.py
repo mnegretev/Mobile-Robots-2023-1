@@ -40,8 +40,8 @@ def segment_by_color(img_bgr, points, obj_name):
     #   Check online documentation for cv2.cvtColor function
     # - Determine the pixels whose color is in the selected color range.
     #   Check online documentation for cv2.inRange
-    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    img_bgr = cv2.inRange(img_bgr, numpy.array(lowerLimit), numpy.array(upperLimit))
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    img_mask = cv2.inRange(img_hsv, numpy.array(lowerLimit), numpy.array(upperLimit))
 
     # - Calculate the centroid of all pixels in the given color range (ball position).
     #   Check online documentation for cv2.findNonZero and cv2.mean
@@ -49,7 +49,7 @@ def segment_by_color(img_bgr, points, obj_name):
     #   using the point cloud 'points'. Use numpy array notation to process the point cloud data.
     #   Example: 'points[240,320][1]' gets the 'y' value of the point corresponding to
     #   the pixel in the center of the image.
-    nz = cv2.findNonZero(img_bgr)
+    nz = cv2.findNonZero(img_mask)
     meanValue = cv2.mean(nz)
 
     centroid = points[int(meanValue[0]), int(meanValue[1])]
