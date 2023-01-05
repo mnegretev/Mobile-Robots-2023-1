@@ -42,35 +42,38 @@ def segment_by_color(img_bgr, points, obj_name):
     #
     upperLimit = [0]
     lowerLimit = [0]
-
+    
     if obj_name == "pringles":
         upperLimit = [35, 255, 255]
         lowerLimit = [25, 50, 50]
     else:
         upperLimit = [20, 255, 255]
         lowerLimit = [10, 200, 50]
-   
-    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    img_bin = cv2.inRange(img_hsv, numpy.array(lowerLimit), numpy.array(upperLimit))
-    nonZero = cv2.findNonZero(img_bin)
-    meanCentroide = cv2.mean(nonZero)
-
-    x, y, z = 0, 0, 0
-
-    for i in nonZero:
-        [[c,r]] = i
-        if math.isnan(points[r,c][0]) or math.isnan(points[r,c][1]) or math.isnan(points[r,c][2]):
-            pass
-        else:
-            x = x + points[r,c][0]
-            y = y + points[r,c][1]
-            z = z + points[r,c][2]
-
-    x = x/len(nonZero)
-    y = y/len(nonZero)
-    z = z/len(nonZero)
-
-    return [meanCentroide[0], meanCentroide[1], x, y, z]
+    img_hsv=cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV) 
+    img_bin=cv2.inRange(img_hsv,numpy.array([lowerLimit]),numpy.array([upperLimit])) 
+    indice=cv2.findNonZero(img_bin)
+    coordenadas_xy=cv2.mean(indice)
+    [x,y,z,i] = [0,0,0,0]
+    for [[c,r]] in indice:
+        Xaux=points[r,c][0]
+        Yaux=points[r,c][1]
+        Zaux=points[r,c][2]
+        if math.isnan(Xaux) or math.isnan(Yaux) or math.isnan(Zaux):
+		continue
+	[x,y,z,i] = [x+Xaux, y+Yaux, z+Zaux,i+1]
+    if i>0:
+    	x = x/i 
+	y = y/i 
+	z = z/i
+        print("Object found")
+    else: 
+	x=0
+	y=0
+	z=0
+    #print(img_bgr[240][320])
+    #print(points[0][0])
+    #return [0,0,0,0,0]
+    return [coordenadas_xy[0],coordenadas_xy[1],x,y,z]
 	
 def callback_find_object(req):
     global pub_point, img_bgr
