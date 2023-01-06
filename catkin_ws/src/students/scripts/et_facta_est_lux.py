@@ -164,6 +164,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -247,6 +248,9 @@ def main():
     executing_task = False
     state = "SM_INIT"
     goal_flag = False
+    x,y,z = [0,0,0]
+    obj = ""
+    loc = []
 
     while not rospy.is_shutdown():
         if state == "SM_INIT":
@@ -262,6 +266,7 @@ def main():
          obj, loc = parse_command(recognized_speech)
          print("Requested object: " + obj)
          print("Requested location " + str(loc))
+         say("I need to find the " + obj)
          state = "SM_MOVE_HEAD"
         elif state == "SM_MOVE_HEAD":
          move_head(0,-1)
@@ -310,7 +315,7 @@ def main():
          state = "SM_GOTO_LOCATION"
         elif state == "SM_GOTO_LOCATION":
          if location == "kitchen":
-          go_to_goal_pose(1672875291.131834229, 337.078000000)//Checar
+          go_to_goal_pose(3.22, 9.72)//Checar
           state = "SM_WAIT_FOR_GOAL_REACH"
         elif state == "SM_WAIT_FOR_GOAL_REACH":
          if goal_flag:
