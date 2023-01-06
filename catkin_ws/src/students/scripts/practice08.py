@@ -26,37 +26,42 @@ def segment_by_color(img_bgr, points, obj_name):
     # - Assign lower and upper color limits according to the requested object:
     #   If obj_name == 'pringles': [25, 50, 50] - [35, 255, 255]
     #   otherwise                : [10,200, 50] - [20, 255, 255]
+    #lowerLimit = [0]
+    #upperLimit = [0]
+
+    if obj_name == "pringles":
+        lowerLimit = numpy.array([25, 50, 50], numpy.uint8)
+        upperLimit = numpy.array([35, 255, 255], numpy.uint8)
+    else:
+        lowerLimit = numpy.array([10, 200, 50], numpy.uint8)
+        upperLimit = numpy.array([20, 255, 255], numpy.uint8)
+
     # - Change color space from RGB to HSV.
     #   Check online documentation for cv2.cvtColor function
     # - Determine the pixels whose color is in the selected color range.
     #   Check online documentation for cv2.inRange
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    img_mask = cv2.inRange(img_hsv, lowerLimit, upperLimit)
+
     # - Calculate the centroid of all pixels in the given color range (ball position).
     #   Check online documentation for cv2.findNonZero and cv2.mean
     # - Calculate the centroid of the segmented region in the cartesian space
     #   using the point cloud 'points'. Use numpy array notation to process the point cloud data.
     #   Example: 'points[240,320][1]' gets the 'y' value of the point corresponding to
     #   the pixel in the center of the image.
+    nz = cv2.findNonZero(img_mask)
+    meanValue = cv2.mean(nz)
+
+    centroid = points[int(meanValue[1]), int(meanValue[0])]
+
+    print("Centroid location: ", meanValue)
+    print("Centroid location (cartesian): ", centroid)
+
     # - Return a tuple of the form: [img_x, img_y, centroid_x, centroid_y, centroid_z]
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    
-    
-    if obj_name == "pringles":
-        limiteInferior= [25, 50, 50]
-        limiteSuperior= [35, 255, 255]
-    else:
-        limiteInferior= [10, 200, 50]
-        limiteSuperior= [20, 255, 255]
-    
-    img_bgr= cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    img_bgr=cv2.inRange(img_bgr, numpy.array(limiteInferior), numpy.array(limiteSuperior))  #cv2.inRange pasándole los valores de los pixeles.
-    indice= cv2.findNonZero(img_bgr)  #cv2.findNonZero para tomar ciertos índices.
-    valorMedio= cv2.mean(indice)
-    centroide= points[int(valorMedio[0]), int(valorMedio[1])]
-    
-    # return [valorMedio,centroide,0,0,0]
-    return [valorMedio[0], valorMedio[1], centroide[0], centroide[1], centroide[2]]
+    return [meanValue[0], meanValue[1], centroid[0], centroid[1], centroid[2]]
 
 def callback_find_object(req):
     global pub_point, img_bgr
