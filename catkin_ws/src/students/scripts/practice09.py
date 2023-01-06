@@ -19,7 +19,7 @@ import urdf_parser_py.urdf
 from geometry_msgs.msg import PointStamped
 from custom_msgs.srv import *
 
-NAME = "FULL_NAME"
+NAME = "GINEZ ALVAREZ ADRIAN"
 
 def get_model_info():
     global joints, transforms
@@ -56,15 +56,23 @@ def forward_kinematics(q, Ti, Wi):
     #     Ri are the Homogeneous Transformations with zero-translation and rotation qi around axis Wi.
     #     Ti[7] is the final Homogeneous Transformation from gripper center to joint 7.
     # Hints:
-    #     Use the tft.identity_matrix() function to get the 4x4 I
+    #     Use the tft.identity_matrix() function to get the 4x4 I check
     #     Use the tft.concatenate_matrices() function for multiplying Homogeneous Transformations
     #     Use the tft.rotation_matrix() matrices Ri.
     #     Use the tft.euler_from_matrix() function to get RPY from matrix H
     #     Check online documentation of these functions:
     #     http://docs.ros.org/en/jade/api/tf/html/python/transformations.html
     #
-    x,y,z,R,P,Y = 0,0,0,0,0,0
-    return numpy.asarray([x,y,z,R,P,Y])
+    # x,y,z,R,P,Y = 0,0,0,0,0,0
+    
+    H = tft.identity_matrix()
+    for i in range(len(q)):
+    	H = tft.concatenate_matrices(H, Ti[i], tft.rotation_matrix(q[i], Wi[i]))
+    	
+    H = tft.concatenate_matrices(H, Ti[7])
+    x,y,z = H[0, 3], H[1, 3], H[2, 3]
+    R,P,Y = list(tft.euler_from_matrix(H)) #Rotación de la transformación	
+    return numpy.asarray([x, y, z, R, P, Y])
 
 def jacobian(q, Ti, Wi):
     delta_q = 0.000001
@@ -92,6 +100,12 @@ def jacobian(q, Ti, Wi):
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
     
+    q_next = numpy.asarray([q,]*len(q)) + delta_q*numpy.identity(len(q))
+    q_prev = numpy.asarray([q,]*len(q)) - delta_q*numpy.identity(len(q))
+    
+    for i in range(len(q)):
+    	J[:,i] = (forward_kinematics(q_next[i, :], Ti, Wi) - forward_kinematics(q_prev[i, :], Ti, Wi))/(2*delta_q)
+
     return J
 
 def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
@@ -122,7 +136,28 @@ def inverse_kinematics_xyzrpy(x, y, z, roll, pitch, yaw, Ti, Wi):
     #    Return calculated q if maximum iterations were not exceeded
     #    Otherwise, return None
     #
-    return None
+    
+    q = numpy.asarray([-0.5, 0.6, 0.3, 2.0, 0.3, 0.2, 0.3])
+    p = forward_kinematics(q, Ti, Wi)
+    
+    error = p - pd
+    error[3:6] = (error[3:6] + math.pi)%(2*math.pi) - math.pi
+    
+    while numpy.linalg.norm(error)>tolerance and iterations < max_iterations:
+        J = jacobian(q, Ti, Wi)
+        
+        q = (q - numpy.dot(numpy.linalg.pinv(J), error) + math.pi)%(2*math.pi) - math.pi
+        p = forward_kinematics(q, Ti, Wi)
+        
+        error = p - pd
+        error[3:6] = (error[3:6] + math.pi)%(2*math.pi) - math.pi
+        
+        iterations += 1
+        
+    if iterations < max_iterations: 
+    	return  q 
+    else:
+    	return None
 
 def callback_la_ik_for_pose(req):
     global transforms, joints
