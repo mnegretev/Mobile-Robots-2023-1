@@ -278,14 +278,13 @@ def main():
                 print("I will move my left arm")
                 state = "SM_MOVE_LEFT_ARM"
             else:
-                print("Inside drink if")
                 say("I will move my right arm")
                 state = "SM_MOVE_RIGHT_ARM"
 
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
             print("I moved mi left arm")
-            move_base(0.1, 0, 0)
+            move_base(0.2, 0, 0)
             move_left_gripper(0.7)
             x,y,z = find_object(obj)
             print("I found the object: " + str(obj))
@@ -295,10 +294,8 @@ def main():
 
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
-            move_base(0.1, 0, 0)
             move_right_gripper(0.7)
             x,y,z = find_object(obj)
-            print("I found the object: " + str(obj))
             x,y,z = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
             state = "SM_INVERSE_KINEMATICS"
 
@@ -314,12 +311,9 @@ def main():
                     print("An exception has ocurred!!")
                 
             else:
-                try:
-                    q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
-                    move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
-                    move_right_gripper(-0.5)
-                except:
-                    print("An exception has ocurred!!")
+                q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
+                move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+                move_right_gripper(-0.4)
                 
             state = "SM_GO_BACK"
 
@@ -337,8 +331,8 @@ def main():
             state = "SM_END"
 
         elif state == "SM_END":
+            #state = "SM_INIT"
             print("\n\nThe program has finished!\n\n")
-            state = "SM_INIT"
 
         else:
             print("FATAL ERROR!")
