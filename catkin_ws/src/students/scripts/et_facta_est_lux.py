@@ -284,7 +284,7 @@ def main():
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
             print("I moved mi left arm")
-            move_base(0.1,0,0)
+            move_base(0.15, 0, 0)
             move_left_gripper(0.7)
             x,y,z = find_object(obj)
             print("I found the object: " + str(obj))
@@ -319,7 +319,7 @@ def main():
 
         elif state == "SM_GO_BACK":
             print("I'm gonna move backward")
-            move_base(-0.25, 0, 5)
+            move_base(-0.35, 0, 5)
             print("I moved backward")
             move_head(0, 0)
             state = "SM_GO_FORWARD"
