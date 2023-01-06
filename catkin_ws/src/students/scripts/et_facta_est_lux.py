@@ -277,9 +277,14 @@ def main():
                 print("Inside pringles if")
                 print("I will move my left arm")
                 state = "SM_MOVE_LEFT_ARM"
-            else:
+            elif obj == "drink":
+                print("Inside drink if")
                 say("I will move my right arm")
                 state = "SM_MOVE_RIGHT_ARM"
+            
+            else:
+                print("An error has ocurred!")
+                state = "SM_END"
 
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
@@ -297,6 +302,7 @@ def main():
             move_base(0.1, 0, 0)
             move_right_gripper(0.7)
             x,y,z = find_object(obj)
+            print("I found the object: " + str(obj))
             x,y,z = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
             state = "SM_INVERSE_KINEMATICS"
 
@@ -311,13 +317,16 @@ def main():
                 except:
                     print("An exception has ocurred!!")
                 
-            else:
+            elif obj == "drink":
                 try:
                     q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
                     move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
                     move_right_gripper(-0.5)
                 except:
                     print("An exception has ocurred!!")
+
+            else:
+                state = "SM_END"
                 
             state = "SM_GO_BACK"
 
