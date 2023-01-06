@@ -29,15 +29,17 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "SOTO MONTERROZA"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
+    if executing_task:
+        return
+    new_task = True
     recognized_speech = msg.hypothesis[0]
-    print("New command received: " + recognized_speech)
 
 #
 # Global variable 'goal_reached' is set True when the last sent navigation goal is reached
@@ -174,7 +176,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -238,9 +240,116 @@ def main():
     #
     # FINAL PROJECT 
     #
-    
+    new_task = False
+    executing_task = False
+    recognized_speech = ""
+    goal_reached = False
+
+    current_state = "SM_INIT"
+    requested_object   = ""
+    requested_location = [0,0]
+
     while not rospy.is_shutdown():
-        loop.sleep()
+        if current_state == "SM_INIT": #State 0
+            print("Starting state machine :D ...")
+            if(new_task == True):
+                new_task = False
+                current_state = "SM_SAY_HELLO"
+
+        elif current_state == "SM_SAY_HELLO": #STATE 1
+            print("Saying hello")
+	    
+            say("Hello world")
+            #current_state = "SM_MOVE_ARM"
+            current_state = "SM_OBJECT_DETECTION"
+
+        elif current_state == "SM_OBJECT_DETECTION":#STATE 2
+            print("Recognizing Object")
+            say("Robot is recognizing object")
+            obj,loc = parse_command(recognized_speech) #Se reconce el voz
+            print(obj)
+            print(loc)
+            current_state = "SM_HEAD_DOWN"
+
+        elif current_state == "SM_HEAD_DOWN":#STATE 3
+            print("Moving head")
+            say("Im sad") #CAMBIAR
+            move_head(0,-0.9)
+            current_state = "SM_FIND_OBJECT"
+
+        elif current_state == "SM_FIND_OBJECT":
+            print("Finding object")
+            say("Finding object")
+            x_obj, y_obj, z_obj = find_object(obj)
+            print(x_obj, y_obj, z_obj)
+            current_state = "SM_POINT_TRANSFORM"
+
+        elif current_state == "SM_POINT_TRANSFORM":
+         print("transformacion")
+         if obj == "pringles":
+                xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_left_link")
+         else:
+                xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_right_link")
+         print(xt, yt, zt)
+         current_state = "SM_INVERSE_KINEMATICS"
+
+        elif current_state == "SM_INVERSE_KINEMATICS":
+         print("SIK")
+         if obj == "pringles":
+                q = calculate_inverse_kinematics_left(xt,yt,zt,1.5,1.3,1.8)
+                print("Llegue")
+         else:
+                 q = calculate_inverse_kinematics_right(xt,yt,zt)
+                 print(q)
+         current_state = "SM_MOVE_ARM_TO_START"
+
+        elif current_state == "SM_MOVE_ARM_TO_START":
+             print("Moving the robot's arm")
+             print("posicion inicial")
+             move_left_arm(-0.5,0,0,2.3,0,0,0)
+             current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
+
+        elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":
+            print("moving_arm_obj")
+            say("Robot is moving its arm")
+            if obj == "pringles":
+             move_left_gripper(0.5)
+             move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+            else:
+             move_right_gripper(0.5)
+             move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+             current_state = "SM_CLOSE_HAND"
+        
+        elif current_state == "SM_CLOSE_HAND":
+            print("closing hand")
+            if obj == "pringles":
+             move_left_arm(-0,0,0,1.7,0,0,0)
+             move_left_gripper(-0.5)
+             move_left_arm(0,0,0,3,0,0,-1)
+            else:
+             move_right_arm(-0,0,0,1.7,0,0,0)
+             move_right_gripper(-0.5)
+             move_right_arm(0,0,0,3,0,0,-0.8)
+             say("I got it")
+            current_state = "SM_MOVE_TO_GOAL_POSE"
+            #else:
+                #move_right_gripper(-3)
+                
+        elif current_state == "SM_MOVE_TO_GOAL_POSE" :
+         go_to_goal_pose(loc[0],loc[1])
+         if goal_reached:
+          if obj == "pringles":
+           move_left_gripper(0.5)
+           current_state = "SM_RETURN"
+        elif current_state == "SM_RETURN" :
+         go_to_goal_pose(3.32,5.86)
+         print("estoy girando")
+         move_base(0,1,15)
+         print("ya gire")
+         move_left_gripper(0)
+         current_state = "SM_FINISH"
+
+          
 
 if __name__ == '__main__':
     try:
