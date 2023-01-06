@@ -30,18 +30,18 @@ def segment_by_color(img_bgr, points, obj_name):
     upperLimit = [0]
 
     if obj_name == "pringles":
-        lowerLimit = [25, 50, 50]
-        upperLimit = [35, 255, 255]
+        lowerLimit = numpy.array([25, 50, 50])
+        upperLimit = numpy.array([35, 255, 255])
     else:
-        lowerLimit = [10, 200, 50]
-        upperLimit = [20, 255, 255]
+        lowerLimit = numpy.array([10, 200, 50])
+        upperLimit = numpy.array([20, 255, 255])
 
     # - Change color space from RGB to HSV.
     #   Check online documentation for cv2.cvtColor function
     # - Determine the pixels whose color is in the selected color range.
     #   Check online documentation for cv2.inRange
     img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    img_mask = cv2.inRange(img_hsv, numpy.array(lowerLimit), numpy.array(upperLimit))
+    img_mask = cv2.inRange(img_hsv, lowerLimit, upperLimit)
 
     # - Calculate the centroid of all pixels in the given color range (ball position).
     #   Check online documentation for cv2.findNonZero and cv2.mean
@@ -52,7 +52,7 @@ def segment_by_color(img_bgr, points, obj_name):
     nz = cv2.findNonZero(img_mask)
     meanValue = cv2.mean(nz)
 
-    centroid = points[int(meanValue[0]), int(meanValue[1])]
+    centroid = points[int(meanValue[1]), int(meanValue[0])]
     print("Centroid location: ", meanValue)
     print("Centroid location (cartesian): ", centroid)
 
