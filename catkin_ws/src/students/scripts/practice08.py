@@ -52,7 +52,7 @@ def segment_by_color(img_bgr, points, obj_name):
     nz = cv2.findNonZero(img_mask)
     meanValue = cv2.mean(nz)
 
-    centroid = points[int(meanValue[1]), int(meanValue[0])]
+    centroid = points[int(meanValue[0]), int(meanValue[1])]
     print("Centroid location: ", meanValue)
     print("Centroid location (cartesian): ", centroid)
 
