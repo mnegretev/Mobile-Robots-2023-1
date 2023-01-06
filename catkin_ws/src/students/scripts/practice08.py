@@ -26,8 +26,8 @@ def segment_by_color(img_bgr, points, obj_name):
     # - Assign lower and upper color limits according to the requested object:
     #   If obj_name == 'pringles': [25, 50, 50] - [35, 255, 255]
     #   otherwise                : [10,200, 50] - [20, 255, 255]
-    lowerLimit = [0]
-    upperLimit = [0]
+    #lowerLimit = [0]
+    #upperLimit = [0]
 
     if obj_name == "pringles":
         lowerLimit = numpy.array([25, 50, 50], numpy.uint8)
