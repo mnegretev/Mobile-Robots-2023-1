@@ -30,11 +30,11 @@ def segment_by_color(img_bgr, points, obj_name):
     upperLimit = [0]
 
     if obj_name == "pringles":
-        lowerLimit = numpy.array([25, 50, 50])
-        upperLimit = numpy.array([35, 255, 255])
+        lowerLimit = numpy.array([25, 50, 50], numpy.uint8)
+        upperLimit = numpy.array([35, 255, 255], numpy.uint8)
     else:
-        lowerLimit = numpy.array([10, 200, 50])
-        upperLimit = numpy.array([20, 255, 255])
+        lowerLimit = numpy.array([10, 200, 50], numpy.uint8)
+        upperLimit = numpy.array([20, 255, 255], numpy.uint8)
 
     # - Change color space from RGB to HSV.
     #   Check online documentation for cv2.cvtColor function
@@ -52,7 +52,8 @@ def segment_by_color(img_bgr, points, obj_name):
     nz = cv2.findNonZero(img_mask)
     meanValue = cv2.mean(nz)
 
-    centroid = points[int(meanValue[0]), int(meanValue[1])]
+    centroid = points[int(meanValue[1]), int(meanValue[0])]
+
     print("Centroid location: ", meanValue)
     print("Centroid location (cartesian): ", centroid)
 
