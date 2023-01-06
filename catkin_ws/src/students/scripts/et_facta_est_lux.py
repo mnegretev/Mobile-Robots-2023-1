@@ -270,13 +270,30 @@ def main():
             move_left_arm(-1, 0,0,1.5, 0, 0.8, 0)
             x,y,z = find_object(obj)
             x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
+            state = "SM_INVERSE_KINEMATICS"
             
-            state = "SM_END"
+            
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0,0)
             x,y,z = find_object(obj)
             x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_right_link")
-            state= "SM_END"
+            state= "SM_INVERSE_KINEMATICS"
+        
+        elif state == "SM_INVERSE_KINEMATICS":
+           if obj == "pringles":   
+               try:
+                    print("Before inverse_kinematics")
+                    q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+                    print("After inverse_kinematics")
+                    move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+                    move_left_gripper(-0.4)
+               except:
+                   print("An exception has ocurred")
+           else:
+                q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
+                move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+                move_right_gripper(-0.4)
+                state= "SM_INVERSE_KINEMATICS"              
         elif state == "SM_END":
             None
         else:
