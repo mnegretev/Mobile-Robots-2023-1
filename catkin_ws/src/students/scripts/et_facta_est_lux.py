@@ -284,7 +284,7 @@ def main():
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
             print("I moved mi left arm")
-            move_base(0.2, 0, 0)
+            move_base(0.1, 0, 0)
             move_left_gripper(0.7)
             x,y,z = find_object(obj)
             print("I found the object: " + str(obj))
@@ -294,7 +294,7 @@ def main():
 
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
-            move_base(0.2, 0, 0)
+            move_base(0.1, 0, 0)
             move_right_gripper(0.7)
             x,y,z = find_object(obj)
             x,y,z = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
