@@ -234,7 +234,17 @@ def main():
     rospy.wait_for_service('/manipulation/ra_inverse_kinematics')
     rospy.wait_for_service('/vision/find_object')
     print("Services are now available.")
+    
+    new_task = False
+    executing_task = False
+    recognized_speech = ""
+    goal_reached = False
 
+    current_state = "SM_INIT"
+    requested_object   = ""
+    requested_location = [0,0]
+    
+    
     #
     # FINAL PROJECT 
     #
@@ -311,7 +321,6 @@ def main():
             else:
                 move_right_gripper(q)
             current_state == "SM_FINISH"
-        loop.sleep()
 
 if __name__ == '__main__':
     try:
