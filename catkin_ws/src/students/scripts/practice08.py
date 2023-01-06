@@ -40,8 +40,7 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    limiteInferior= [0]
-    limiteSuperior= [0]
+    
     
     if obj_name == "pringles":
         limiteInferior= [25, 50, 50]
