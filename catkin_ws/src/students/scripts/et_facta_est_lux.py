@@ -282,7 +282,7 @@ def main():
                 state = "SM_MOVE_RIGHT_ARM"
 
         elif state == "SM_MOVE_LEFT_ARM":
-            move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
+            move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
             print("I moved mi left arm")
             move_base(0.2, 0, 0)
             move_left_gripper(0.7)
