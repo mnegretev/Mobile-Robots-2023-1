@@ -319,7 +319,7 @@ def main():
 
         elif state == "SM_GO_BACK":
             print("I'm gonna move backward")
-            move_base(-0.5, 0, 5)
+            move_base(-0.25, 0, 5)
             print("I moved backward")
             move_head(0, 0)
             state = "SM_GO_FORWARD"
