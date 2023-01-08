@@ -162,6 +162,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -250,67 +251,67 @@ def main():
     requested_location = [0,0]
 
     while not rospy.is_shutdown():
-        if current_state == "SM_INIT": #State 0
-            print("Starting state machine :D ...")
+        if current_state == "SM_INIT": 			#ESTADO 0: INICIO DE MAQUINA
+            print("E0:INICIANDO MÀQUINA DE ESTADOS")
             if(new_task == True):
                 new_task = False
                 current_state = "SM_SAY_HELLO"
 
-        elif current_state == "SM_SAY_HELLO": #STATE 1
-            print("Saying hello")
-	    
+        elif current_state == "SM_SAY_HELLO": 		#ESTADO 1: SALUDO ROBOT CON VOZ
+            print("E1: SALUDO")
             say("Hello world")
-            #current_state = "SM_MOVE_ARM"
             current_state = "SM_OBJECT_DETECTION"
 
-        elif current_state == "SM_OBJECT_DETECTION":#STATE 2
-            print("Recognizing Object")
+        elif current_state == "SM_OBJECT_DETECTION":		#ESTADO 2: RECONOCIMIENTO DE ORDEN
+            print("E2: RECONOCIMIENTO DE OBJETO")
             say("Robot is recognizing object")
-            obj,loc = parse_command(recognized_speech) #Se reconce el voz
-            print(obj)
-            print(loc)
+            obj,loc = parse_command(recognized_speech) 	#Reconocimiento de voz
+            print("   Objeto a agarrar: "+ obj) 
+            print("   Localizaciòn: ["+ str(loc[0]) + "," + str(loc[1])+ "]")
             current_state = "SM_HEAD_DOWN"
 
-        elif current_state == "SM_HEAD_DOWN":#STATE 3
-            print("Moving head")
-            say("Im sad") #CAMBIAR
+        elif current_state == "SM_HEAD_DOWN":			#ESTADO 3: POSICIONAMIENTO CABEZA 
+            print("E3: POSICIONAMIENTO DE CABEZA")
             move_head(0,-0.9)
             current_state = "SM_FIND_OBJECT"
 
-        elif current_state == "SM_FIND_OBJECT":
-            print("Finding object")
+        elif current_state == "SM_FIND_OBJECT":		#ESTADO 4: BUSQUEDA DE OBJETO 
+            print("E4: BUSCANDO OBJETO")
             say("Finding object")
-            x_obj, y_obj, z_obj = find_object(obj)
-            print(x_obj, y_obj, z_obj)
+            x_obj, y_obj, z_obj = find_object(obj)		#BUSQUEDA DE OBJETO
+            print("   Centroide de objeto: ["+str(x_obj)+","+str(y_obj)+","+ str(z_obj)+"]")
             current_state = "SM_POINT_TRANSFORM"
 
-        elif current_state == "SM_POINT_TRANSFORM":
-         print("transformacion")
+        elif current_state == "SM_POINT_TRANSFORM":		#ESTADO 5: TRANSFORMACIÒN COORDENADAS
+         print("E5: TRANSFORMACIÒN DE COORDENADAS")
          if obj == "pringles":
                 xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_left_link")
          else:
                 xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_right_link")
-         print(xt, yt, zt)
+         print("   Coordenadas transformadas: ["+ str(xt) + str(yt) + str(zt))
          current_state = "SM_INVERSE_KINEMATICS"
 
-        elif current_state == "SM_INVERSE_KINEMATICS":
-         print("SIK")
+        elif current_state == "SM_INVERSE_KINEMATICS":	#ESTADO 6: CINEMÀTICA INVERSA
+         print("E6: CINEMÀTICA INVERSA")
          if obj == "pringles":
-                q = calculate_inverse_kinematics_left(xt,yt,zt,1.5,1.3,1.8)
-                print("Llegue")
+                q = calculate_inverse_kinematics_left(xt,yt,zt,3,-1.57,-3)
          else:
-                 q = calculate_inverse_kinematics_right(xt,yt,zt)
-                 print(q)
+                q = calculate_inverse_kinematics_right(xt,yt,zt,1.5,1.3,1.8)
+         print(q)
          current_state = "SM_MOVE_ARM_TO_START"
 
-        elif current_state == "SM_MOVE_ARM_TO_START":
-             print("Moving the robot's arm")
-             print("posicion inicial")
-             move_left_arm(-0.5,0,0,2.3,0,0,0)
-             current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
+        elif current_state == "SM_MOVE_ARM_TO_START":	#ESTADO 7: BRAZO A POSICION INICIAL
+         print("E7: BRAZO A POSICION INICIAL")
+         if obj == "pringles":    
+          print("   Brazo izquierdo a posicion inicial")
+          move_left_arm(-0.5,0,0,2.3,0,0,0)
+         else:
+          print("   Brazo derecho a posicion inicial")
+          move_right_arm(-0.5,0,0,2.3,0,0,0)
+         current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
 
-        elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":
-            print("moving_arm_obj")
+        elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":	#ESTADO 8: BRAZO A OBJETO
+            print("E8: BRAZO A OBJETO")
             say("Robot is moving its arm")
             if obj == "pringles":
              move_left_gripper(0.5)
@@ -318,10 +319,10 @@ def main():
             else:
              move_right_gripper(0.5)
              move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
-             current_state = "SM_CLOSE_HAND"
+            current_state = "SM_CLOSE_HAND"
         
-        elif current_state == "SM_CLOSE_HAND":
-            print("closing hand")
+        elif current_state == "SM_CLOSE_HAND":		#ESTADO 9: CERRAR MANO
+            print("E8: CERRANDO MANO")
             if obj == "pringles":
              move_left_arm(-0,0,0,1.7,0,0,0)
              move_left_gripper(-0.5)
@@ -332,8 +333,7 @@ def main():
              move_right_arm(0,0,0,3,0,0,-0.8)
              say("I got it")
             current_state = "SM_MOVE_TO_GOAL_POSE"
-            #else:
-                #move_right_gripper(-3)
+
                 
         elif current_state == "SM_MOVE_TO_GOAL_POSE" :
          go_to_goal_pose(loc[0],loc[1])
@@ -341,6 +341,7 @@ def main():
           if obj == "pringles":
            move_left_gripper(0.5)
            current_state = "SM_RETURN"
+           
         elif current_state == "SM_RETURN" :
          go_to_goal_pose(3.32,5.86)
          print("estoy girando")
