@@ -49,10 +49,11 @@ def callback_goal_reached(msg):
     global goal_reached
     goal_reached = msg.data
     print("Received goal reached: " + str(goal_reached))
+    goal_flag = True
 
 def parse_command(cmd):
     obj = "pringles" if "PRINGLES" in cmd else "drink"
-    loc = [8.0,8.5] if "TABLE" in cmd else [3.22, 9.72]
+    loc = [3.22, 9.2] if "TABLE" in cmd else [3.22, 9.72]
     return obj, loc
 
 #
@@ -242,6 +243,7 @@ def main():
     #
     # FINAL PROJECT 
     #
+    goal_reached = False
     new_task = False
     recognized_speech = ""
     executing_task = False
@@ -316,9 +318,22 @@ def main():
         elif state == "SM_GO_FORWARD":
             print("I am going to move forward")
             go_to_goal_pose(loc[0], loc[1])
-            print("I reached my goal!!!!!!!")
-            state = "SM_END"
-                                      
+            state = "SM_WAIT_FOR_GOAL_REACH"
+            
+        elif state == "SM_WAIT_FOR_GOAL_REACH":
+         if goal_reached:
+            state = "SM_GOAL_REACHED"
+          
+        elif state == "SM_GOAL_REACHED":
+            print("Destino alcanzado")
+            move_base(0,3.14,2)
+            print("Acomodando orientacion")  
+            state = "SM_TABLE"
+        
+        elif state == "SM_TABLE": 
+            move_base(0.2,0,2)
+            state = "SM_END"       
+                                          
         elif state == "SM_END":
             print("\n\nEL programa ha terminado!\n\n")
         else:
