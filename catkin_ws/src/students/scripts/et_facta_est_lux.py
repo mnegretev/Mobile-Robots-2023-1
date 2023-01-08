@@ -284,20 +284,19 @@ def main():
             print("Objeto encontrado"+str([x,y,z]))
             x,y,z = transform_point(x,y,z,'realsense_link', 'shoulders_right_link')
             print("Objeto encontrado"+str([x,y,z]))
-            state= "SM_INVERSE_KINEMATICS"
+            state= "SM_INVERSE_KINEMATICS"#Prueba
         
         elif state == "SM_INVERSE_KINEMATICS":
            if obj == "pringles":   
                try:
                     print("Before inverse_kinematics")
                     print("Objeto encontrado"+str([x,y,z]))
-                    [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+                    [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_left(x+0.03, y+0.01, z+0.09, 0, -1.5, 0)
                     print("After inverse_kinematics")
+                    print("Objeto encontrado"+str([x,y,z]))
                     move_left_arm(q0,q1,q2,q3,q4,q5,q6)
-                    move_left_gripper(-0.5)
-                    #sleep(1)
-                    #move_left_arm(-0.2322,-0.1066,-0.0617,1.9900,-0.2533,-0.1770,0.1347)
-                    move_left_arm(-1.3,0.2,0,1.6,0,1.2,0)
+                    move_left_gripper(-0.3)
+                    move_left_arm(-0.153,0.065,-0.197,2.550,-0.342,-0.608,0.362)
                     state = "SM_END"
                except:
                    state = "SM_END"
@@ -306,9 +305,22 @@ def main():
                 [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
                 move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
                 move_right_gripper(-0.4)
-                state= "SM_INVERSE_KINEMATICS"              
+           state= "SM_GO_BACK"
+        elif state == "SM_GO_BACK":
+            print("I'm gonna move backward")
+            move_base(-0.2, 0, 2)
+            print("I moved backward")
+            move_head(0, 0)
+            state = "SM_GO_FORWARD"
+            
+        elif state == "SM_GO_FORWARD":
+            print("I am going to move forward")
+            go_to_goal_pose(loc[0], loc[1])
+            print("I reached my goal!!!!!!!")
+            state = "SM_END"
+                                      
         elif state == "SM_END":
-            None
+            print("\n\nEL programa ha terminado!\n\n")
         else:
             print("FATAL ERROR!!! :'(")
         loop.sleep()
