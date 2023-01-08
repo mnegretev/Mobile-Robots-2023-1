@@ -163,6 +163,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -177,7 +178,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -267,30 +268,42 @@ def main():
             else:
                 state = "SM_MOVE_RIGHT_ARM"
         elif state == "SM_MOVE_LEFT_ARM":
-            move_left_arm(-1, 0,0,1.5, 0, 0.8, 0)
+            move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
+            move_base(0.2,0,0)
+            move_left_gripper(0.5) 
             x,y,z = find_object(obj)
-            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
+            print("Coordenas camara"+str([x,y,z]))
+            x,y,z = transform_point(x,y,z,'realsense_link','shoulders_left_link')
+            print("Coordenas transformadas"+str([x,y,z]))
             state = "SM_INVERSE_KINEMATICS"
             
             
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0,0)
             x,y,z = find_object(obj)
-            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_right_link")
+            print("Objeto encontrado"+str([x,y,z]))
+            x,y,z = transform_point(x,y,z,'realsense_link', 'shoulders_right_link')
+            print("Objeto encontrado"+str([x,y,z]))
             state= "SM_INVERSE_KINEMATICS"
         
         elif state == "SM_INVERSE_KINEMATICS":
            if obj == "pringles":   
                try:
                     print("Before inverse_kinematics")
-                    q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+                    print("Objeto encontrado"+str([x,y,z]))
+                    [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
                     print("After inverse_kinematics")
-                    move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
-                    move_left_gripper(-0.4)
+                    move_left_arm(q0,q1,q2,q3,q4,q5,q6)
+                    move_left_gripper(-0.5)
+                    #sleep(1)
+                    #move_left_arm(-0.2322,-0.1066,-0.0617,1.9900,-0.2533,-0.1770,0.1347)
+                    move_left_arm(-1.3,0.2,0,1.6,0,1.2,0)
+                    state = "SM_END"
                except:
+                   state = "SM_END"
                    print("An exception has ocurred")
            else:
-                q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
+                [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
                 move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
                 move_right_gripper(-0.4)
                 state= "SM_INVERSE_KINEMATICS"              
