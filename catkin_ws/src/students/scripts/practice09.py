@@ -179,7 +179,7 @@ def callback_ra_ik_for_pose(req):
     Wi = [joints['right'][i].axis for i in range(len(joints['right']))]  
     q = inverse_kinematics_xyzrpy(req.x, req.y, req.z, req.roll, req.pitch, req.yaw, Ti, Wi)
     if q is None:
-        return False
+        return None
     resp = InverseKinematicsResponse()
     [resp.q1, resp.q2, resp.q3, resp.q4, resp.q5, resp.q6, resp.q7] = [q[0], q[1], q[2], q[3], q[4], q[5], q[6]]
     return resp

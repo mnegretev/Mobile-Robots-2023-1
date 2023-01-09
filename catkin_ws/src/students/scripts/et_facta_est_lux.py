@@ -304,7 +304,7 @@ def main():
                    print("An exception has ocurred")
            else:
                 [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
-                move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+                move_right_arm(q0,q1,q2,q3,q4,q5,q6)
                 move_right_gripper(-0.4)
            state= "SM_GO_BACK"
         elif state == "SM_GO_BACK":
