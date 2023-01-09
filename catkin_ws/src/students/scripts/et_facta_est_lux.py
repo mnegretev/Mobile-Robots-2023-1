@@ -53,9 +53,8 @@ def callback_goal_reached(msg):
 
 def parse_command(cmd):
     obj = "pringles" if "PRINGLES" in cmd else "drink"
-    loc = [3.22, 9.2] if "TABLE" in cmd else [3.22, 9.72]
+    loc = [5.8,6.7] if "TABLE" in cmd else [3.22, 9.2]
     return obj, loc
-
 #
 # This function sends the goal articular position to the left arm and sleeps 2 seconds
 # to allow the arm to reach the goal position. 
@@ -299,7 +298,7 @@ def main():
                     move_left_arm(q0,q1,q2,q3,q4,q5,q6)
                     move_left_gripper(-0.3)
                     move_left_arm(-0.153,0.065,-0.197,2.550,-0.342,-0.608,0.362)
-                    state = "SM_END"
+                    state = "SM_GO_BACK"
                except:
                    state = "SM_END"
                    print("An exception has ocurred")
@@ -317,12 +316,35 @@ def main():
             
         elif state == "SM_GO_FORWARD":
             print("I am going to move forward")
-            go_to_goal_pose(loc[0], loc[1])
-            state = "SM_WAIT_FOR_GOAL_REACH"
-            
+            if loc == [3.22, 9.2]:#Para Kitchen
+             go_to_goal_pose(loc[0], loc[1])
+             print("Going to kitchen")
+             state = "SM_WAIT_FOR_GOAL_REACH"
+            else:
+             go_to_goal_pose(loc[0], loc[1])
+             print("Going to table")
+             state = "SM_WAIT_FOR_GOAL_REACH_TABLE"
+        
         elif state == "SM_WAIT_FOR_GOAL_REACH":
          if goal_reached:
             state = "SM_GOAL_REACHED"
+            
+        elif state == "SM_WAIT_FOR_GOAL_REACH_TABLE":
+          if goal_reached:
+            state = "SM_GOAL_REACHED_TABLE"
+        
+        elif state == "SM_GOAL_REACHED_TABLE":
+            print("Destino alcanzado")
+            print("Moviendo brazo")
+            move_left_arm(1.4850,0.0940,-0.1140,2.0416,0.0060,-1.6820,0)
+            state = "SM_DROP_TABLE"
+        
+        elif state == "SM_DROP_TABLE":
+            print("Acomodando Base")
+            move_base(0,-5.14,4)
+            move_head(0,-0.4) 
+            move_left_gripper(0.5)
+            state = "SM_END"               
           
         elif state == "SM_GOAL_REACHED":
             print("Destino alcanzado")
@@ -331,8 +353,13 @@ def main():
             state = "SM_TABLE"
         
         elif state == "SM_TABLE": 
-            move_base(0.2,0,2)
-            state = "SM_END"       
+            move_base(0.2,0,1.8)
+            state = "SM_DROP"
+            
+        elif state == "SM_DROP":
+            move_head(0,-1) 
+            move_left_gripper(0.5)
+            state = "SM_END"           
                                           
         elif state == "SM_END":
             print("\n\nEL programa ha terminado!\n\n")
