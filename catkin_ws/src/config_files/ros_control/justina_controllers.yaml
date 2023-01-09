@@ -62,31 +62,31 @@
   ra_1_controller:
     type: effort_controllers/JointPositionController
     joint: ra_1_joint
-    pid: {d: 4.64, i: 4.0200000000000005, p: 19.95}
+    pid: {d: 4.86, i: 17.5, p: 20.429999999999996}
   ra_2_controller:
     type: effort_controllers/JointPositionController
     joint: ra_2_joint
-    pid: {d: 4.28, i: 6.1, p: 20.32}
+    pid: {d: 3.1500000000000004, i: 11.669999999999998, p: 20.49}
   ra_3_controller:
     type: effort_controllers/JointPositionController
     joint: ra_3_joint
-    pid: {d: 0.53, i: 5.0200000000000005, p: 10.169999999999998}
+    pid: {d: 0.48, i: 8.649999999999999, p: 10.42}
   ra_4_controller:
     type: effort_controllers/JointPositionController
     joint: ra_4_joint
-    pid: {d: 1.02, i: 2.6900000000000004, p: 20.3}
+    pid: {d: 1.35, i: 20.349999999999998, p: 20.4}
   ra_5_controller:
     type: effort_controllers/JointPositionController
     joint: ra_5_joint
-    pid: {d: 0.0, i: 0.0, p: 2.5}
+    pid: {d: 0.54, i: 2.45, p: 9.719999999999999}
   ra_6_controller:   
     type: effort_controllers/JointPositionController
     joint: ra_6_joint
-    pid: {d: 0.0, i: 0.0, p: 2.5}
+    pid: {d: 0.69, i: 15.45, p: 20.429999999999996}
   ra_7_controller:
     type: effort_controllers/JointPositionController
     joint: ra_7_joint
-    pid: {d: 0.0, i: 0.0, p: 2.5}
+    pid: {0.46, i: 10.03, p: 9.649999999999999}
   ra_grip_left_controller:
     type: effort_controllers/JointPositionController
     joint: ra_grip_left
