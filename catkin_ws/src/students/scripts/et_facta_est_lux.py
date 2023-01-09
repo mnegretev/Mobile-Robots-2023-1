@@ -177,7 +177,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -253,77 +253,96 @@ def main():
     #
     
     while not rospy.is_shutdown():
-        if current_state == "SM_INIT": #State 0
+        if current_state == "SM_INIT":                  #ESTADO 0: START MACHINE
             print("Starting state machine :D ...")
             if(new_task == True):
                 new_task = False
                 current_state = "SM_SAY_HELLO"
 
-        elif current_state == "SM_SAY_HELLO": #STATE 1
+        elif current_state == "SM_SAY_HELLO":           #ESTADO 1: SAY HELLO 
             print("Saying hello")
             say("Hello world")
-            #current_state = "SM_MOVE_ARM"
             current_state = "SM_OBJECT_DETECTION"
 
-        elif current_state == "SM_OBJECT_DETECTION":#STATE 2
+        elif current_state == "SM_OBJECT_DETECTION":    #ESTADO 2 OBJECT DETECTION
             print("Recognizing Object")
             say("Robot is recognizing object")
-            obj,loc = parse_command(recognized_speech) #Se reconce el voz
-            print(obj)
-            print(loc)
+            obj,loc = parse_command(recognized_speech) #Con ello reconocemos la voz
+            print("Tomando el objeto:" + obj)
+            print("Ubicación: [" + str(loc[0]) + "," + str(loc[1]) + "]")
             current_state = "SM_HEAD_DOWN"
 
-        elif current_state == "SM_HEAD_DOWN":#STATE 3
+        elif current_state == "SM_HEAD_DOWN":            #ESTADO 3: HEAD DOWN
             print("Moving head")
-            say("Im sad") #CAMBIAR
             move_head(0,-0.9)
             current_state = "SM_FIND_OBJECT"
 
-        elif current_state == "SM_FIND_OBJECT":
+        elif current_state == "SM_FIND_OBJECT":          #ESTADO 4: FIND OBJECT
             print("Finding object")
             say("Finding object")
             x_obj, y_obj, z_obj = find_object(obj)
             print(x_obj, y_obj, z_obj)
-            current_state == "SM_POINT_TRANSFORM"
+            current_state = "SM_POINT_TRANSFORM"
 
-        elif current_state == "SM_POINT_TRANSFORM":
+        elif current_state == "SM_POINT_TRANSFORM":       #ESTADO 5: POINT TRANSFORM
             if obj == "pringles":
-                xt, yt, zt = transform_point_to_left_arm(x_obj, y_obj, z_obj)
-
+                xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_left_link")
             else:
-                xt, yt, zt = transform_point_to_right_arm(x_obj, y_obj, z_obj)
+                xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_right_link")
             print(xt, yt, zt)
             current_state = "SM_INVERSE_KINEMATICS"
 
-        elif current_state == "SM_INVERSE_KINEMATICS":
+        elif current_state == "SM_INVERSE_KINEMATICS":       #ESTADO 6: INVERSE KINEMATICS
             if obj == "pringles":
-                q = ik_left_arm(xt,yt,zt)
+                q = calculate_inverse_kinematics_left(xt,yt,zt,3,-1.57,-3)
             else:
-                q = ik_right_arm(xt,yt,zt)
+                q = calculate_inverse_kinematics_right(xt,yt,zt,1.5,1.3,1.8)
             print(q)
-            current_state == "SM_MOVE_ARM_TO_START"
+            current_state = "SM_MOVE_ARM_TO_START"
 
-        elif current_state == "SM_MOVE_ARM_TO_START":
+        elif current_state == "SM_MOVE_ARM_TO_START":          #ESTADO 7: MOVE ARM TO START
              print("Moving the robot's arm")
-             move_left_arm(-0.5,0,0,2.1,0,0,0)
+             if obj == "pringles":
+                move_left_arm(-0.5,0,0,2.2,0,0,0)
+             else:
+                move_right_arm(-0.5,0,0,2.2,0,0,0)
              current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
 
-        elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":
+        elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":        #ESTADO 8: MOVE ARM TO TAKE OBJECT
             print("moving_arm_obj")
             say("Robot is moving its arm")
             if obj == "pringles":
+                move_left_gripper(0.5)
                 move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
             else:
+                move_right_gripper(0.5)
                 move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
             current_state = "SM_CLOSE_HAND"
         
-        elif current_state == "SM_CLOSE_HAND":
+        elif current_state == "SM_CLOSE_HAND":                   #ESTADO 9: CLOSE HAND
             print("closing hand")
             if obj == "pringles":
-                move_left_gripper(q)
+                move_left_arm(0,0,0,1.7,0,0,0)
+                move_left_gripper(-0.5)
+                move_left_arm(0,0,0,3,0,0,-1)
             else:
-                move_right_gripper(q)
-            current_state == "SM_FINISH"
+                move_right_arm(0,0,0,1.7,0,0,0)
+                move_right_gripper(-0.5)
+                move_right_arm(0,0,0,3,0,0,-0.8)
+            current_state = "SM_MOVE_TO_GOAL_POSE"
+            
+        elif current_state == "SM_MOVE_TO_GOAL_POSE":            #ESTADO 10: MOVE TO GOAL POSE
+            go_to_goal_pose(loc[0],loc[1])
+            if goal_reached:
+                if obj == "pringles":
+                    move_left_gripper(0.5)
+                    current_state = "SM_RETURN"
+                    
+        elif current_state == "SM_RETURN":                       #ESTADO 11: RETURN AND FINISH
+            go_to_goal_pose(3.32,5.86)
+            move_base(0,1,15)
+            move_left_gripper(0)
+            current_state = "SM_FINISH"
 
 if __name__ == '__main__':
     try:
