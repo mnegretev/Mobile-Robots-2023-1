@@ -371,8 +371,8 @@ def main():
         elif state == "SM_TOMAR":    
             move_base(0.2, 0, 0.5)
             print("Acercandome a la mesa")
-            move_right_gripper(-0.5)
-            move_right_arm(0.8170,0.135,-0.050,1.442,-0.315,0.008,0.150)
+            move_right_gripper(-0.6)
+            move_right_arm(0.9170,0.135,-0.050,1.442,-0.315,0.008,0.150)
             state = "SM_RIGHT_ARM_GO_TO"
             
         elif state == "SM_RIGHT_ARM_GO_TO":    
@@ -391,9 +391,20 @@ def main():
             state = "SM_GOAL_REACHED_KITCHEN"
         
         elif state == "SM_GOAL_REACHED_KITCHEN":    #Cuando ya estoy en la cocina
-            print("LLegue a la cocina")  
-            state = "SM_END"
+            print("LLegue a la cocina")
+            move_base(0,3.14,2)
+            print("Acomodando orientacion")  
+            state = "SM_DROP_KITCHEN_RIGHT_ARM"
         
+        elif state =="SM_DROP_KITCHEN_RIGHT_ARM":
+            move_base(0.2,0,1.8)
+            print("Acercandome a la mesa")
+            state = "SM_DROP2_KITCHEN_RIGHT_ARM"
+            
+        elif state == "SM_DROP2_KITCHEN_RIGHT_ARM":
+            move_right_gripper(0.5)
+            state = "SM_END"    
+            
         elif state =="SM_WAIT_FOR_GOAL_REACH_TABLE_RIGHT_ARM":
          if goal_reached:
             state = "SM_GOAL_REACHED_TABLE_RIGHT_ARM"
