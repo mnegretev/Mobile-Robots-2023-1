@@ -281,11 +281,17 @@ def main():
             
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0,0)
+            move_right_gripper(1.2)
+            move_base(-0.2,0,0.8)
+            print("Retrocediendo")
+            move_base(0,0.8,0.28)
+            print("Acomodando")
+            time.sleep(2.0)
             x,y,z = find_object(obj)
-            print("Objeto encontrado"+str([x,y,z]))
+            print("Coordenadas camara"+str([x,y,z]))
             x,y,z = transform_point(x,y,z,'realsense_link', 'shoulders_right_link')
-            print("Objeto encontrado"+str([x,y,z]))
-            state= "SM_INVERSE_KINEMATICS"#Prueba
+            print("Coordenadas reales"+str([x,y,z]))
+            state="SM_INVERSE_KINEMATICS"#Prueba
         
         elif state == "SM_INVERSE_KINEMATICS":
            if obj == "pringles":   
@@ -303,10 +309,11 @@ def main():
                    state = "SM_END"
                    print("An exception has ocurred")
            else:
-                [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
+                [q0,q1,q2,q3,q4,q5,q6] = calculate_inverse_kinematics_right(x, y, z+0.10, 0, -1.5, 0)
                 move_right_arm(q0,q1,q2,q3,q4,q5,q6)
-                move_right_gripper(-0.4)
-           state= "SM_GO_BACK"
+                state="SM_TOMAR"
+           #state= "SM_GO_BACK"
+           #state="SM_TOMAR"
         elif state == "SM_GO_BACK":
             print("I'm gonna move backward")
             move_base(-0.2, 0, 2)
@@ -360,7 +367,12 @@ def main():
             move_head(0,-1) 
             move_left_gripper(0.5)
             state = "SM_END"           
-                                          
+#Estados para brazo derecho        
+        elif state == "SM_TOMAR":    
+            move_base(0.2, 0, 0.5)
+            print("Acercandome a la mesa")
+            move_right_gripper(0)
+            state = "SM_END"                              
         elif state == "SM_END":
             print("\n\nEL programa ha terminado!\n\n")
         else:
