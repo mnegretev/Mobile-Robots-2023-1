@@ -371,8 +371,37 @@ def main():
         elif state == "SM_TOMAR":    
             move_base(0.2, 0, 0.5)
             print("Acercandome a la mesa")
-            move_right_gripper(0)
-            state = "SM_END"                              
+            move_right_gripper(-0.5)
+            move_right_arm(0.8170,0.135,-0.050,1.442,-0.315,0.008,0.150)
+            state = "SM_RIGHT_ARM_GO_TO"
+            
+        elif state == "SM_RIGHT_ARM_GO_TO":    
+            print("GOING TO REQUESTED POSITION")
+            if loc == [3.22, 9.2]:#Para Kitchen
+             go_to_goal_pose(loc[0], loc[1])
+             print("Going to kitchen")
+             state = "SM_WAIT_FOR_GOAL_REACH_RIGHT_ARM"
+            else:
+             go_to_goal_pose(loc[0], loc[1])#PARA TABLE
+             print("Going to table")
+             state = "SM_WAIT_FOR_GOAL_REACH_TABLE_RIGHT_ARM"   
+           
+        elif state == "SM_WAIT_FOR_GOAL_REACH_RIGHT_ARM": #Espero hasta llegar a la cocina
+         if goal_reached:
+            state = "SM_GOAL_REACHED_KITCHEN"
+        
+        elif state == "SM_GOAL_REACHED_KITCHEN":    #Cuando ya estoy en la cocina
+            print("LLegue a la cocina")  
+            state = "SM_END"
+        
+        elif state =="SM_WAIT_FOR_GOAL_REACH_TABLE_RIGHT_ARM":
+         if goal_reached:
+            state = "SM_GOAL_REACHED_TABLE_RIGHT_ARM"
+        
+        elif state == "SM_GOAL_REACHED_TABLE_RIGHT_ARM":
+            print("He llegado a TABLE")
+            state = "SM_END"
+                                       
         elif state == "SM_END":
             print("\n\nEL programa ha terminado!\n\n")
         else:
