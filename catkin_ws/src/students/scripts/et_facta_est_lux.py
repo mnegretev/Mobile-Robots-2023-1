@@ -29,11 +29,12 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "Suarez Martinez Enrique"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
-#
+# VE
+# La variable global 'speech_recognized' contiene la última oración reconocida
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
     recognized_speech = msg.hypothesis[0]
@@ -41,7 +42,9 @@ def callback_recognized_speech(msg):
 
 #
 # Global variable 'goal_reached' is set True when the last sent navigation goal is reached
-#
+# VE
+# La variable global 'goal_reached' se establece en True cuando se alcanza el último 
+# objetivo de navegación enviado
 def callback_goal_reached(msg):
     global goal_reached
     goal_reached = msg.data
@@ -55,7 +58,10 @@ def parse_command(cmd):
 #
 # This function sends the goal articular position to the left arm and sleeps 2 seconds
 # to allow the arm to reach the goal position. 
-#
+
+#VE
+#Esta función envía la posición articular de destino al brazo izquierdo y duerme 2 segundos 
+#para permitir que el brazo alcance la posición de destino.
 def move_left_arm(q1,q2,q3,q4,q5,q6,q7):
     global pubLaGoalPose
     msg = Float64MultiArray()
@@ -72,7 +78,9 @@ def move_left_arm(q1,q2,q3,q4,q5,q6,q7):
 #
 # This function sends the goal angular position to the left gripper and sleeps 1 second
 # to allow the gripper to reach the goal angle. 
-#
+#VE
+# Esta función envía la posición angular del objetivo a la pinza izquierda y duerme 1 segundo
+# para permitir que la pinza alcance el ángulo objetivo.
 def move_left_gripper(q):
     global pubLaGoalGrip
     pubLaGoalGrip.publish(q)
@@ -81,7 +89,9 @@ def move_left_gripper(q):
 #
 # This function sends the goal articular position to the right arm and sleeps 2 seconds
 # to allow the arm to reach the goal position. 
-#
+# VE
+# Esta funcion envia la posicion articular de meta al brazo derecho y duerme 2 segundos
+# para permitir que el brazo alcance la posición deseada.
 def move_right_arm(q1,q2,q3,q4,q5,q6,q7):
     global pubRaGoalPose
     msg = Float64MultiArray()
@@ -98,7 +108,10 @@ def move_right_arm(q1,q2,q3,q4,q5,q6,q7):
 #
 # This function sends the goal angular position to the right gripper and sleeps 1 second
 # to allow the gripper to reach the goal angle. 
-#
+# VE
+# Esta función envía la posición angular objetivo a la pinza derecha y duerme 1 segundo
+# para permitir que la pinza alcance el ángulo objetivo.
+
 def move_right_gripper(q):
     global pubRaGoalGrip
     pubRaGoalGrip.publish(q)
@@ -107,7 +120,10 @@ def move_right_gripper(q):
 #
 # This function sends the goal pan-tilt angles to the head and sleeps 1 second
 # to allow the head to reach the goal position. 
-#
+# VE
+# Esta función envía los ángulos de giro e inclinación del objetivo a la cabeza y duerme 1 segundo
+# para permitir que la cabeza alcance la posición de destino.
+
 def move_head(pan, tilt):
     global pubHdGoalPose
     msg = Float64MultiArray()
@@ -120,7 +136,10 @@ def move_head(pan, tilt):
 # This function sends a linear and angular speed to the mobile base to perform
 # low-level movements. The mobile base will move at the given linear-angular speeds
 # during a time given by 't'
-#
+# VE
+# Esta función envía una velocidad lineal y angular a la base móvil para realizar
+# movimientos de bajo nivel. La base móvil se moverá a las velocidades angulares lineales dadas
+# durante un tiempo dado por 't'
 def move_base(linear, angular, t):
     global pubCmdVel
     cmd = Twist()
@@ -133,7 +152,9 @@ def move_base(linear, angular, t):
 #
 # This function publishes a global goal position. This topic is subscribed by
 # pratice04 and performs path planning and tracking.
-#
+# VE
+# Esta función publica una posición de objetivo global. Este tema está suscrito por
+# pratice04 y realiza la planificación y el seguimiento de rutas.
 def go_to_goal_pose(goal_x, goal_y):
     global pubGoalPose
     goal_pose = PoseStamped()
@@ -144,7 +165,8 @@ def go_to_goal_pose(goal_x, goal_y):
 
 #
 # This function sends a text to be synthetized.
-#
+# VE
+# Esta función envía un texto a sintetizar.
 def say(text):
     global pubSay
     msg = SoundRequest()
@@ -158,8 +180,11 @@ def say(text):
 #
 # This function calls the service for calculating inverse kinematics for left arm (practice 08)
 # and returns the calculated articular position.
-#
+# VE
+# Esta función llama al servicio de cálculo de cinemática inversa para brazo izquierdo (práctica 08)
+# y devuelve la posición articular calculada.
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -173,7 +198,9 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 #
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
-#
+# VE
+# Esta función llama al servicio de cálculo de cinemática inversa para brazo derecho (práctica 08)
+# y devuelve la posición articular calculada.
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
@@ -189,7 +216,9 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 #
 # Calls the service for finding object (practice 08) and returns
 # the xyz coordinates of the requested object w.r.t. "realsense_link"
-#
+# VE
+# Llama al servicio de búsqueda de objeto (práctica 08) y devuelve
+# las coordenadas xyz del objeto solicitado w.r.t. "realsense_enlace"
 def find_object(object_name):
     clt_find_object = rospy.ServiceProxy("/vision/find_object", FindObject)
     req_find_object = FindObjectRequest()
@@ -200,7 +229,8 @@ def find_object(object_name):
 
 #
 # Transforms a point xyz expressed w.r.t. source frame to the target frame
-#
+# VE
+# Transforma un punto xyz expresado w.r.t. fotograma de origen al fotograma de destino
 def transform_point(x,y,z, source_frame, target_frame):
     listener = tf.TransformListener()
     listener.waitForTransform(target_frame, source_frame, rospy.Time(), rospy.Duration(4.0))
@@ -238,7 +268,55 @@ def main():
     #
     # FINAL PROJECT 
     #
-    
+    new_task = False
+    recognized_speech = ""
+    executing_task = False
+    state = "St_incio"
+    while not rospy.is_shutdown():
+
+        if state == "St_inicio":
+            print("iniciando proyecto final...")
+            print("Esperando por un comando...")
+            state = "St_Comando"
+        
+        elif state == "St_comando":
+            if new_task:
+                new_task = False
+                executing_task = True
+                state = "St_analizando"
+
+        elif state == "St_analizando":
+            obj, loc = parse_command(recognized_speech)
+            print("Objecto: " + obj)
+            print("Localizacion: " + str(loc))
+            state = "St_movHEAD"
+
+        elif state == "St_movHEAD":
+            move_head(0,-0.1)
+            
+            if obj == "pringles":
+                state = "SM_MOVE_LEFT_ARM"
+            else:
+                state = "SM_MOVE_RIGHT_ARM"
+
+
+        elif state == "SM_MOVE_LEFT_ARM":
+            move_left_arm(-1, 0,0,1.5, 0, 0.8, 0)
+            x,y,z = find_object(obj)
+            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
+            
+            state = "SM_END"
+        elif state == "SM_MOVE_RIGHT_ARM":
+            move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0,0)
+            x,y,z = find_object(obj)
+            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_right_link")
+            state= "SM_END"
+        elif state == "SM_END":
+            None
+        else:
+            print("FATAL ERROR!!! :'(")
+        loop.sleep()
+
     while not rospy.is_shutdown():
         loop.sleep()
 
