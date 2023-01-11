@@ -7,7 +7,7 @@
 # Write the code necessary to make the robot to perform the following possible commands:
 # * Robot take the <pringles|drink> to the <table|kitchen>
 # You can choose where the table and kitchen are located within the map.
-# Pringles and drink are the two objects on the table used in practice 07.
+# Pringles and drink are the two objects on the table used in practice 08.
 # The Robot must recognize the orders using speech recognition.
 # Entering the command by text or similar way is not allowed.
 # The Robot must announce the progress of the action using speech synthesis,
@@ -29,13 +29,16 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "GINEZ ALVAREZ ADRIAN"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
+    if executing_task:
+        return
+    new_task = True
     recognized_speech = msg.hypothesis[0]
     print("New command received: " + recognized_speech)
 
@@ -160,6 +163,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -174,7 +178,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -238,8 +242,86 @@ def main():
     #
     # FINAL PROJECT 
     #
-    
+    new_task = False
+    recognized_speech = ""
+    executing_task = False
+    state = "SM_INIT"
     while not rospy.is_shutdown():
+        if state == "SM_INIT":
+            say("Initializing final project...")
+            print("Waiting for spoken command...")
+            state = "SM_WAIT_FOR_COMMAND"
+            
+        elif state == "SM_WAIT_FOR_COMMAND":
+            if new_task:
+                new_task = False
+                executing_task = True
+                state = "SM_PARSING"
+                
+        elif state == "SM_PARSING":
+            obj, loc = parse_command(recognized_speech)
+            print("Requested object: " + obj)
+            print("Requested location: " + str(loc))
+            state = "SM_MOVE_HEAD"
+            
+        elif state == "SM_MOVE_HEAD":
+            say("DOWN_HEAD")
+            move_head(0,-1.0)
+            if obj == "pringles":
+                say("TAKE PRINGLES WITH LEFT ARM")
+                state = "SM_MOVE_LEFT_ARM"
+            else:
+                print("TAKE DRINK WITH RIGHT ARM")
+                state = "SM_MOVE_RIGHT_ARM"
+                
+        elif state == "SM_MOVE_LEFT_ARM":
+            move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
+            print("SEARCH "+ obj)
+            say("SEARCH")
+            x,y,z = find_object(obj)
+            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
+            say("SEARCH COMPLETE")
+            state = "SM_IK"
+            
+        elif state == "SM_MOVE_RIGHT_ARM":
+            move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
+            print("SEARCH "+ obj)
+            say("SEARCH")
+            x,y,z = find_object(obj)
+            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_right_link")
+            say("SEARCH_COMPLETE")
+            state = "SM_IK"
+        
+        elif state == "SM_IK":
+            if obj == "pringles":
+            	q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+            	say("MOVING LEFT ARM")
+            	move_left_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+            	print("AND_GRIPPER")
+            	move_left_gripper(-0.4)
+            else:
+            	q = calculate_inverse_kinematics_right(x, y, z, 0, -1.4, 0)
+            	say("MOVING RIGHT ARM")
+            	move_right_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+            	say("AND GRIPPER")
+            	move_right_gripper(-0.5)
+            state = "NAV"
+        
+        elif state == "NAV":
+            say("PREPARING NAVIGATION")
+            move_head(0, 0)
+            move_base(-0.3, 0, 4)
+            say("READY")
+            go_to_goal_pose(loc[0], loc[1])
+            print("TAKE_YOUR " + obj)
+            say("FINISH")
+            state = "SM_END"
+        
+        elif state == "SM_END":
+            None
+            
+        else:
+            print("FATAL ERROR!!! :'(")
         loop.sleep()
 
 if __name__ == '__main__':
