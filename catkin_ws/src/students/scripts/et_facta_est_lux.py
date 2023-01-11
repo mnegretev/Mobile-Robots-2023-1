@@ -251,6 +251,8 @@ def main():
     x,y,z = [0,0,0]
     obj = ""
     loc = []
+    move_head(0,0)
+    
 
     while not rospy.is_shutdown():
         if state == "SM_INIT":
@@ -268,22 +270,23 @@ def main():
          print("Requested object: " + obj)
          print("Requested location " + str(loc))
          say("I need to find the " + obj)
-         #move_base(1,0,1)
+         #move_base(1,0,2)
          state = "SM_MOVE_HEAD"
         elif state == "SM_MOVE_HEAD":
+         #move_base(1,0,2)
          move_head(0,-1)
          if obj == "pringles":
           state = "SM_PREPARE_LEFT_ARM"
          else:
           state = "SM_PREPARE_RIGHT_ARM"
         elif state == "SM_PREPARE_LEFT_ARM":
-         move_left_arm(-1.3,0.2,0,2.0,0,1.2,0)
+         move_left_arm(-1.3,0.2,0.0,2.1,0.0,1.6,0.0)
          x,y,z = find_object(obj)
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_left_link")
          state = "SM_OPEN_LEFT_GRIPPER"
          say("I found the " + obj)
         elif state == "SM_PREPARE_RIGHT_ARM":
-         move_right_arm(-1,-0.2,0,1.4,1.1,0,0)
+         move_right_arm(-1.4,-0.2,0.0,1.4,2.2,0.0,0.0)
          x,y,z = find_object(obj)
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_right_link")
          state = "SM_OPEN_RIGHT_GRIPPER"
@@ -295,12 +298,12 @@ def main():
          move_right_gripper(0.5)
          state = "SM_MOVE_RIGHT_ARM"
         elif state == "SM_MOVE_LEFT_ARM":
-         #move_base(1,0,1)
+         move_base(1,0,2)
          q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(x,y,z,0,-1.5,0)
          move_left_arm(q1,q2,q3,q4,q5,q6,q7)
          state = "SM_CLOSE_LEFT_GRIPPER"
         elif state == "SM_MOVE_RIGHT_ARM":
-         #move_base(1,0,1)
+         move_base(1,0,2)
          q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_right(x,y,z,0,-1.5,0)
          move_right_arm(q1,q2,q3,q4,q5,q6,q7)
          state = "SM_CLOSE_RIGHT_GRIPPER"
@@ -314,10 +317,11 @@ def main():
          move_left_arm(-1.3,0.2,0,1.6,0,1.2,0)
          state = "SM_MOVE_BASE_BACK"
         elif state == "SM_RETURN_RIGHT_ARM":
-         move_right_arm(-1.3,0.2,0,1.6,0,1.2,0) #Checar
+         move_right_arm(-1,-0.2,0,1.8,1.1,0.2,0) #Checar
          state = "SM_MOVE_BASE_BACK"
         elif state == "SM_MOVE_BASE_BACK":
-         move_base(-1, 0, 9) #Checar
+         say("Moving to the location")
+         move_base(-1, 0, 6) #Checar
          state = "SM_GOTO_LOCATION"
         elif state == "SM_GOTO_LOCATION":
          #say("Going to location")
@@ -329,11 +333,12 @@ def main():
          if goal_flag:
           state = "SM_DROP_OBJECT"
         elif state == "SM_DROP_OBJECT":
-         if object == "pringles":
+         if obj == "pringles":
           move_left_gripper(0.5)
          else:
           move_right_gripper(0.5)
          state = "SM_END"
+         say("I delivered the " + obj)
         elif state == "SM_END":
          print("CIRCUIT FINISHED SUCCESSFULLY")
         else:
