@@ -248,7 +248,7 @@ def main():
     state = "SM_INIT"
     while not rospy.is_shutdown():
         if state == "SM_INIT":
-            print("Initializing final project...")
+            say("Initializing final project...")
             print("Waiting for spoken command...")
             state = "SM_WAIT_FOR_COMMAND"
             
@@ -265,53 +265,56 @@ def main():
             state = "SM_MOVE_HEAD"
             
         elif state == "SM_MOVE_HEAD":
-            print("DOWN_HEAD")
-            move_head(0,-0.9)
+            say("DOWN_HEAD")
+            move_head(0,-1.0)
             if obj == "pringles":
-                print("TAKE_PRINGLES_WITH_LEFT_ARM")
+                say("TAKE PRINGLES WITH LEFT ARM")
                 state = "SM_MOVE_LEFT_ARM"
             else:
-                print("TAKE_PRINGLES_WITH_RIGHT_ARM")
+                print("TAKE DRINK WITH RIGHT ARM")
                 state = "SM_MOVE_RIGHT_ARM"
                 
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
             print("SEARCH "+ obj)
+            say("SEARCH")
             x,y,z = find_object(obj)
             x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
-            print("SEARCH_COMPLETE")
+            say("SEARCH COMPLETE")
             state = "SM_IK"
             
         elif state == "SM_MOVE_RIGHT_ARM":
             move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
             print("SEARCH "+ obj)
+            say("SEARCH")
             x,y,z = find_object(obj)
             x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_right_link")
-            print("SEARCH_COMPLETE")
+            say("SEARCH_COMPLETE")
             state = "SM_IK"
         
         elif state == "SM_IK":
             if obj == "pringles":
             	q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
-            	print("MOVING_LEFT_ARM")
+            	say("MOVING LEFT ARM")
             	move_left_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
             	print("AND_GRIPPER")
             	move_left_gripper(-0.4)
             else:
             	q = calculate_inverse_kinematics_right(x, y, z, 0, -1.4, 0)
-            	print("MOVING_RIGHT_ARM")
+            	say("MOVING RIGHT ARM")
             	move_right_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
-            	print("AND_GRIPPER")
-            	move_right_gripper(-0.4)
+            	say("AND GRIPPER")
+            	move_right_gripper(-0.5)
             state = "NAV"
         
-        elif state = "NAV"
-            print("PREPARING_NAVIGATION")
+        elif state == "NAV":
+            say("PREPARING NAVIGATION")
             move_head(0, 0)
-            move_base(-0.3, 0, 3)
-            print("READY")
+            move_base(-0.3, 0, 4)
+            say("READY")
             go_to_goal_pose(loc[0], loc[1])
             print("TAKE_YOUR " + obj)
+            say("FINISH")
             state = "SM_END"
         
         elif state == "SM_END":
