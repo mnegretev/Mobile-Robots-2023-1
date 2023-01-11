@@ -256,6 +256,7 @@ def main():
         if state == "SM_INIT":
          print("Initializating final project...")
          print("Waiting for spoken command...")
+         say("Waiting for command")
          state = "SM_WAIT_FOR_COMMAND"
         elif state == "SM_WAIT_FOR_COMMAND":
          if new_task:
@@ -267,6 +268,7 @@ def main():
          print("Requested object: " + obj)
          print("Requested location " + str(loc))
          say("I need to find the " + obj)
+         #move_base(1,0,1)
          state = "SM_MOVE_HEAD"
         elif state == "SM_MOVE_HEAD":
          move_head(0,-1)
@@ -275,15 +277,17 @@ def main():
          else:
           state = "SM_PREPARE_RIGHT_ARM"
         elif state == "SM_PREPARE_LEFT_ARM":
-         move_left_arm(-1,0,0,1.5,0,0.8,0)
+         move_left_arm(-1.3,0.2,0,2.0,0,1.2,0)
          x,y,z = find_object(obj)
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_left_link")
          state = "SM_OPEN_LEFT_GRIPPER"
+         say("I found the " + obj)
         elif state == "SM_PREPARE_RIGHT_ARM":
          move_right_arm(-1,-0.2,0,1.4,1.1,0,0)
          x,y,z = find_object(obj)
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_right_link")
          state = "SM_OPEN_RIGHT_GRIPPER"
+         say("I found the " + obj)
         elif state == "SM_OPEN_LEFT_GRIPPER":
          move_left_gripper(0.5)
          state = "SM_MOVE_LEFT_ARM"
@@ -291,10 +295,12 @@ def main():
          move_right_gripper(0.5)
          state = "SM_MOVE_RIGHT_ARM"
         elif state == "SM_MOVE_LEFT_ARM":
+         #move_base(1,0,1)
          q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(x,y,z,0,-1.5,0)
          move_left_arm(q1,q2,q3,q4,q5,q6,q7)
          state = "SM_CLOSE_LEFT_GRIPPER"
         elif state == "SM_MOVE_RIGHT_ARM":
+         #move_base(1,0,1)
          q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_right(x,y,z,0,-1.5,0)
          move_right_arm(q1,q2,q3,q4,q5,q6,q7)
          state = "SM_CLOSE_RIGHT_GRIPPER"
@@ -308,15 +314,17 @@ def main():
          move_left_arm(-1.3,0.2,0,1.6,0,1.2,0)
          state = "SM_MOVE_BASE_BACK"
         elif state == "SM_RETURN_RIGHT_ARM":
-         move_right_arm(-1.3,0.2,0,1.6,0,1.2,0)//Checar
+         move_right_arm(-1.3,0.2,0,1.6,0,1.2,0) #Checar
          state = "SM_MOVE_BASE_BACK"
         elif state == "SM_MOVE_BASE_BACK":
-         move_base(1, 0, 2)//Checar
+         move_base(-1, 0, 9) #Checar
          state = "SM_GOTO_LOCATION"
         elif state == "SM_GOTO_LOCATION":
-         if location == "kitchen":
-          go_to_goal_pose(3.22, 9.72)//Checar
-          state = "SM_WAIT_FOR_GOAL_REACH"
+         #say("Going to location")
+         #if str(loc) == "KITCHEN":
+          #move_base(1,0,1)
+         go_to_goal_pose(3.22, 9.72) #Checar
+         state = "SM_WAIT_FOR_GOAL_REACH"
         elif state == "SM_WAIT_FOR_GOAL_REACH":
          if goal_flag:
           state = "SM_DROP_OBJECT"

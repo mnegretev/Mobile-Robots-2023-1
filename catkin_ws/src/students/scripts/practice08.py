@@ -42,14 +42,15 @@ def segment_by_color(img_bgr, points, obj_name):
     #
     #lower = [25,50,50] if obj_name == "pringles" else [30,50,50]
     #upper = [35,255,255] if obj_name == "pringles" else [28,96,165]
-
+    lower = []
+    upper = []
     #Se cambia el espacio de color de RGB a HSV
     img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
     #Se asignan limites de colores para los dos objetos
     if obj_name == 'pringles':
      lower = [25,50,50]
      upper = [35,255,255]
-    if obj_name == 'lata':
+    if obj_name == 'drink':
      lower = [10,200,50]
      upper = [20,255,255]
 
