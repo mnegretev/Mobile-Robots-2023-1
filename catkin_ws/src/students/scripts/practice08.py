@@ -42,25 +42,40 @@ def segment_by_color(img_bgr, points, obj_name):
     #
     #global img_bgr
     #Cambia el espacio de color de BGR a HSV
-    img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
-    lower = [25,50,50] if obj_name =="pringles" else [10,200,50]
-    upper = [35,255,255] if obj_name =="pringles" else [20,255,255]
+#
+    if obj_name == 'pringles':
+    	lower = [25, 50, 50]
+    	upper = [35, 255, 255]
+    else:
+    	lower = [10, 200, 50]
+    	upper = [20, 255, 255]
+    	
+    #Cambiamos de formato de BGR a HSV
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    
+    #Determinamos los pixeles que estan dentro del rango de colores definido.
     lower = numpy.asarray(lower)
     upper = numpy.asarray(upper)
-    #print("Debugging")
-    #Determina los pixeles cuyo color esta en el rango de colores definido
-    img_bgr = cv2.inRange(img_bgr, lower, upper)
-    #Regresa las coordenadas de los pixeles que están dentro del rango de colores dado
-    pixeles = cv2.findNonZero(img_bgr)
-    #Calcula el punto medio de un objeto (centroide)
-    valor_medio = cv2.mean(pixeles)
-    #Regresa las coordenadas cartesianas del centroide
-    valor_medio_cartesiano = points[int(valor_medio[0]), int(valor_medio[1])]
-    print("Coord Img centroide ", valor_medio)
-    print("Coord cartesianas centroide", valor_medio_cartesiano)
+    img_hsv = cv2.inRange(img_hsv, lower, upper)
+
+    #Calculamos el centroide de todos los pixeles en el rango de colores definidos
+    pixels = cv2.findNonZero(img_hsv)
+    mean_value = cv2.mean(pixels)
     
-    return [valor_medio[0],valor_medio[1],valor_medio_cartesiano[0],valor_medio_cartesiano[1], valor_medio_cartesiano[2]]
+    #Calculamos el centroide en el espacio cartesiano
+    centroid = points[int(mean_value[1]), int(mean_value[0])]
     
+    #Formamos la tupla con los siguientes elementos: [img_x, img_y, centroid_x, centroid_y, centroid_z]
+    img_x = mean_value[0]
+    img_y = mean_value[1]
+    centroid_x = centroid[0]
+    centroid_y = centroid[1]
+    centroid_z = centroid[2]
+    print("Coordenadas del centroide: ", mean_value)
+    print("Coordenadas del centroide en el espacio cartesiano: ", centroid)
+    
+    return [img_x, img_y, centroid_x, centroid_y, centroid_z]
+        
 
 def callback_find_object(req):
     global pub_point, img_bgr
