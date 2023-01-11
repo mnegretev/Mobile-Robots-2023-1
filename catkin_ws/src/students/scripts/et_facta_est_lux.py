@@ -371,7 +371,7 @@ def main():
         elif state == "SM_TOMAR":    
             move_base(0.2, 0, 0.5)
             print("Acercandome a la mesa")
-            move_right_gripper(-0.6)
+            move_right_gripper(-0.61)
             move_right_arm(0.9170,0.135,-0.050,1.442,-0.315,0.008,0.150)
             state = "SM_RIGHT_ARM_GO_TO"
             
@@ -411,7 +411,21 @@ def main():
         
         elif state == "SM_GOAL_REACHED_TABLE_RIGHT_ARM":
             print("He llegado a TABLE")
-            state = "SM_END"
+            #move_right_arm(1.4,0.135,-0.050,1.442,-0.315,0.008,0.150)
+            #move_right_arm(1.4,0.135,-0.050,1.442,-0.915,0.008,0.150)
+            move_right_arm(1.55,0.135,-0.050,1.442,-0.95,0.008,0.150)
+            state = "SM_TURN"
+        
+        elif state == "SM_TURN":
+            print("Girando")
+            move_base(0,7,5.3)
+            state="SM_D_TABLE_RIGHT_ARM"
+        
+        elif state == "SM_D_TABLE_RIGHT_ARM":
+            print("Soltando lata")
+            move_head(0,-0.3) 
+            move_right_gripper(0.5)
+            state="SM_END"
                                        
         elif state == "SM_END":
             print("\n\nEL programa ha terminado!\n\n")
