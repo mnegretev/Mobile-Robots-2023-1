@@ -249,6 +249,7 @@ def main():
     state = "SM_INIT"
     while not rospy.is_shutdown():
         if state == "SM_INIT":
+            say("Waiting for command")
             print("Initializing final project...")
             print("Waiting for spoken command...")
             state = "SM_WAIT_FOR_COMMAND"
@@ -266,8 +267,10 @@ def main():
             move_head(0,-1)
             if obj == "pringles":
                 state = "SM_MOVE_LEFT_ARM"
+                say("Taking the pringles")
             else:
                 state = "SM_MOVE_RIGHT_ARM"
+                say("Taking the drink")
         elif state == "SM_MOVE_LEFT_ARM":
             move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
             move_base(0.2,0,0)
@@ -315,6 +318,7 @@ def main():
            #state= "SM_GO_BACK"
            #state="SM_TOMAR"
         elif state == "SM_GO_BACK":
+            say("Moving Backward")
             print("I'm gonna move backward")
             move_base(-0.2, 0, 2)
             print("I moved backward")
@@ -326,10 +330,12 @@ def main():
             if loc == [3.22, 9.2]:#Para Kitchen
              go_to_goal_pose(loc[0], loc[1])
              print("Going to kitchen")
+             say("Going to the kitchen")
              state = "SM_WAIT_FOR_GOAL_REACH"
             else:
              go_to_goal_pose(loc[0], loc[1])
              print("Going to table")
+             say("Going to the table")
              state = "SM_WAIT_FOR_GOAL_REACH_TABLE"
         
         elif state == "SM_WAIT_FOR_GOAL_REACH":
@@ -341,12 +347,14 @@ def main():
             state = "SM_GOAL_REACHED_TABLE"
         
         elif state == "SM_GOAL_REACHED_TABLE":
+            say("Im next to the table")
             print("Destino alcanzado")
             print("Moviendo brazo")
             move_left_arm(1.4850,0.0940,-0.1140,2.0416,0.0060,-1.6820,0)
             state = "SM_DROP_TABLE"
         
         elif state == "SM_DROP_TABLE":
+            say("Moving to dropping position")
             print("Acomodando Base")
             move_base(0,-5.14,4)
             move_head(0,-0.4) 
@@ -355,11 +363,13 @@ def main():
           
         elif state == "SM_GOAL_REACHED":
             print("Destino alcanzado")
+            say("Im in the kitchen")
             move_base(0,3.14,2)
             print("Acomodando orientacion")  
             state = "SM_TABLE"
         
         elif state == "SM_TABLE": 
+            say("Dropping the pringles")
             move_base(0.2,0,1.8)
             state = "SM_DROP"
             
