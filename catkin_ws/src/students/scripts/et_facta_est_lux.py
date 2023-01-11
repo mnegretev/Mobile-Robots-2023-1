@@ -29,15 +29,17 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "CHAVOLLA JIMENEZ RAUL DANIEL"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
-    recognized_speech = msg.hypothesis[0]
-    print("New command received: " + recognized_speech)
+    if executing_task:
+        return
+    new_task = True
+    recognized_speech = msg.data
 
 #
 # Global variable 'goal_reached' is set True when the last sent navigation goal is reached
@@ -174,7 +176,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -236,11 +238,111 @@ def main():
     print("Services are now available.")
 
     #
-    # FINAL PROJECT 
+    # FINAL PROJECT SE PROCEDE A REALIZAR LA MAQUINA DE ESTADOS 
     #
-    
+    new_task = False
+    executing_task = False
+    recognized_speech = ""
+    goal_reached = False
+
+    current_state = "ME_INICIAL"
+    requested_object = ""
+    requested_location = [0,0]
+
     while not rospy.is_shutdown():
-        loop.sleep()
+        if current_state == "ME_INICIAL": #se inicia la maquina de estados con el estado inicial
+            print("SE PROCEDE A INICIAR MAQUINA DE ESTADOS E0")
+            if(new_task == True):
+                new_task == False
+                current_state = "ME_DECIR_HOLA"
+               
+        
+        
+        elif current_state == "ME_DECIR_HOLA":  #estado 1 dar la bienvenida con la voz del robot
+            print("DICIENDO HOLA E1")
+            say("HELLO THERE GENERAL KENOBI")
+            current_state = "ME_DETECTAR_OBJETO"
+
+
+        elif current_state == "ME_DETECTAR_OBJETO":  #reconocimiento de la voz y orden estado 2
+            print("PROCEDIENTO A RECONOCER EL OBJETO E2")
+            say("Robot are going to recognizing object")
+            obj,loc = parse_command(recognized_speech)
+            print ("el objeto es" + str(obj))
+            print("la localizacion es" + str(loc))
+            current_state = "ME_BAJAR_CABEZA"           
+
+        elif current_state == "ME_BAJAR_CABEZA":
+            print("PROCEDIENDO A BAJAR LA CABEZA E3") #SE PROCEDE A POSICIONAR LA CABEZA PARA DETECTAR LOS OBJETOS ESTADO 3
+            move_head(0, -0.8)
+            current_state = "ME_BUSCAR_OBJETO"
+
+        elif current_state == "ME_BUSCAR_OBJETO":
+            print("procediendo a buscar el objeto solicitado")
+            say("Finding this object")
+            x_obj, y_obj, z_obj = find_object(obj)#se procede a buscar el objeto utilizando color segmentatiom E4
+            current_state = "ME_TRANSFORMATION_POINT"
+        
+        elif current_state == "ME_TRANSFORMATION_POINT": #se procede a transformar coordenadas estado 5
+            print("transformando coordenadas")
+            if obj == "pringles":
+                xt, yt, zt = transform_point(x_obj, y_obj, z_obj, "realsense_link","shoulders_left_link")
+            else:
+                xt, yt, zt = transform_point(x_obj, y_obj, z_obj, "realsense_link","shoulders_right_link")
+            current_state = "ME_CINEMATICA_INVERSA"
+        
+        elif current_state == "ME_CINEMATICA_INVERSA":  #se procede a calcular la cinematica inversa E6
+            print("ESTADO 6 CALCULO DE CINEMATICA INVERSA")
+            if obj == "pringles":
+                q = calculate_inverse_kinematics_left(xt,yt,zt,3,-1.57,-3)
+            else:
+                q = calculate_inverse_kinematics_right(xt,yt,zt,1.5,1.2,1.7)
+            print("La conematica inversa es" + str(q))
+            current_state = "ME_MOVIENDO_EL_BRAZO"
+        
+        elif current_state == "ME_MOVIENDO_EL_BRAZO":#procediendo a mover el brazo o contraerlo para comenzar 
+            print("MOVIENDO EL BRAZO")
+            move_left_arm(-0.5,0,0,2.3,0,0,0)
+            current_state = "ME_MOVIENDO_BRAZO_AL_OBJETO"
+        
+        elif current_state == "ME_MOVIENDO_BRAZO_AL_OBJETO":#ESTADO 8 SE PROCEDE A MOVER EL BRAZO AL OBJETO CON LAS COORDENADAS CORRECTAS
+            print("moviendo el brazo")
+            say ("Robot moving arm")
+            if obj == "pringles":
+                move_left_gripper (0.5)
+                move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+            else:
+                move_right_gripper(0.5)
+                move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+            current_state = "ME_CERRAR_MANO"
+
+        elif current_state == "ME_CERRAR_MANO":#ESTADO 9 SE PROCEDE A CERRAR LA MANO
+            print("SE PROCEDE A CERRAR LA MANO")
+            if obj == "pringles":
+                move_left_arm(-0,0,0,1.7,0,0,0)
+                move_left_gripper(-0.5)
+                move_left_arm(0,0,0,3,0,0,-1)
+            else:
+                move_right_arm(-0,0,0,1.7,0,0,0)
+                move_right_gripper(-0.5)
+                move_right_arm(0,0,0,3,0,0,-0.8)
+            say("i'll be back")
+            current_state = "ME_POSICION_FINAL"
+        
+        elif current_state == "ME_POSICION_FINAL":#ESTADO 10 IR A POCICION FINAL
+            go_to_goal_pose(loc[0],loc[1])
+            if goal_reached:
+                if obj =="pringles":
+                    move_left_gripper(0.5)
+            current_state = "ME_RETORNO"
+
+        elif current_state == "ME_RETORNO":#ESTADO 11 FINALIZACION
+            go_to_goal_pose(3.32, 5.86)
+            print("estoy girando")
+            say ("i'm turn")
+            move_base(0,1,15)
+            move_left_gripper(0)
+            current_state = "ME_FINISH"     
 
 if __name__ == '__main__':
     try:
