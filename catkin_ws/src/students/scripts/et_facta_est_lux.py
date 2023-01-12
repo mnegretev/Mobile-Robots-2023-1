@@ -163,6 +163,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -254,7 +255,7 @@ def main():
     
     while not rospy.is_shutdown():
         if current_state == "SM_INIT":                  #ESTADO 0: START MACHINE
-            print("Starting state machine :D ...")
+            print("State 0: Start machine...")
             if(new_task == True):
                 new_task = False
                 current_state = "SM_SAY_HELLO"
@@ -285,6 +286,7 @@ def main():
             current_state = "SM_POINT_TRANSFORM"
 
         elif current_state == "SM_POINT_TRANSFORM":       #ESTADO 5: POINT TRANSFORM
+            print("Point transform")
             if obj == "pringles":
                 xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_left_link")
             else:
@@ -293,6 +295,7 @@ def main():
             current_state = "SM_INVERSE_KINEMATICS"
 
         elif current_state == "SM_INVERSE_KINEMATICS":       #ESTADO 6: INVERSE KINEMATICS
+            print("Inverse kinematics")
             if obj == "pringles":
                 q = calculate_inverse_kinematics_left(xt,yt,zt,3,-1.57,-3)
             else:
@@ -303,13 +306,13 @@ def main():
         elif current_state == "SM_MOVE_ARM_TO_START":          #ESTADO 7: MOVE ARM TO START
              print("Moving the robot's arm")
              if obj == "pringles":
-                move_left_arm(-0.5,0,0,2.2,0,0,0)
+                move_left_arm(-0.5,0,0,2.3,0,0,0)
              else:
-                move_right_arm(-0.5,0,0,2.2,0,0,0)
+                move_right_arm(-0.5,0,0,2.3,0,0,0)
              current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
 
         elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":        #ESTADO 8: MOVE ARM TO TAKE OBJECT
-            print("moving_arm_obj")
+            print("Move arm to take object")
             say("Robot is moving its arm")
             if obj == "pringles":
                 move_left_gripper(0.5)
@@ -320,15 +323,16 @@ def main():
             current_state = "SM_CLOSE_HAND"
         
         elif current_state == "SM_CLOSE_HAND":                   #ESTADO 9: CLOSE HAND
-            print("closing hand")
+            print("Closing hand")
             if obj == "pringles":
-                move_left_arm(0,0,0,1.7,0,0,0)
+                move_left_arm(-0,0,0,1.7,0,0,0)
                 move_left_gripper(-0.5)
                 move_left_arm(0,0,0,3,0,0,-1)
             else:
-                move_right_arm(0,0,0,1.7,0,0,0)
+                move_right_arm(-0,0,0,1.7,0,0,0)
                 move_right_gripper(-0.5)
                 move_right_arm(0,0,0,3,0,0,-0.8)
+                say("I got it")
             current_state = "SM_MOVE_TO_GOAL_POSE"
             
         elif current_state == "SM_MOVE_TO_GOAL_POSE":            #ESTADO 10: MOVE TO GOAL POSE
