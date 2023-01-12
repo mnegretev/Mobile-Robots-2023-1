@@ -299,7 +299,7 @@ def main():
             if obj == "pringles":
                 q = calculate_inverse_kinematics_left(xt,yt,zt,3,-1.57,-3)
             else:
-                q = calculate_inverse_kinematics_right(xt,yt+0.1,zt,3,-1.57,-3)
+                q = calculate_inverse_kinematics_right(xt,yt+0.3,zt,3,-1.57,-3)
             print(q)
             current_state = "SM_MOVE_ARM_TO_START"
 
