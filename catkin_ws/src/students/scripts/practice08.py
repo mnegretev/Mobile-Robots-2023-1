@@ -57,7 +57,7 @@ def segment_by_color(img_bgr, points, obj_name):
         
         if math.isnan(points[r,c][0]) or math.isnan(points[r,c][1]) or math.isnan(points[r,c][2]):
                 pass
-            else:
+        else:
             centroid_x += points[r,c][0]
             centroid_y += points[r,c][1]
             centroid_z += points[r,c][2]
