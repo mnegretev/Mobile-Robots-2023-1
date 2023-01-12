@@ -241,180 +241,150 @@ def main():
     #
     
     #inicialización de variables
-    recognized_speech = None
+    recognized_speech = ""
     new_task = False
     executing_task = False
-    #target_obj, target_loc = None 
-    #, target_loc_poss = None
-    #target_object_x,target_object_y,target_object_z= None
     goal_reached = False
-    
-    state = "SM_INIT"
-    while not rospy.is_shutdown():
-        #loop.sleep()
-        if state == "SM_INIT":
-            print("Inicializando el proyecto final...")
-            print("Esperando por un comando de voz...")
-            state = "SM_en_espera_comando"
-        elif state == "SM_en_espera_comando":
-            if new_task:
-                new_task = False
-                executing_task = True
-                state = "SM_parsing"
-        elif state == "SM_parsing":
-            #parse_command(recognized_speech)
 
-        #Bloque recepción de comando
-        #if not new_task:
-        #elif recognized_speech:
-            target_obj, target_loc = parse_command(recognized_speech) 
-            #, target_loc_poss = parse_command(recognized_speech)
-            print("Objeto solicitado: "+ target_obj)
-            print("Ubicación solicitada: " + target_loc)
-            new_task = True
-            state = 'SM_Say_command'
+
+    while not rospy.is_shutdown():
+        loop.sleep()
+        
+
+        #Recibir comando
+        if not new_task:
+            if recognized_speech:
+                obj, loc = parse_command(recognized_speech)
+                new_task = True
+                executing_task = 'Say_comand'
         
         
-        #Bloque dar comando
-        elif state == 'SM_Say_command':
-            say('New command detected')
+        #Decir comando
+        elif executing_task == 'Say_comand':
+            print('New command detected')
             time.sleep(1)
             say('Task')
             time.sleep(1)
-            say('Take '+ target_obj + ' to the ' + target_loc)
-            state = 'SM_Move_base_back'
+            say('Take '+ obj + ' to the ' + str(loc))
+            executing_task = 'Move_base_back'
 
 
         #Mover base atras
-        elif state == 'SM_Move_base_back': 
-            say('Moving back')
+        elif executing_task == 'Move_base_back': 
+            print('Moving back')
             move_base(-0.1, 0, 1)
-            state = 'SM_Move_head'
+            executing_task = 'Move_head'
 
         
         #Mover cabeza
-        elif state == 'SM_Move_head':
+        elif executing_task == 'Move_head':
             say('Looking down')
-            move_head(0,-0.1)
-            state = 'SM_Seek_obj'
+            move_head(0,-0.9)
+            executing_task = 'Seek_obj'
 
 
         #Buscar objeto
-        elif state == 'SM_Seek_obj':
-            say('Looking for ' + target_obj)
-            target_object_x,target_object_y,target_object_z = find_object(target_obj)
-            state = 'SM_Transf_coords'
+        elif executing_task == 'Seek_obj':
+            say('Looking for ' + obj)
+            x, y, z = find_object(obj)
+            executing_task = 'Transf_coords'
 
         
         #Transformar coordenadas
-        elif state == 'SM_Transf_coords':
-            say('Processing coordinates')
-            if target_obj == 'pringles':
-                target_object_x,target_object_y,target_object_z = transform_point(target_object_x,
-                                                                                target_object_y,
-                                                                                target_object_z,
-                                                                                'left_arm_grip_center',
-                                                                                'shoulders_left_link')
+        elif executing_task == 'Transf_coords':
+            print('Processing coordinates')
+            if obj == 'pringles':
+                object_x,object_y,object_z = transform_point(x,y,z,'left_arm_grip_center','shoulders_left_link')
             else:
-                target_object_x,target_object_y,target_object_z = transform_point(target_object_x,
-                                                                                target_object_y,
-                                                                                target_object_z,
-                                                                                'right_arm_grip_center',
-                                                                                'shoulders_right_link')
-            state = 'SM_kinematics'
+                object_x,object_y,object_z = transform_point(x,y,z,'right_arm_grip_center','shoulders_right_link')
+            executing_task = 'kinematics'
 
         
         #Cinematica inversa
-        elif state == 'SM_kinematics':
-            say('Doing math')
-            if target_obj == 'pringles':
-                q = calculate_inverse_kinematics_left(target_object_x,
-                                                target_object_y,
-                                                target_object_z,
-                                                0, -1.5, 0)
+        elif executing_task == 'kinematics':
+            print('Doing math')
+            if obj == 'pringles':
+                ik = calculate_inverse_kinematics_left(object_x,object_y,object_z,0, -1.5, 0)
             else:
-                q = calculate_inverse_kinematics_right(target_object_x,
-                                                target_object_y,
-                                                target_object_z,
-                                                0, -1.5, 0)
-            state = 'SM_open_griper_taking_obj'
+               ik = calculate_inverse_kinematics_right(object_x,object_y,object_z,0, -1.5, 0)
+            executing_task = 'open_griper_taking_obj'
 
 
         #Abrir Griper
-        elif state == 'SM_open_griper_taking_obj':
-            say('Open griper')
-            if target_obj == 'pringles':
-                pubLaGoalGrip(0.1)
+        elif executing_task == 'open_griper_taking_obj':
+            print('Open griper')
+            if obj == 'pringles':
+                move_left_gripper(0.1)
             else:
-                pubRaGoalGrip(0.1)
-            state = 'SM_move_predef_taking_obj'
+                move_right_gripper(0.1)
+            executing_task = 'move_predef_taking_obj'
 
 
         #Mover brazo posicion predefinida
-        elif state == 'SM_move_predef_taking_obj':
-            say('Moving arm to position one')
-            if target_obj == 'pringles':
-                q2 = [-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0]
-                move_left_arm(q2)
+        elif executing_task == 'move_predef_taking_obj':
+            print('Moving arm to position one')
+            if obj == 'pringles':
+                pos1 = [-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0]
+                move_left_arm(pos1[0],pos1[1],pos1[2],pos1[3],pos1[4],pos1[5],pos1[6])
             else:
-                q2 = [-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0]
-                move_right_arm(q2)
-            state = 'SM_move_target_taking_obj'
+                pos1 = [-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0]
+                move_right_arm(pos1[0],pos1[1],pos1[2],pos1[3],pos1[4],pos1[5],pos1[6])
+            executing_task = 'move_target_taking_obj'
 
 
         #Mover brazo posicion objetivo
-        elif state == 'SM_move_target_taking_obj':
-            say('Moving arm to target')
-            if target_obj == 'pringles':
-                move_left_arm(q)
+        elif executing_task == 'move_target_taking_obj':
+            print('Moving arm to target')
+            if obj == 'pringles':
+                move_left_arm(ik[0],ik[1],ik[2],ik[3],ik[4],ik[5],ik[6])
             else:
-                move_right_arm(q)
-            state = 'SM_close_griper_taking_obj'
+                move_right_arm(ik[0],ik[1],ik[2],ik[3],ik[4],ik[5],ik[6])
+            executing_task = 'close_griper_taking_obj'
 
 
         #Cerrar Griper
-        elif state == 'SM_close_griper_taking_obj':
+        elif executing_task == 'close_griper_taking_obj':
             say('Taking object')
-            if target_obj == 'pringles':
-                pubLaGoalGrip(-0.1)
+            if obj == 'pringles':
+                move_left_gripper(-0.1)
             else:
-                pubRaGoalGrip(-0.1)
-            state = 'SM_move_predef_obj'
+                move_right_gripper(-0.1)
+            executing_task = 'move_predef_obj'
 
         
         #Mover brazo posicion predefinida
-        elif state == 'SM_move_predef_obj':
-            say('Moving arm to position two')
-            if target_obj == 'pringles':
-                q2 = [-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0]
-                move_left_arm(q2)
+        elif executing_task == 'move_predef_obj':
+            print('Moving arm to position two')
+            if obj == 'pringles':
+                pos2 = [-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0]
+                move_left_arm(pos2[0],pos2[1],pos2[2],pos2[3],pos2[4],pos2[5],pos2[6])
             else:
-                q2 = [-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0]
-                move_right_arm(q2)
-            state = 'SM_move_goal'
+                pos2 = [-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0]
+                move_right_arm(pos2[0],pos2[1],pos2[2],pos2[3],pos2[4],pos2[5],pos2[6])
+            executing_task = 'move_goal'
 
 
         #Mover hacia meta
-        elif state == 'SM_move_goal':
-            say('Moving to goal')
-            go_to_goal_pose(target_loc_poss[0],target_loc_poss[1])
-            state = 'SM_wait_goal_reached'
+        elif executing_task == 'move_goal':
+            print('Moving to goal')
+            go_to_goal_pose(loc[0],loc[1])
+            executing_task = 'wait_goal_reached'
 
 
         #Esperar indicacion de llegar
-        elif state == 'SM_wait_goal_reached':
+        elif executing_task == 'wait_goal_reached':
             if(goal_reached):
                 say('Goal reached')
-                state = 'SM_open_griper_leaving_obj'
+                executing_task = 'open_griper_leaving_obj'
 
         #Abrir Griper
-        elif state == 'SM_open_griper_leaving_obj':
-            say('Droping object')
-            if target_obj == 'pringles':
-                pubLaGoalGrip(0.1)
+        elif executing_task == 'open_griper_leaving_obj':
+            print('Droping object')
+            if obj == 'pringles':
+                move_left_gripper(0.1)
             else:
-                pubRaGoalGrip(0.1)
-            state = 'end'
+                move_right_gripper(0.1)
+            executing_task = 'end'
 
         
         time.sleep(1)
