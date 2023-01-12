@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# MOBILE ROBOTS - FI-UNAM, 2022-2
+# MOBILE ROBOTS - FI-UNAM, 2023-1
 # FINAL PROJECT - SIMPLE SERVICE ROBOT
 # 
 # Instructions:
@@ -29,13 +29,17 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
-
+NAME = "Lopez Luis Enrique"
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
+    
+    if executing_task:
+        return
+    new_task = True
+    
     recognized_speech = msg.hypothesis[0]
     print("New command received: " + recognized_speech)
 
@@ -160,6 +164,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -174,7 +179,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -238,8 +243,135 @@ def main():
     #
     # FINAL PROJECT 
     #
+    new_task = False
+    recognized_speech = ""
+    executing_task = False
+    state = "SM_INIT"
     
     while not rospy.is_shutdown():
+        if state == "SM_INIT":
+            print("INITIALIZING MOBILE ROBOTS FINAL PROJECT\nWaiting for a command...\n")
+            say("Initializing Mobile Robots Final Project. I will be waiting for a command")
+            state = "SM_WAIT_FOR_COMMAND"
+
+        elif state == "SM_WAIT_FOR_COMMAND":
+            if new_task:
+                new_task = False
+                executing_task = True
+                print("A COMMAND HAS BEEN RECEIVED\n")
+                
+                obj, loc = parse_command(recognized_speech)
+                print("Requested object:")
+                print(obj)
+                print("Requested location: ")
+                print(str(loc))
+                print("Before SM_MOVE_HEAD")
+                state = "SM_MOVE_HEAD"
+                print("After SM_MOVE_HEAD")
+
+        elif state == "SM_MOVE_HEAD":
+            print("Inside SM_MOVE_HEAD")
+            move_head(0, -1)
+            if obj == "pringles":
+                print("Inside pringles if")
+                print("I will move my left arm")
+                state = "SM_MOVE_LEFT_ARM"
+            else:
+                say("I will move my right arm")
+                state = "SM_MOVE_RIGHT_ARM"
+
+        elif state == "SM_MOVE_LEFT_ARM":
+            move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
+            print("I moved mi left arm")
+            move_base(0.2, 0, 0)
+            move_left_gripper(0.7)
+            x,y,z = find_object(obj)
+            print("I found the object: " + str(obj))
+            x,y,z = transform_point(x, y, z, "realsense_link", "shoulders_left_link")
+            print("After transform _point()")
+            state = "SM_INVERSE_KINEMATICS"
+
+        elif state == "SM_MOVE_RIGHT_ARM":
+            move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
+            move_right_gripper(0.7)
+            x,y,z = find_object(obj)
+            x,y,z = transform_point(x, y, z, "realsense_link", "shoulders_right_link")
+            state = "SM_INVERSE_KINEMATICS"
+
+        elif state == "SM_INVERSE_KINEMATICS":
+            if obj == "pringles":
+                try:
+                    print("Before inverse_kinematics")
+                    q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+                    print("After inverse_kinematics")
+                    move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+                    move_left_gripper(-0.3)
+                except:
+                    print("An exception has ocurred!!")
+                
+            else:
+                q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
+                move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+                move_right_gripper(-0.4)
+                
+            state = "SM_GO_BACK"
+
+        elif state == "SM_GO_BACK":
+            print("I'm gonna move backward")
+            move_base(-1, 0, 2)
+            print("I moved backward")
+            move_head(0, 0)
+            state = "SM_GO_FORWARD"
+
+        elif state == "SM_GO_FORWARD":
+            print("I am going to move forward")
+            go_to_goal_pose(loc[0], loc[1])
+            print(" fin del recorrido!!!!!!!")
+            goal_reached = False
+            state = "SM_WAIT"
+	
+        elif state == "SM_WAIT":
+            if goal_reached:
+                print("Se ha llegado")
+                goal_reached = False
+                state = "SM_LEAVE_RETURN"
+
+        
+        elif state == "SM_LEAVE_RETURN":
+            print("Soltando el objeto...")
+            if obj == "pringles":
+                q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(0.40,-0.05,-0.30,0,0,0)
+                move_left_arm(q1,q2,q3,q4,q5,q6,q7)
+                move_left_gripper(0.0)
+                q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(0.20,-0.05,-0.25,0,0,0)
+                move_left_arm(q1,q2,q3,q4,q5,q6,q7)
+            else: #Drink
+                q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_right(0.40,0.05,-0.37,0,0,0)
+                move_right_arm(q1,q2,q3,q4,q5,q6,q7)
+                move_right_gripper(0.0)
+                q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_righ(0.20,0.05,-0.25,0,0,0)
+                move_right_arm(q1,q2,q3,q4,q5,q6,q7)
+            go_to_goal_pose(3.29,5.81)
+            print("Regresando...")
+            goal_reached = False
+            state = "SM_FINAL"
+        
+        #Se regresa y ajusta posicion
+        elif state == "SM_FINAL":
+            if goal_reached == True:
+                print("Regreso")
+                goal_reached = False
+                state = "None"
+                executing_task = False
+        
+        	
+        elif state == "SM_END":
+            #state = "SM_INIT"
+            print("\n\nThe program has finished!\n\n")
+
+        else:
+            print("FATAL ERROR!")
+
         loop.sleep()
 
 if __name__ == '__main__':
@@ -248,3 +380,4 @@ if __name__ == '__main__':
     except rospy.ROSInterruptException:
         pass
     
+
