@@ -321,7 +321,7 @@ def main():
                 time.sleep(2)
                 move_right_gripper(0)
                 move_right_arm(0, 0, 0, 0, 0, 0, 0)
-            goal_reached == False
+            goal_reached = False
             go_to_goal_pose(3.5, 6.0)
             while goal_reached == False:
                 None
