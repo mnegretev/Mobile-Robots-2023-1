@@ -244,7 +244,7 @@ def main():
     recognized_speech = ""
     goal_reached = False
 
-    current_state = "SM_INIT"
+    current_state = "S0_START"
     requested_object   = ""
     requested_location = [0,0]
     
@@ -254,7 +254,7 @@ def main():
     #
     
     while not rospy.is_shutdown():
-        if current_state == "SM_INIT":                  #ESTADO 0: START MACHINE
+        if current_state == "S0_START":                  #ESTADO 0: START MACHINE
             print("State 0: Start machine...")
             if(new_task == True):
                 new_task = False
@@ -269,7 +269,7 @@ def main():
             print("Recognizing Object")
             say("Robot is recognizing object")
             obj,loc = parse_command(recognized_speech) #Con ello reconocemos la voz
-            print("Tomando el objeto:" + obj)
+            print("Objeto:" + obj)
             print("Ubicación: [" + str(loc[0]) + "," + str(loc[1]) + "]")
             current_state = "SM_HEAD_DOWN"
 
@@ -299,7 +299,7 @@ def main():
             if obj == "pringles":
                 q = calculate_inverse_kinematics_left(xt,yt,zt,3,-1.57,-3)
             else:
-                q = calculate_inverse_kinematics_right(xt,yt,zt,1.5,1.3,1.8)
+                q = calculate_inverse_kinematics_right(xt,yt+0.001,zt,3,-1.57,-3)
             print(q)
             current_state = "SM_MOVE_ARM_TO_START"
 
@@ -308,7 +308,7 @@ def main():
              if obj == "pringles":
                 move_left_arm(-0.5,0,0,2.3,0,0,0)
              else:
-                move_right_arm(-0.5,0,0,2.3,0,0,0)
+                move_right_arm(-0.4,0,0,2.3,0.5,0,0)
              current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
 
         elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":        #ESTADO 8: MOVE ARM TO TAKE OBJECT
@@ -329,24 +329,26 @@ def main():
                 move_left_gripper(-0.5)
                 move_left_arm(0,0,0,3,0,0,-1)
             else:
-                move_right_arm(-0,0,0,1.7,0,0,0)
                 move_right_gripper(-0.5)
                 move_right_arm(0,0,0,3,0,0,-0.8)
                 say("I got it")
             current_state = "SM_MOVE_TO_GOAL_POSE"
             
         elif current_state == "SM_MOVE_TO_GOAL_POSE":            #ESTADO 10: MOVE TO GOAL POSE
+            print("Move to goal pose")
             go_to_goal_pose(loc[0],loc[1])
             if goal_reached:
-                if obj == "pringles":
-                    move_left_gripper(0.5)
-                    current_state = "SM_RETURN"
+                move_left_gripper(0.5)
+                goal_reached = False
+                current_state = "SM_RETURN"
                     
         elif current_state == "SM_RETURN":                       #ESTADO 11: RETURN AND FINISH
-            go_to_goal_pose(3.32,5.86)
-            move_base(0,1,15)
-            move_left_gripper(0)
-            current_state = "SM_FINISH"
+            print("Return")
+            go_to_goal_pose(2,5.86)
+            if goal_reached == True:
+                move_base(0,1,15)
+                move_left_gripper(0)
+                current_state = "SM_FINISH"
 
 if __name__ == '__main__':
     try:
