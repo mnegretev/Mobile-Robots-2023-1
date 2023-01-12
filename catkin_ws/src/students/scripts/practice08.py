@@ -40,28 +40,32 @@ def segment_by_color(img_bgr, points, obj_name):
     #   where img_x, img_y are the center of the object in image coordinates and
     #   centroid_x, y, z are the center of the object in cartesian coordinates. 
     #
-    centroid_x, centroid_y, centroid_z = 0, 0, 0
-    img_xy = [numpy.nan, numpy.nan]
+    
     colorA = [25,50,50] if obj_name == 'pringles' else [14,212,145]
     colorB = [35,255,255] if obj_name == 'pringles' else [179,216,224]
+    
     colorA = numpy.asarray(colorA)
     colorB = numpy.asarray(colorB)
     
     img_NonZero = cv2.findNonZero(cv2.inRange(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV),colorA,colorB))
+    img_xy = cv2.mean(img_NonZero)
     
-    if img_NonZero is not None:
-        img_xy = cv2.mean(img_NonZero)
-        for i in img_NonZero:
-            [[c,r]] = i
-            if math.isnan(points[r,c][0]) or math.isnan(points[r,c][1]) or math.isnan(points[r,c][2]):
+    centroid_x, centroid_y, centroid_z = 0, 0, 0
+    
+    for i in img_NonZero:
+        [[c,r]] = i
+        
+        if math.isnan(points[r,c][0]) or math.isnan(points[r,c][1]) or math.isnan(points[r,c][2]):
                 pass
             else:
             centroid_x += points[r,c][0]
             centroid_y += points[r,c][1]
             centroid_z += points[r,c][2]
-        centroid_x = centroid_x/len(img_NonZero)
-        centroid_y = centroid_y/len(img_NonZero)
-        centroid_z = centroid_z/len(img_NonZero)
+    
+    centroid_x = centroid_x/len(img_NonZero)
+    centroid_y = centroid_y/len(img_NonZero)
+    centroid_z = centroid_z/len(img_NonZero)
+    
     return [img_xy[0], img_xy[1], centroid_x, centroid_y, centroid_z]
 
 def callback_find_object(req):
