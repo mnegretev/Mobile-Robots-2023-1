@@ -7,7 +7,7 @@ from std_msgs.msg import String
 from std_msgs.msg import UInt8MultiArray
 from custom_msgs.msg import RecognizedSpeech
 from pocketsphinx import *
-#from sphinxbase.sphinxbase import *
+#from sphinxbase import *
 
 def callback_sphinx_audio(msg):
     global decoder, in_speech_bf, pub_recognized
@@ -29,12 +29,12 @@ def main():
     rospack = rospkg.RosPack()
 
     in_speech_bf = False
-    l_model   = ""
-    hmm_folder= "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/"
-    dict_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/gpsr.dic"
-    gram_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/gpsr.gram"
-    gram_rule = "simple_command"
-    gram_name = "final_project_gram"
+    l_model   = "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us.lm.bin"
+    hmm_folder= "/usr/local/lib/python3.8/dist-packages/pocketsphinx/model/en-us/en-us"
+    dict_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/default.dic"
+    gram_file = rospack.get_path("sprec_pocketsphinx") + "/vocab/default.gram"
+    gram_rule = "default"
+    gram_name = "default"
     if rospy.has_param("~hmm"):
         hmm_folder = rospy.get_param("~hmm")
     if rospy.has_param("~lm"):
