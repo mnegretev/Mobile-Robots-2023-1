@@ -285,12 +285,14 @@ def main():
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_left_link")
          state = "SM_OPEN_LEFT_GRIPPER"
          say("I found the " + obj)
+         #move_base(0.8,0,2)
         elif state == "SM_PREPARE_RIGHT_ARM":
-         move_right_arm(-1.4,-0.2,0.0,1.4,2.2,0.0,0.0)
+         move_right_arm(-1.4,-0.2,0.0,1.4,2.3,0.0,0.0)
          x,y,z = find_object(obj)
          x,y,z = transform_point(x,y,z,"realsense_link","shoulders_right_link")
          state = "SM_OPEN_RIGHT_GRIPPER"
          say("I found the " + obj)
+         #move_base(1,0,2)
         elif state == "SM_OPEN_LEFT_GRIPPER":
          move_left_gripper(0.5)
          state = "SM_MOVE_LEFT_ARM"
@@ -298,7 +300,7 @@ def main():
          move_right_gripper(0.5)
          state = "SM_MOVE_RIGHT_ARM"
         elif state == "SM_MOVE_LEFT_ARM":
-         move_base(1,0,2)
+         move_base(0.8,0,1.5)
          q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(x,y,z,0,-1.5,0)
          move_left_arm(q1,q2,q3,q4,q5,q6,q7)
          state = "SM_CLOSE_LEFT_GRIPPER"
