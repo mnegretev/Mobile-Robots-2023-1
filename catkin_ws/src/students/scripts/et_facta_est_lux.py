@@ -295,7 +295,7 @@ def main():
 		
 		elif state == "SM_START_NAVIGATION":
             print("Sending goal position to " + str(loc))
-            go_to_goal_pose(requested_location[0], requested_location[1])
+            go_to_goal_pose(loc[0], loc[1])
             goal_reached = False
             if loc == [3.13, 9.0]:
             	say("I'm going to navigate to the Kitchen")
