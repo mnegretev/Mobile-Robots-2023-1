@@ -253,7 +253,6 @@ def main():
     	if current_state == "SM_INIT":
             print("Waiting for new task")
             current_state = "SM_WAITING_NEW_TASK"
-            #current_state = "MOVER_BASE"
 	elif current_state == "MOVER_BASE":
 	    move_head(0, -0.9)
 	    move_base(-0.3, 0, 2.0)
