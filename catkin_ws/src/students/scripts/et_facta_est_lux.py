@@ -123,14 +123,16 @@ def move_head(pan, tilt):
 # low-level movements. The mobile base will move at the given linear-angular speeds
 # during a time given by 't'
 #
-def move_base(linear, angular, t):
+def move_base(linear, diagonal, angular, t):
     global pubCmdVel
     cmd = Twist()
     cmd.linear.x = linear
+    cmd.linear.y = diagonal
     cmd.angular.z = angular
     pubCmdVel.publish(cmd)
     time.sleep(t)
     pubCmdVel.publish(Twist())
+    print("cmd: "+str(cmd))
 
 #
 # This function publishes a global goal position. This topic is subscribed by
@@ -263,7 +265,6 @@ def main():
             say("I'll prepare")
             move_head(0,0)
             move_left_arm(-1,0,0,3,0,0.5,0)
-            move_right_arm(-0.5,0,0,3,1.5,0,0)
             go_to_goal_pose(init_loc[0],init_loc[1])
             if goal_reached:
              print("Localization of start: "+str(init_loc[0])+", "+str(init_loc[1]))
@@ -291,55 +292,38 @@ def main():
             if xobj!=0 and yobj!=0 and zobj!=0:
              x,y,z = transform_point(xobj, yobj, zobj,"realsense_link","shoulders_left_link")
              q = calculate_inverse_kinematics_left(x,y,z,3,-1.57,-3)             
-             if q[0] == 0 and q[1] == 0 and q[2] == 0 and q[3] == 0  and q[4] == 0 and q[5] == 0 and q[6] == 0:
-              x,y,z = transform_point(xobj, yobj, zobj,"realsense_link","shoulders_right_link")
-              q = calculate_inverse_kinematics_right(x,y,z,1.6,-1.0,1.7)               
-              if q[0] == 0 and q[1] == 0 and q[2] == 0 and q[3] == 0  and q[4] == 0 and q[5] == 0 and q[6] == 0:
-               if xobj < 0:
-                move_base(0,0.25,5)
+             if q[0] == 0 and q[1] == 0 and q[2] == 0 and q[3] == 0  and q[4] == 0 and q[5] == 0 and q[6] == 0:             
+               if xobj > 0:
+                move_base(0,-0.25,0,2)
                else:
-                move_base(0,-0.25,5)
-              else:
-               move_right_gripper(0.5)                
-               print("Q: "+str(q))
-               state = "STATE-4"               
+                move_base(0,0.25,0,2)
              else:
               move_left_gripper(0.5)                
               print("Q: "+str(q))
               state = "STATE-4"
             else:
-             move_base(0.25,0,2)
+             move_base(0,0,0.25,5)
               
         elif state == "STATE-4":            
-            if obj == "pringles":
-             move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])       
-            else:
-             move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+            move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])                  
             state = "STATE-5"
         
         elif state == "STATE-5": #
-            if obj == "pringles":
-             move_left_gripper(-0.3)
-             move_left_arm(-1,0,0,3,0,0.5,0)
-            else:
-             move_right_gripper(-0.3)
-             move_right_arm(-0.5,0,0,3,1.5,0,0)
+            move_left_gripper(-0.3)
+            move_left_arm(-1,0,0,3,0,0.5,0)
             say("I go to the goal pose")
             go_to_goal_pose(loc[0],loc[1])
             state = "STATE-6"
 
         elif state == "STATE-6":
             if goal_reached:
-             goal_reached = False
              say("I'm here")
              state = "STATE-7"
         
         elif state == "STATE-7": #
-            if obj == "pringles":
-             move_left_gripper(0.5)
-            else:
-             move_right_gripper(0.5)
+            move_left_gripper(0.5)
             say("Dropping")
+            goal_reached = False
             executing_task = False
             state = "STATE-0"
             
