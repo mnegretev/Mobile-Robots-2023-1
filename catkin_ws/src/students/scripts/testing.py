@@ -297,7 +297,7 @@ def main():
         #Mover base atras
         elif executing_task == 'Move_base_back': 
             say('Moving back')
-            move_base(-0.1, 0, 2)
+            move_base(-0.1, 0, 1.9)
             executing_task = 'Move_head'
 
         
@@ -325,8 +325,8 @@ def main():
                 move_left_arm(q2)
                 q2 = [-0.4, 0,0,1.6, 0, 0.8, 0]
                 move_left_arm(q2)
-                q2 = [0 , 0 ,0 ,1.6, 0, 0.4, 0]
-                move_left_arm(q2)
+                #q2 = [0 , 0 ,0 ,1.6, 0, 0.4, 0]
+                #move_left_arm(q2)
             else:
                 q2 = [0,0,0,0,0,0,0]
                 move_right_arm(q2)
@@ -345,9 +345,9 @@ def main():
         elif executing_task == 'open_griper_taking_obj':
             say('Open griper')
             if target_obj == 'pringles':
-                move_left_gripper(0.2)
+                move_left_gripper(0.3)
             else:
-                move_right_gripper(0.2)
+                move_right_gripper(0.3)
             executing_task = 'Transf_coords'
         
         
@@ -361,7 +361,8 @@ def main():
                                                                                 "realsense_link",
                                                                                 'shoulders_left_link')
                 target_object_x += 0.085
-                #target_object_z += 0.08
+                target_object_z += 0.1
+                target_object_y -= 0.02
             else:
                 target_object_x,target_object_y,target_object_z = transform_point(target_object_x,
                                                                                 target_object_y,
@@ -370,7 +371,7 @@ def main():
                                                                                 'shoulders_right_link')
                 target_object_x += 0.07
                 target_object_y -= 0.04
-                target_object_z += 0.2
+                target_object_z += 0.16
             executing_task = 'kinematics'
             print('New coords',target_object_x,target_object_y,target_object_z)
         
@@ -413,10 +414,10 @@ def main():
         elif executing_task == 'close_griper_taking_obj':
             say('Taking object')
             if target_obj == 'pringles':
-                move_left_gripper(-0.1)
+                move_left_gripper(-0.15)
             else:
                 #move_base(0.05, 0, 0.2)
-                move_right_gripper(-0.12)
+                move_right_gripper(-0.2)
             executing_task = 'move_predef_obj'
 
         

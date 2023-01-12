@@ -28,8 +28,8 @@ listener    = None
 def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
     #Def alpha and beta - note harcoding 
-    alpha = 0.2 
-    beta = 0.32
+    alpha = 0.19 
+    beta = 0.33
     v_max = 0.5
     w_max = 0.6
     #
