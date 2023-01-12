@@ -27,10 +27,10 @@ listener    = None
 
 def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
-    alpha = 0.5
-    beta = 1
-    v_max = 0.8
-    w_max = 1
+    alpha = 0.2
+    beta = 0.9
+    v_max = 0.6
+    w_max = 0.8
     #
     # TODO:
     # Implement the control law given by:
@@ -100,13 +100,18 @@ def follow_path(path):
 def callback_global_goal(msg):
     print("Calculating path from robot pose to " + str([msg.pose.position.x, msg.pose.position.y]))
     [robot_x, robot_y, robot_a] = get_robot_pose(listener)
-    req = GetPlanRequest(goal=PoseStamped(pose=msg.pose))
-    req.start.pose.position = Point(x=robot_x, y=robot_y)
-    path = rospy.ServiceProxy('/path_planning/a_star_search', GetPlan)(req).plan
-    path = rospy.ServiceProxy('/path_planning/smooth_path',SmoothPath)(SmoothPathRequest(path=path)).smooth_path
-    print("Following path with " + str(len(path.poses)) + " points...")
-    follow_path([[p.pose.position.x, p.pose.position.y] for p in path.poses])
-    print("Global goal point reached")
+    if robot_x-0.1 <= msg.pose.position.x <= robot_x+0.1 and robot_y - 0.1 <= msg.pose.position.y <= robot_y+0.1:
+     pub_goal_reached.publish(True)
+     print("I'm in the goal pose")
+    else:      
+     req = GetPlanRequest(goal=PoseStamped(pose=msg.pose))
+     req.start.pose.position = Point(x=robot_x, y=robot_y)
+     path = rospy.ServiceProxy('/path_planning/a_star_search', GetPlan)(req).plan
+     path = rospy.ServiceProxy('/path_planning/smooth_path',SmoothPath)(SmoothPathRequest(path=path)).smooth_path
+     print("Following path with " + str(len(path.poses)) + " points...")
+     print("path: "+str(path))
+     follow_path([[p.pose.position.x, p.pose.position.y] for p in path.poses])
+     print("Global goal point reached")
 
 def get_robot_pose(listener):
     try:

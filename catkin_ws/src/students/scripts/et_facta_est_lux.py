@@ -29,15 +29,17 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "CORIA PÉREZ SAUL"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
+    if executing_task:
+        return
+    new_task = True
     recognized_speech = msg.hypothesis[0]
-    print("New command received: " + recognized_speech)
 
 #
 # Global variable 'goal_reached' is set True when the last sent navigation goal is reached
@@ -67,7 +69,7 @@ def move_left_arm(q1,q2,q3,q4,q5,q6,q7):
     msg.data.append(q6)
     msg.data.append(q7)
     pubLaGoalPose.publish(msg)
-    time.sleep(2.0)
+    time.sleep(10.0)
 
 #
 # This function sends the goal angular position to the left gripper and sleeps 1 second
@@ -93,7 +95,7 @@ def move_right_arm(q1,q2,q3,q4,q5,q6,q7):
     msg.data.append(q6)
     msg.data.append(q7)
     pubRaGoalPose.publish(msg)
-    time.sleep(2.0)
+    time.sleep(10.0)
 
 #
 # This function sends the goal angular position to the right gripper and sleeps 1 second
@@ -114,7 +116,7 @@ def move_head(pan, tilt):
     msg.data.append(pan)
     msg.data.append(tilt)
     pubHdGoalPose.publish(msg)
-    time.sleep(1.0)
+    time.sleep(5.0)
 
 #
 # This function sends a linear and angular speed to the mobile base to perform
@@ -141,6 +143,7 @@ def go_to_goal_pose(goal_x, goal_y):
     goal_pose.pose.position.x = goal_x
     goal_pose.pose.position.y = goal_y
     pubGoalPose.publish(goal_pose)
+    print("Robot go to: " + str(goal_x)+", "+ str(goal_y))
 
 #
 # This function sends a text to be synthetized.
@@ -160,6 +163,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -167,14 +171,17 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
     req_ik.pitch = pitch
     req_ik.yaw   = yaw
     clt = rospy.ServiceProxy("/manipulation/la_inverse_kinematics", InverseKinematics)
-    resp = clt(req_ik)
-    return [resp.q1, resp.q2, resp.q3, resp.q4, resp.q5, resp.q6, resp.q7]
+    try:
+     resp = clt(req_ik)
+     return [resp.q1, resp.q2, resp.q3, resp.q4, resp.q5, resp.q6, resp.q7]
+    except:
+     return [0,0,0,0,0,0,0]
 
 #
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -183,8 +190,11 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
     req_ik.pitch = pitch
     req_ik.yaw   = yaw
     clt = rospy.ServiceProxy("/manipulation/ra_inverse_kinematics", InverseKinematics)
-    resp = clt(req_ik)
-    return [resp.q1, resp.q2, resp.q3, resp.q4, resp.q5, resp.q6, resp.q7]
+    try:
+     resp = clt(req_ik)
+     return [resp.q1, resp.q2, resp.q3, resp.q4, resp.q5, resp.q6, resp.q7]
+    except:
+     return [0,0,0,0,0,0,0]
 
 #
 # Calls the service for finding object (practice 08) and returns
@@ -239,7 +249,104 @@ def main():
     # FINAL PROJECT 
     #
     
+    new_task = False
+    executing_task = False
+    goal_reached = False
+    init_loc = [3.25,5.90]
+
+    state = "STATE-0"
+    
     while not rospy.is_shutdown():
+        if state == "STATE-0": #Mueve el robot a la localización de inicio y pone los brazos y la cabeza en una posición inicial
+            print("Initializing  final project...")
+            say("Hello")
+            say("I'll prepare")
+            move_head(0,0)
+            move_left_arm(-1,0,0,3,0,0.5,0)
+            move_right_arm(-0.5,0,0,3,1.5,0,0)
+            go_to_goal_pose(init_loc[0],init_loc[1])
+            if goal_reached:
+             print("Localization of start: "+str(init_loc[0])+", "+str(init_loc[1]))
+             say("I ready")
+             say("Wait for a command")
+             state = "STATE-1"             
+            
+        elif state == "STATE-1": #Espera un comando
+            goal_reached = False
+            if new_task:
+                new_task = False
+                executing_task = True
+                state = "STATE-2"
+                
+        elif state == "STATE-2": #Desifra el comando
+            obj, loc = parse_command(recognized_speech)
+            print("Requested object: " + obj)
+            print("Requested location: " + str(loc))
+            state = "STATE-3"
+            
+        elif state == "STATE-3": #Localiza los objetos para una posición óptima del efector final
+            move_head(0,-0.9)
+            xobj,yobj,zobj = find_object(obj)
+            print("Pose of the object:("+str(xobj)+", "+str(yobj)+", "+str(zobj)+")")
+            if xobj!=0 and yobj!=0 and zobj!=0:
+             x,y,z = transform_point(xobj, yobj, zobj,"realsense_link","shoulders_left_link")
+             q = calculate_inverse_kinematics_left(x,y,z,3,-1.57,-3)             
+             if q[0] == 0 and q[1] == 0 and q[2] == 0 and q[3] == 0  and q[4] == 0 and q[5] == 0 and q[6] == 0:
+              x,y,z = transform_point(xobj, yobj, zobj,"realsense_link","shoulders_right_link")
+              q = calculate_inverse_kinematics_right(x,y,z,1.6,-1.0,1.7)               
+              if q[0] == 0 and q[1] == 0 and q[2] == 0 and q[3] == 0  and q[4] == 0 and q[5] == 0 and q[6] == 0:
+               if xobj < 0:
+                move_base(0,0.25,5)
+               else:
+                move_base(0,-0.25,5)
+              else:
+               move_right_gripper(0.5)                
+               print("Q: "+str(q))
+               state = "STATE-4"               
+             else:
+              move_left_gripper(0.5)                
+              print("Q: "+str(q))
+              state = "STATE-4"
+            else:
+             move_base(0.25,0,2)
+              
+        elif state == "STATE-4":            
+            if obj == "pringles":
+             move_left_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])       
+            else:
+             move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
+            state = "STATE-5"
+        
+        elif state == "STATE-5": #
+            if obj == "pringles":
+             move_left_gripper(-0.3)
+             move_left_arm(-1,0,0,3,0,0.5,0)
+            else:
+             move_right_gripper(-0.3)
+             move_right_arm(-0.5,0,0,3,1.5,0,0)
+            say("I go to the goal pose")
+            go_to_goal_pose(loc[0],loc[1])
+            state = "STATE-6"
+
+        elif state == "STATE-6":
+            if goal_reached:
+             goal_reached = False
+             say("I'm here")
+             state = "STATE-7"
+        
+        elif state == "STATE-7": #
+            if obj == "pringles":
+             move_left_gripper(0.5)
+            else:
+             move_right_gripper(0.5)
+            say("Dropping")
+            executing_task = False
+            state = "STATE-0"
+            
+        elif state == "END":
+            print("This is the end.")
+        else:
+            print("FATAL ERROR!!! :'(")
         loop.sleep()
 
 if __name__ == '__main__':
@@ -247,4 +354,3 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
-    

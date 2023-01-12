@@ -63,23 +63,23 @@
   ra_1_controller:
     type: effort_controllers/JointPositionController
     joint: ra_1_joint
-    pid: {d: 4.64, i: 4.0200000000000005, p: 19.95}
+    pid: {d: 10.64, i: 4.0200000000000005, p: 400}
   ra_2_controller:
     type: effort_controllers/JointPositionController
     joint: ra_2_joint
-    pid: {d: 4.28, i: 6.1, p: 20.32}
+    pid: {d: 4.28, i: 6.1, p: 800}
   ra_3_controller:
     type: effort_controllers/JointPositionController
     joint: ra_3_joint
-    pid: {d: 0.53, i: 5.0200000000000005, p: 10.169999999999998}
+    pid: {d: 5, i: 5.0200000000000005, p: 1000}
   ra_4_controller:
     type: effort_controllers/JointPositionController
     joint: ra_4_joint
-    pid: {d: 1.02, i: 2.6900000000000004, p: 20.3}
+    pid: {d: 1.02, i: 2.6900000000000004, p: 1000}
   ra_5_controller:
     type: effort_controllers/JointPositionController
     joint: ra_5_joint
-    pid: {d: 0.0, i: 0.0, p: 2.5}
+    pid: {d: 0.58, i: 8.459999999999999, p: 100}
   ra_6_controller:   
     type: effort_controllers/JointPositionController
     joint: ra_6_joint
