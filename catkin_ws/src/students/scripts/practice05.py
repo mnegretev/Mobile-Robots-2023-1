@@ -29,10 +29,10 @@ def calculate_control(robot_x, robot_y, robot_a, goal_x, goal_y):
     cmd_vel = Twist()
     
     # Parámetros
-    alpha = 0.5
-    beta = 3.0
-    v_max = 0.8
-    w_max = 1.0
+    alpha = 0.2
+    beta = 0.4
+    v_max = 0.6
+    w_max = 0.8
     
     
     # Error de ángulo y acote
