@@ -87,8 +87,8 @@ def rejection_force(robot_x, robot_y, robot_a, laser_readings):
     Ry = 0
     for [distance, angle] in laser_readings:
         if distance < d0 : 
-            Rx += eta * (math.sqrt((1/distance)-(1/d0))) * (math.cos(angle + robot_a)) 
-            Ry += eta * (math.sqrt((1/distance)-(1/d0))) * (math.sin(angle + robot_a))
+            Rx += eta * (math.sqrt((1/distance)-(1/d0))) * ((math.cos(angle + robot_a)) - robot_x)
+            Ry += eta * (math.sqrt((1/distance)-(1/d0))) * ((math.sin(angle + robot_a)) - robot_y)
         else:
             Rx += 0 * (math.cos(angle + robot_a))
             Ry += 0 * (math.sin(angle + robot_a))

@@ -48,20 +48,27 @@ def segment_by_color(img_bgr, points, obj_name):
         lower = [10, 200, 50]
         upper = [20, 255, 255]
 
+    img_bgr = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
 
     lower = numpy.asarray(lower)
     upper = numpy.asarray(upper)
 
-    img_bgr = cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
+    
     pixel_hsv = cv2.inRange(img_bgr,lower,upper) #cambiando modelo de color 
 
     pixel_DiferenteCero = cv2.findNonZero(pixel_hsv) # pixeles que coinciden 
 
     media_Pixeles = cv2.mean(pixel_DiferenteCero) #media de los pixeles
 
-    centroid = points[int(media_Pixeles[0]), int(media_Pixeles[1])] 
+    centroid = points[int(media_Pixeles[1]), int(media_Pixeles[0])] 
 
-    return [media_Pixeles[0],media_Pixeles[1], centroid[0],centroid[1],centroid[2]]
+    mp_x = media_Pixeles[0]
+    mp_y = media_Pixeles[1]
+    cent_x = centroid[0]
+    cent_y = centroid[1]
+    cent_z = centroid[2]
+
+    return [mp_x, mp_y, cent_x, cent_y, cent_z]
 
 def callback_find_object(req):
     global pub_point, img_bgr

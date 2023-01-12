@@ -201,7 +201,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # VE
 # Esta función llama al servicio de cálculo de cinemática inversa para brazo derecho (práctica 08)
 # y devuelve la posición articular calculada.
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -261,8 +261,11 @@ def main():
     loop = rospy.Rate(10)
     print("Waiting for services...")
     rospy.wait_for_service('/manipulation/la_inverse_kinematics')
+    print("Waiting for services1...")
     rospy.wait_for_service('/manipulation/ra_inverse_kinematics')
+    print("Waiting for services2...")
     rospy.wait_for_service('/vision/find_object')
+    print("Waiting for services3...")
     print("Services are now available.")
 
     #
@@ -271,50 +274,169 @@ def main():
     new_task = False
     recognized_speech = ""
     executing_task = False
-    state = "St_incio"
-    while not rospy.is_shutdown():
+    state = "St_inicio"
 
+   
+
+    while not rospy.is_shutdown():
+        #Estado 0: Inicio
         if state == "St_inicio":
+            say("Starting")
             print("iniciando proyecto final...")
             print("Esperando por un comando...")
-            state = "St_Comando"
-        
+            state = "St_comando"
+        #Estado 1: Esperando comando 
+
         elif state == "St_comando":
+            say("Command detected")
             if new_task:
+                print("Comando recibido...")
                 new_task = False
                 executing_task = True
                 state = "St_analizando"
-
+        #Estado 2: Reconociendo comando 
         elif state == "St_analizando":
+            print("Reconociendo Comando...")
+            say("Parsing command")
             obj, loc = parse_command(recognized_speech)
             print("Objecto: " + obj)
             print("Localizacion: " + str(loc))
-            state = "St_movHEAD"
+            state = "St_moverCabeza"
 
-        elif state == "St_movHEAD":
-            move_head(0,-0.1)
-            
+        #Estado 3: Mover la cabeza para identificar objetos
+        elif state == "St_moverCabeza":
+            say("Looking down")
+            print("Moviendo Cabeza...")
+            move_head(0,-0.9)
+            state = "St_BuscarObjeto"
+
+        #Estado 4: Buscar objetos 
+        elif state == "St_BuscarObjeto":
+            say("Found object")
+            print("Buscando Objetos...")
+            obj_x, obj_y, obj_z = find_object(obj)
+            state = "St_Transfor_Coor"
+
+        #Estado 5: Transformar Coordendas 
+        elif state == "St_Transfor_Coor":
+            say("transforming coordinates")
+            print("Trasformando Coordenadas...")
             if obj == "pringles":
-                state = "SM_MOVE_LEFT_ARM"
-            else:
-                state = "SM_MOVE_RIGHT_ARM"
-
-
-        elif state == "SM_MOVE_LEFT_ARM":
-            move_left_arm(-1, 0,0,1.5, 0, 0.8, 0)
-            x,y,z = find_object(obj)
-            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
+                print("Trasformando Coordenadas Brazo Izquierdo...")
+                obj_x, obj_y, obj_z = transform_point(obj_x, obj_y, obj_z, "realsense_link", "shoulders_left_link")
             
+            else:
+                print("Trasformando Coordenadas Brazo Derecho...")
+                obj_x, obj_y, obj_z = transform_point(obj_x, obj_y, obj_z, "realsense_link", "shoulders_right_link")
+
+            state = "St_Cinematica_Inv"
+
+        #Estado 6: Calculando Cinematica Inversa 
+        elif state == "St_Cinematica_Inv":
+            say("Calculating inverse kinematics")
+            print("Calculando Cinematica Inversa...")
+            if obj == "pringles":
+                print("Calculando Cinematica Inversa Brazo Izquierdo...")
+                CinematicaInv = calculate_inverse_kinematics_left (obj_x, obj_y, obj_z, 0, -1.5,0)
+            else:
+                print("Calculando Cinematica Inversa Brazo Derecho...")
+                CinematicaInv = calculate_inverse_kinematics_right (obj_x, obj_y, obj_z, 0, -1.5,0)
+
+            state = "St_pos_Init_Brazos"
+
+        #Estado 7: Moviendo brazos a una posicion definida y abriendo gripper 
+        elif state == "St_pos_Init_Brazos":
+            say("Moving arms")
+            print("Moviendo Brazos y abriendo gripper...")
+            if obj == "pringles":
+                move_left_gripper(0.1)
+                move_left_arm(-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0)
+                print("Moviendo y abriendo gripper Brazo Izquierdo...")
+            else:
+                move_right_gripper(0.1)
+                move_right_arm(-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0)
+                print("Moviendo y abriendo gripper Brazo Derecho...")
+            state = "St_pos_Obj_Brazos"
+
+        #Estado 8: Mover brazo al objeto 
+        elif state == "St_pos_Obj_Brazos":
+            print("Moviendo Brazo al objeto...")
+            if obj == "pringles":
+                print("Moviendo Brazo Izquierdo al objeto...")
+                move_left_arm(CinematicaInv)
+            else:
+                print("Moviendo Brazo Derecho al objeto...")
+                move_right_arm(CinematicaInv)
+            state = "St_Cerrar_Griper"
+
+        #Estado 9: Tomar el objeto 
+        elif state == "St_Cerrar_Griper":
+            say("Grabbed the object")
+            print("Tomando Objetos...")
+            if obj == "pringles":
+                print("Tomando Objetos Brazo Izquierdo...")
+                move_left_gripper(-0.1)               
+            else:
+                print("Tomando Objetos Brazo Derecho...")
+                move_right_gripper(-0.1)
+            state = "St_regresando_Pos_Init_Br"
+
+        #Estado 10: Regresar brazos a posicion definida 
+        elif state == "St_regresando_Pos_Init_Br":
+            print("Regresando Brazos y moviendo cabeza...")
+            if obj == "pringles":
+                print("Regresando Brazos Izquierdo...")
+                move_left_arm(-1.3, 0.2, 0.0, 1.6, 0.0, 1.2, 0.0)
+                move_head (0, 0)
+               
+            else:
+                print("Regresando Brazos Derecho...")
+                move_right_arm(-1.0, -0.2, 0.0, 1.4, 1.1, 0.0, 0.0)
+                move_head (0, 0)
+            state = "St_transportar"
+
+        #Estado 11: Llevar el objeto a otra localizacion 
+        elif state == "St_transportar":
+            say("Transport object")
+            print("Transportando objeto...")
+            move_base(-0.2, 0, 2)
+            go_to_goal_pose(loc[0],loc[1])
+            state = "St_Parar"
+
+        #Estado 12: Soltar objeto 
+        elif state == "St_Parar":
+            say("Drop object")
+            print("Parar y soltar obejto...")
+            if goal_reached:
+                if obj == "pringles":
+                    move_left_gripper(0.1)
+                else:
+                    move_right_gripper(0.1)
+                
+                state = "St_regresando_loc"    
+
+        #Estado 13: Regresano a localizacion original
+        elif state == "St_regresando_loc":
+            print("Regresando...")
+            say("Returning")
+            go_to_goal_pose(3,5.8)
+            move_base(0,1,15)
+            if obj == "pringles":
+                move_left_gripper(0)
+            else:
+                move_right_gripper(0)
             state = "SM_END"
-        elif state == "SM_MOVE_RIGHT_ARM":
-            move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0,0)
-            x,y,z = find_object(obj)
-            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_right_link")
-            state= "SM_END"
+                
+
+        #Estado 14: Fin 
         elif state == "SM_END":
-            None
+            say("I finished")
+
+
         else:
             print("FATAL ERROR!!! :'(")
+
+
         loop.sleep()
 
     while not rospy.is_shutdown():
