@@ -254,22 +254,22 @@ def main():
             print("Waiting for new task")
             current_state = "SM_WAITING_NEW_TASK"
             #current_state = "MOVER_BASE"
-	elif current_state == "MOVER_BASE":
-	    move_head(0, -0.9)
-	    move_base(-0.3, 0, 2.0)
-            current_state = "SM_START_NAVIGATION"
+	#elif current_state == "MOVER_BASE":
+	#   move_head(0, -0.9)
+	 #   move_base(-0.3, 0, 2.0)
+          #  current_state = "SM_START_NAVIGATION"
 	    #move_base(0.3, 0.3, 0.0)
 	    #current_state = "SM_INIT"
 
-        elif current_state == "SM_WAITING_NEW_TASK":
-            if new_task:
-                requested_object, requested_location = parse_command(recognized_speech)
-                print("New task received: " + requested_object + " to  " + str(requested_location))
-                say("Executing the command, " + recognized_speech)
-                rospy.sleep(5)
-                current_state = "SM_MOVE_HEAD"
-                new_task = False
-                executing_task = True
+        #elif current_state == "SM_WAITING_NEW_TASK":
+         #   if new_task:
+          #      requested_object, requested_location = parse_command(recognized_speech)
+           #     print("New task received: " + requested_object + " to  " + str(requested_location))
+            #    say("Executing the command, " + recognized_speech)
+             #   rospy.sleep(5)
+              #  current_state = "SM_MOVE_HEAD"
+               # new_task = False
+		#executing_task = True
                 
         elif current_state == "SM_MOVE_HEAD":
             print("Moving head to look at table...")
