@@ -275,7 +275,7 @@ def main():
                 state = "SM_MOVE_RIGHT_ARM"
                 
         elif state == "SM_MOVE_LEFT_ARM":
-            move_left_arm(-1, 0, 0, 1.5, 0, 0.8, 0)
+            move_left_arm(-1.3, 0.2, 0.0, 1.5, 0, 1.2, 0)
             print("SEARCH "+ obj)
             say("SEARCH")
             x,y,z = find_object(obj)
@@ -305,23 +305,25 @@ def main():
             	move_right_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
             	say("AND GRIPPER")
             	move_right_gripper(-0.5)
-            state = "NAV"
-        
-        elif state == "NAV":
+            state = "SM_NAV"
+        	
+        elif state == "SM_NAV":
             say("PREPARING NAVIGATION")
             move_head(0, 0)
             move_base(-0.3, 0, 4)
             say("READY")
             go_to_goal_pose(loc[0], loc[1])
-            print("TAKE_YOUR " + obj)
-            say("FINISH")
             state = "SM_END"
         
         elif state == "SM_END":
-            None
+            if(goal_reached == True):
+            	say("TAKE_YOUR " + obj)
+            	say("FINISH")
+            	None
             
         else:
             print("FATAL ERROR!!! :'(")
+            say("ERROR")
         loop.sleep()
 
 if __name__ == '__main__':
