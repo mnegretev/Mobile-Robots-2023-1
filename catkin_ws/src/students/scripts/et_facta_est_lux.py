@@ -262,6 +262,7 @@ def main():
             time.sleep(10)
             if new_task == True:
                 say("New command detected")
+                time.sleep(5)
                 new_task = False
                 #executing_task = True
                 state = "SM_PARSING"
