@@ -29,13 +29,18 @@ from sound_play.msg import SoundRequest
 from custom_msgs.srv import *
 from custom_msgs.msg import *
 
-NAME = "FULL NAME"
+NAME = "Martinez Juarez, Abigail Meztli"
 
 #
 # Global variable 'speech_recognized' contains the last recognized sentence
 #
 def callback_recognized_speech(msg):
     global recognized_speech, new_task, executing_task
+
+    if executing_task:
+        return
+    new_task = True
+
     recognized_speech = msg.hypothesis[0]
     print("New command received: " + recognized_speech)
 
@@ -160,6 +165,7 @@ def say(text):
 # and returns the calculated articular position.
 #
 def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+    req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
     req_ik.z = z
@@ -174,7 +180,7 @@ def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
 # This function calls the service for calculating inverse kinematics for right arm (practice 08)
 # and returns the calculated articular position.
 #
-def calculate_inverse_kinematics_left(x,y,z,roll, pitch, yaw):
+def calculate_inverse_kinematics_right(x,y,z,roll, pitch, yaw):
     req_ik = InverseKinematicsRequest()
     req_ik.x = x
     req_ik.y = y
@@ -238,8 +244,98 @@ def main():
     #
     # FINAL PROJECT 
     #
-    
+    new_task = False
+    recognized_speech = ""
+    executing_task = False
+    state = "SM_INIT"
+    goal_reached = False
+
     while not rospy.is_shutdown():
+    
+        if state == "SM_INIT":
+            print("Initializing Final Project\n")
+            print("Waiting for spoken command\n")
+            state = "SM_WAIT_FOR_COMMAND"
+
+        elif state == "SM_WAIT_FOR_COMMAND":
+            say("Hello. I will be waiting for a command")
+            if new_task:
+                say("New command detected")
+                new_task = False
+                executing_task = True
+                state = "SM_PARSING"
+
+        elif state == "SM_PARSING":
+            obj, loc = parse_command(recognized_speech)
+            print("Requested object: " + obj)
+            print("Requested location: " + str(loc))
+            say("I take the " + obj + " to the " + str(loc))
+            state = "SM_MOVE_HEAD"
+
+        elif state == "SM_MOVE_HEAD":
+            move_head(0,-1)
+            if obj == "pringles":
+                state = "SM_TAKE_PRINGLES"
+            else:
+                state = "SM_TAKE_DRINK"
+        
+        elif state == "SM_TAKE_PRINGLES":
+            move_left_arm(-1.3, 0.2, 0, 1.6, 0, 1.2, 0)
+            move_base(0.2, 0, 0)
+            move_left_gripper(0.7)
+            x,y,z = find_object(obj)
+            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
+            q = calculate_inverse_kinematics_left(x, y, z, 0, -1.5, 0)
+            move_left_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+            move_left_gripper(-0.4)
+            state = "SM_GO_TO_GOAL"
+        
+        elif state == "SM_TAKE_DRINK":
+            move_right_arm(-1, -0.2, 0, 1.4, 1.1, 0, 0)
+            move_base(0.2, 0, 0)
+            move_right_gripper(0.7)
+            x,y,z = find_object(obj)
+            x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_right_link")
+            q = calculate_inverse_kinematics_right(x, y, z, 0, -1.5, 0)
+            move_right_arm(q[0], q[1], q[2], q[3], q[4], q[5], q[6])
+            move_right_gripper(-0.4)
+            state= "SM_GO_TO_GOAL"
+
+        elif state == "SM_GO_TO_GOAL":
+            move_base(-0.5, 0, 5)
+            move_head(0, 0)
+            go_to_goal_pose(loc[0], loc[1])
+            if goal_reached == True:
+                say("I reached my goal")
+                state = "SM_GO_BACK"
+        
+        elif state == "SM_GO_BACK":
+            say("I going back")
+            if obj == "pringles":
+                move_left_gripper(0.2)
+                time.sleep(2)
+                move_left_gripper(0)
+                move_left_arm(0, 0, 0, 0, 0, 0, 0)
+            else:
+                move_right_gripper(0.2)
+                time.sleep(2)
+                move_right_gripper(0)
+                move_right_arm(0, 0, 0, 0, 0, 0, 0)
+            goal_reached == False
+            go_to_goal_pose(3.5, 6.0)
+            while goal_reached == False:
+                None
+            move_base(0, 2.2, 5)
+            time.sleep(2)
+            move_base(0.7, 0, 5)
+            goal_reached = False
+            #new_task = True
+            #executing_task = False
+            state = "SM_INIT"
+
+        else:
+            print("FATAL ERROR!!! :'(")
+
         loop.sleep()
 
 if __name__ == '__main__':
