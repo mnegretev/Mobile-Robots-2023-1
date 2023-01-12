@@ -337,7 +337,7 @@ def main():
 
                 
         elif current_state == "E10_TO_GOAL":		#ESTADO 10: MOVERSE A META
-         print("E10: DIRIGIRSE A META")
+         print("E10: DIRIGIRSE A META ")
          go_to_goal_pose(loc[0],loc[1])
          if goal_reached:
            move_left_gripper(0.5)
