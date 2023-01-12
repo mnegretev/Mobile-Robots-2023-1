@@ -246,61 +246,61 @@ def main():
     recognized_speech = ""
     goal_reached = False
 
-    current_state = "SM_INIT"
+    current_state = "E0_START"
     requested_object   = ""
     requested_location = [0,0]
 
     while not rospy.is_shutdown():
-        if current_state == "SM_INIT": 			#ESTADO 0: INICIO DE MAQUINA
+        if current_state == "E0_START": 			#ESTADO 0: INICIO DE MAQUINA
             print("E0:INICIANDO MÀQUINA DE ESTADOS")
             if(new_task == True):
                 new_task = False
-                current_state = "SM_SAY_HELLO"
+                current_state = "E1_HELLO"
 
-        elif current_state == "SM_SAY_HELLO": 		#ESTADO 1: SALUDO ROBOT CON VOZ
+        elif current_state == "E1_HELLO": 		#ESTADO 1: SALUDO ROBOT CON VOZ
             print("E1: SALUDO")
             say("Hello world")
-            current_state = "SM_OBJECT_DETECTION"
+            current_state = "E2_RECOR"
 
-        elif current_state == "SM_OBJECT_DETECTION":		#ESTADO 2: RECONOCIMIENTO DE ORDEN
+        elif current_state == "E2_RECOR":		#ESTADO 2: RECONOCIMIENTO DE ORDEN
             print("E2: RECONOCIMIENTO DE OBJETO")
             say("Robot is recognizing object")
             obj,loc = parse_command(recognized_speech) 	#Reconocimiento de voz
             print("   Objeto a agarrar: "+ obj) 
             print("   Localizaciòn: ["+ str(loc[0]) + "," + str(loc[1])+ "]")
-            current_state = "SM_HEAD_DOWN"
+            current_state = "E3_HEAD"
 
-        elif current_state == "SM_HEAD_DOWN":			#ESTADO 3: POSICIONAMIENTO CABEZA 
+        elif current_state == "E3_HEAD":		#ESTADO 3: POSICIONAMIENTO CABEZA 
             print("E3: POSICIONAMIENTO DE CABEZA")
             move_head(0,-0.9)
-            current_state = "SM_FIND_OBJECT"
+            current_state = "E4_FIND_OBJ"
 
-        elif current_state == "SM_FIND_OBJECT":		#ESTADO 4: BUSQUEDA DE OBJETO 
+        elif current_state == "E4_FIND_OBJ":		#ESTADO 4: BUSQUEDA DE OBJETO 
             print("E4: BUSCANDO OBJETO")
             say("Finding object")
             x_obj, y_obj, z_obj = find_object(obj)		#BUSQUEDA DE OBJETO
             print("   Centroide de objeto: ["+str(x_obj)+","+str(y_obj)+","+ str(z_obj)+"]")
-            current_state = "SM_POINT_TRANSFORM"
+            current_state = "E5_TRANSFORM"
 
-        elif current_state == "SM_POINT_TRANSFORM":		#ESTADO 5: TRANSFORMACIÒN COORDENADAS
+        elif current_state == "E5_TRANSFORM":		#ESTADO 5: TRANSFORMACIÒN COORDENADAS
          print("E5: TRANSFORMACIÒN DE COORDENADAS")
          if obj == "pringles":
                 xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_left_link")
          else:
                 xt, yt, zt = transform_point(x_obj, y_obj, z_obj,"realsense_link","shoulders_right_link")
          print("   Coordenadas transformadas: ["+ str(xt) + str(yt) + str(zt))
-         current_state = "SM_INVERSE_KINEMATICS"
+         current_state = "E6_CIN_INV"
 
-        elif current_state == "SM_INVERSE_KINEMATICS":	#ESTADO 6: CINEMÀTICA INVERSA
+        elif current_state == "E6_CIN_INV":		#ESTADO 6: CINEMÀTICA INVERSA
          print("E6: CINEMÀTICA INVERSA")
          if obj == "pringles":
                 q = calculate_inverse_kinematics_left(xt,yt,zt,3,-1.57,-3)
          else:
-                q = calculate_inverse_kinematics_right(xt,yt,zt,1.5,1.3,1.8)
+                q = calculate_inverse_kinematics_right(xt,yt+.001,zt,3,-1.57,-3)
          print(q)
-         current_state = "SM_MOVE_ARM_TO_START"
+         current_state = "E7_ARM_INI"
 
-        elif current_state == "SM_MOVE_ARM_TO_START":	#ESTADO 7: BRAZO A POSICION INICIAL
+        elif current_state == "E7_ARM_INI":		#ESTADO 7: BRAZO A POSICION INICIAL
          print("E7: BRAZO A POSICION INICIAL")
          if obj == "pringles":    
           print("   Brazo izquierdo a posicion inicial")
@@ -308,9 +308,10 @@ def main():
          else:
           print("   Brazo derecho a posicion inicial")
           move_right_arm(-0.5,0,0,2.3,0,0,0)
-         current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
+          move_right_arm(-0.4,0,0,2.3,.5,0,0)
+         current_state = "E8_ARM_OBJ"
 
-        elif current_state == "SM_MOVE_ARM_TO_TAKE_OBJ":	#ESTADO 8: BRAZO A OBJETO
+        elif current_state == "E8_ARM_OBJ":		#ESTADO 8: BRAZO A OBJETO
             print("E8: BRAZO A OBJETO")
             say("Robot is moving its arm")
             if obj == "pringles":
@@ -319,36 +320,40 @@ def main():
             else:
              move_right_gripper(0.5)
              move_right_arm(q[0],q[1],q[2],q[3],q[4],q[5],q[6])
-            current_state = "SM_CLOSE_HAND"
+            current_state = "E9_CLOSE"
         
-        elif current_state == "SM_CLOSE_HAND":		#ESTADO 9: CERRAR MANO
-            print("E8: CERRANDO MANO")
+        elif current_state == "E9_CLOSE":		#ESTADO 9: CERRAR MANO
+            print("E9: CERRANDO MANO")
             if obj == "pringles":
              move_left_arm(-0,0,0,1.7,0,0,0)
              move_left_gripper(-0.5)
              move_left_arm(0,0,0,3,0,0,-1)
             else:
-             move_right_arm(-0,0,0,1.7,0,0,0)
+             #move_right_arm(-0,0,0,1.7,0,0,0)
              move_right_gripper(-0.5)
              move_right_arm(0,0,0,3,0,0,-0.8)
              say("I got it")
-            current_state = "SM_MOVE_TO_GOAL_POSE"
+            current_state = "E10_TO_GOAL"
 
                 
-        elif current_state == "SM_MOVE_TO_GOAL_POSE" :
+        elif current_state == "E10_TO_GOAL":		#ESTADO 10: MOVERSE A META
+         print("E10: DIRIGIRSE A META")
          go_to_goal_pose(loc[0],loc[1])
          if goal_reached:
-          if obj == "pringles":
            move_left_gripper(0.5)
-           current_state = "SM_RETURN"
+           print("   Objeto depositado")
+           goal_reached = False
+           current_state = "E11_TO_HOME"
            
-        elif current_state == "SM_RETURN" :
-         go_to_goal_pose(3.32,5.86)
-         print("estoy girando")
-         move_base(0,1,15)
-         print("ya gire")
-         move_left_gripper(0)
-         current_state = "SM_FINISH"
+        elif current_state == "E11_TO_HOME" :		#ESTADO 11: REGRESA A INICIO
+         print("E11: REGRESAR A INICIO")
+         go_to_goal_pose(2,5.86)
+         if goal_reached == True:
+          print("Fin")
+          move_base(0,1,15)
+          move_left_gripper(0)
+          current_state = "E12_END"
+         
 
           
 

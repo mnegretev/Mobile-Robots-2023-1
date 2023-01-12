@@ -48,8 +48,10 @@ def segment_by_color(img_bgr, points, obj_name):
         LimiteSup = [35, 255, 255]
         LimiteInf = [25, 50, 50]
     else:
-        LimiteSup = [20, 255, 255]
-        LimiteInf = [10, 200, 50]
+        LimiteSup = [19, 249, 253]
+        LimiteInf = [11, 210, 139]
+        #LimiteSup = [20, 255, 255]
+        #LimiteInf = [10,200, 50]
     #Change of space color
     HSV = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV) 
     #Image segmentation
