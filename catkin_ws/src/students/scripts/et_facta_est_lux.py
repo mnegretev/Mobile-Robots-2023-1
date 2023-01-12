@@ -357,7 +357,8 @@ def main():
             say("Moving to dropping position")
             print("Acomodando Base")
             move_base(0,-5.14,4)
-            move_head(0,-0.4) 
+            move_head(0,-0.4)
+            say("Dropping the pringles") 
             move_left_gripper(0.5)
             state = "SM_END"               
           
@@ -381,7 +382,7 @@ def main():
         elif state == "SM_TOMAR":    
             move_base(0.2, 0, 0.5)
             print("Acercandome a la mesa")
-            move_right_gripper(-0.61)
+            move_right_gripper(-0.6)
             move_right_arm(0.9170,0.135,-0.050,1.442,-0.315,0.008,0.150)
             state = "SM_RIGHT_ARM_GO_TO"
             
@@ -389,15 +390,18 @@ def main():
             print("GOING TO REQUESTED POSITION")
             if loc == [3.22, 9.2]:#Para Kitchen
              go_to_goal_pose(loc[0], loc[1])
+             say("Going to the kitchen")
              print("Going to kitchen")
              state = "SM_WAIT_FOR_GOAL_REACH_RIGHT_ARM"
             else:
              go_to_goal_pose(loc[0], loc[1])#PARA TABLE
              print("Going to table")
+             say("Going to the table")
              state = "SM_WAIT_FOR_GOAL_REACH_TABLE_RIGHT_ARM"   
            
         elif state == "SM_WAIT_FOR_GOAL_REACH_RIGHT_ARM": #Espero hasta llegar a la cocina
          if goal_reached:
+            say("I am in the kitchen")
             state = "SM_GOAL_REACHED_KITCHEN"
         
         elif state == "SM_GOAL_REACHED_KITCHEN":    #Cuando ya estoy en la cocina
@@ -407,16 +411,19 @@ def main():
             state = "SM_DROP_KITCHEN_RIGHT_ARM"
         
         elif state =="SM_DROP_KITCHEN_RIGHT_ARM":
+            say("Moving to dropping position")
             move_base(0.2,0,1.8)
             print("Acercandome a la mesa")
             state = "SM_DROP2_KITCHEN_RIGHT_ARM"
             
         elif state == "SM_DROP2_KITCHEN_RIGHT_ARM":
+            say("Dropping the drink")
             move_right_gripper(0.5)
             state = "SM_END"    
             
         elif state =="SM_WAIT_FOR_GOAL_REACH_TABLE_RIGHT_ARM":
          if goal_reached:
+            say("I am next to the table")
             state = "SM_GOAL_REACHED_TABLE_RIGHT_ARM"
         
         elif state == "SM_GOAL_REACHED_TABLE_RIGHT_ARM":
@@ -424,6 +431,7 @@ def main():
             #move_right_arm(1.4,0.135,-0.050,1.442,-0.315,0.008,0.150)
             #move_right_arm(1.4,0.135,-0.050,1.442,-0.915,0.008,0.150)
             move_right_arm(1.55,0.135,-0.050,1.442,-0.95,0.008,0.150)
+            say("Moving to dropping position")
             state = "SM_TURN"
         
         elif state == "SM_TURN":
@@ -433,11 +441,13 @@ def main():
         
         elif state == "SM_D_TABLE_RIGHT_ARM":
             print("Soltando lata")
+            say("Dropping the drink")
             move_head(0,-0.3) 
             move_right_gripper(0.5)
             state="SM_END"
                                        
         elif state == "SM_END":
+            say(" I have acomplished the task")
             print("\n\nEL programa ha terminado!\n\n")
         else:
             print("FATAL ERROR!!! :'(")
