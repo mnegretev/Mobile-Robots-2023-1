@@ -278,7 +278,7 @@ def main():
             x,y,z = find_object(obj)
             x,y,z = transform_point(x,y,z,"realsense_link", "shoulders_left_link")
 			move_base(-0.3, 0, 2.0)
-			q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(x,y,z,0,-1.50,0)
+			q1,q2,q3,q4,q5,q6,q7 = calculate_inverse_kinematics_left(x,y,z,0,-1.5,0)
 			move_left_arm(q1,q2,q3,q4,q5,q6,q7)
 			say("Grabbing the pringles")
             state = "SM_START_NAVIGATION"
