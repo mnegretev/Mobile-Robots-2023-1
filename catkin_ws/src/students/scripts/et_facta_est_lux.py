@@ -330,6 +330,7 @@ def main():
                 move_left_gripper(-0.5)
                 move_left_arm(0,0,0,3,0,0,-1)
             else:
+                move_right_arm(-0,0,0,1.7,0,0,0)
                 move_right_gripper(-0.5)
                 move_right_arm(0,0,0,3,0,0,-0.8)
                 say("I got it")
