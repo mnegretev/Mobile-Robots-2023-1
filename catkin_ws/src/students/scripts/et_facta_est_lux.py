@@ -70,7 +70,7 @@ def move_left_arm(q1,q2,q3,q4,q5,q6,q7):
     msg.data.append(q6)
     msg.data.append(q7)
     pubLaGoalPose.publish(msg)
-    time.sleep(2.0)
+    time.sleep(8.0)
 
 #
 # This function sends the goal angular position to the left gripper and sleeps 1 second
@@ -79,7 +79,7 @@ def move_left_arm(q1,q2,q3,q4,q5,q6,q7):
 def move_left_gripper(q):
     global pubLaGoalGrip
     pubLaGoalGrip.publish(q)
-    time.sleep(1.0)
+    time.sleep(3.0)
 
 #
 # This function sends the goal articular position to the right arm and sleeps 2 seconds
@@ -96,7 +96,7 @@ def move_right_arm(q1,q2,q3,q4,q5,q6,q7):
     msg.data.append(q6)
     msg.data.append(q7)
     pubRaGoalPose.publish(msg)
-    time.sleep(2.0)
+    time.sleep(8.0)
 
 #
 # This function sends the goal angular position to the right gripper and sleeps 1 second
@@ -105,7 +105,7 @@ def move_right_arm(q1,q2,q3,q4,q5,q6,q7):
 def move_right_gripper(q):
     global pubRaGoalGrip
     pubRaGoalGrip.publish(q)
-    time.sleep(1.0)
+    time.sleep(3.0)
 
 #
 # This function sends the goal pan-tilt angles to the head and sleeps 1 second
