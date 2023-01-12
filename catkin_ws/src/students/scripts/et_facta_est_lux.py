@@ -117,7 +117,7 @@ def move_head(pan, tilt):
     msg.data.append(pan)
     msg.data.append(tilt)
     pubHdGoalPose.publish(msg)
-    time.sleep(1.0)
+    time.sleep(5.0)
 
 #
 # This function sends a linear and angular speed to the mobile base to perform
