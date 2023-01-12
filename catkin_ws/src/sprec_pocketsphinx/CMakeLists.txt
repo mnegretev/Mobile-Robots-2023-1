@@ -1,4 +1,4 @@
-make_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.0.2)
 project(sprec_pocketsphinx)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
