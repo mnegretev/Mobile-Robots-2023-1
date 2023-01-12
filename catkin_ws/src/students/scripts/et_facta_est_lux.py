@@ -259,10 +259,11 @@ def main():
 
         elif state == "SM_WAIT_FOR_COMMAND":
             say("Hello. I will be waiting for a command")
-            if new_task:
+            time.sleep(10)
+            if new_task == True:
                 say("New command detected")
                 new_task = False
-                executing_task = True
+                #executing_task = True
                 state = "SM_PARSING"
 
         elif state == "SM_PARSING":
@@ -270,6 +271,7 @@ def main():
             print("Requested object: " + obj)
             print("Requested location: " + str(loc))
             say("I take the " + obj + " to the " + str(loc))
+            time.sleep(5)
             state = "SM_MOVE_HEAD"
 
         elif state == "SM_MOVE_HEAD":
@@ -307,10 +309,12 @@ def main():
             go_to_goal_pose(loc[0], loc[1])
             if goal_reached == True:
                 say("I reached my goal")
+                time.sleep(5)
                 state = "SM_GO_BACK"
         
         elif state == "SM_GO_BACK":
             say("I going back")
+            time.sleep(5)
             if obj == "pringles":
                 move_left_gripper(0.2)
                 time.sleep(2)
