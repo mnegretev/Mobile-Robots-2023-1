@@ -308,6 +308,7 @@ def main():
              if obj == "pringles":
                 move_left_arm(-0.5,0,0,2.3,0,0,0)
              else:
+                move_right_arm(-0.5,0,0,2.3,0,0,0)
                 move_right_arm(-0.4,0,0,2.3,0.5,0,0)
              current_state = "SM_MOVE_ARM_TO_TAKE_OBJ"
 
