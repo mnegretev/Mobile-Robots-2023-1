@@ -100,10 +100,10 @@ def jacobian(q, Ti, Wi):
     #     RETURN J
     #     
     J = numpy.asarray([[0.0 for a in q] for i in range(6)])            # J 6x7 full of zeros
-    q_next = numpy.asarray([q,]*len(q) + (delta_q*numpy.identity(len(q))))
-    q_prev = numpy.asarray([q,]*len(q) - (delta_q*numpy.identity(len(q))))
+    q_next = numpy.asarray([q,]*len(q)) + delta_q*numpy.identity(len(q))
+    q_prev = numpy.asarray([q,]*len(q)) - delta_q*numpy.identity(len(q))
     
-    for i in range(len(q)):
+    for i in range(0,7):
     	J [:,i] = (forward_kinematics(q_next[i,:], Ti, Wi) - forward_kinematics(q_prev[i,:], Ti, Wi)) / (2* delta_q)  
     return J
 
